@@ -9,10 +9,13 @@ import type { Kitchen } from '../hooks/useKitchen';
 import { EXPIRING_DAYS } from '../logic/availability';
 import { daysBetween, daysLeftText, parseDate } from '../logic/dates';
 import { PLACES, type FridgeRow, type Product } from '../types';
+import { productEmoji } from '../ui/emoji';
 import { Empty, Section, Sheet } from '../ui/kit';
 import { draftFor, productOfRow, ProductForm, shortName, type ProductDraft } from '../ui/ProductForm';
 import { ProductPicker } from '../ui/ProductPicker';
 import { toast } from '../ui/toast';
+
+const PLACE_EMOJI: Record<string, string> = { холодильник: '🧊', морозилка: '❄️', 'полка круп': '🫙' };
 
 function daysLeft(row: FridgeRow, today: Date): number | null {
   const d = parseDate(row.expires);
@@ -60,12 +63,13 @@ export function Fridge({ k }: { k: Kitchen }) {
         Добавить списком после магазина
       </button>
 
+      {rows.length > 0 && <p className="muted small">Нажми на продукт, чтобы поправить. «−» — убавить, «✕» — закончилось (можно вернуть).</p>}
       {rows.length === 0 && <Empty>Холодильник пуст. Добавь продукты — и во вкладке «Готовим» появятся блюда.</Empty>}
 
       {groups
         .filter((g) => g.rows.length)
         .map((g) => (
-          <Section key={g.place} title={g.place[0].toUpperCase() + g.place.slice(1)}>
+          <Section key={g.place} title={`${PLACE_EMOJI[g.place] ?? '📦'} ${g.place[0].toUpperCase() + g.place.slice(1)}`} action={<span className="count">{g.rows.length}</span>}>
             <ul className="list">
               {g.rows.map((row) => {
                 const p = productOfRow(row);
@@ -74,11 +78,18 @@ export function Fridge({ k }: { k: Kitchen }) {
                 const counted = parseQty(row.qty, p).n != null;
                 return (
                   <li key={row.id} className={`item${soon ? ' soon' : ''}`}>
+                    <span className="item-emoji" aria-hidden>
+                      {productEmoji(p?.key)}
+                    </span>
                     <button className="item-main" onClick={() => edit(row)}>
                       <span className="item-name">{row.name}</span>
                       <span className="item-sub">
                         {row.qty && <span>{row.qty}</span>}
-                        {row.expires && <span className={soon ? 'red' : ''}>{dl != null ? `до ${row.expires.slice(0, 5)} · ${daysLeftText(dl)}` : row.expires}</span>}
+                        {row.expires && (
+                          <span className={`exp-pill${soon ? ' hot' : dl != null && dl <= 5 ? ' warm' : ''}`}>
+                            {dl != null ? daysLeftText(dl) : row.expires}
+                          </span>
+                        )}
                         {row.note && <span className="muted">{row.note}</span>}
                       </span>
                     </button>
@@ -87,8 +98,8 @@ export function Fridge({ k }: { k: Kitchen }) {
                         −
                       </button>
                     )}
-                    <button className="pill" onClick={() => finish(row)}>
-                      закончилось
+                    <button className="round-btn done" onClick={() => finish(row)} aria-label="Закончилось" title="Закончилось">
+                      ✕
                     </button>
                   </li>
                 );

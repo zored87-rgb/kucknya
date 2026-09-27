@@ -8,6 +8,7 @@ import type { Kitchen } from '../hooks/useKitchen';
 import { basket, keyBuys, longNotEaten, mealRecipes } from '../logic/keyBuys';
 import { mercadonaWarning } from '../logic/mercadona';
 import type { Product, ShoppingRow } from '../types';
+import { productEmoji } from '../ui/emoji';
 import { Empty, plural, Section } from '../ui/kit';
 import { productLabel } from '../ui/labels';
 import { draftFor, ProductForm, type ProductDraft } from '../ui/ProductForm';
@@ -112,7 +113,7 @@ export function Buy({ k }: { k: Kitchen }) {
                 <div className="item-row">
                   <button className="item-main" onClick={() => setOpenKey(openKey === t.key ? null : t.key)}>
                     <span className="item-name">
-                      {productLabel(t.key)} → откроется {t.unlocks.length} {plural(t.unlocks.length, 'блюдо', 'блюда', 'блюд')}
+                      {productEmoji(t.key)} {productLabel(t.key)} → откроется {t.unlocks.length} {plural(t.unlocks.length, 'блюдо', 'блюда', 'блюд')}
                     </span>
                     <span className="item-sub">нажми, чтобы увидеть какие</span>
                   </button>
@@ -132,7 +133,9 @@ export function Buy({ k }: { k: Kitchen }) {
           <ol className="basket">
             {cart.steps.map((st) => (
               <li key={st.key}>
-                <span>{productLabel(st.key)}</span>
+                <span>
+                  {productEmoji(st.key)} {productLabel(st.key)}
+                </span>
                 <span className="muted">→ {st.readyAfter} {plural(st.readyAfter, 'блюдо', 'блюда', 'блюд')}</span>
               </li>
             ))}
@@ -178,19 +181,19 @@ export function Buy({ k }: { k: Kitchen }) {
         <div className="stats">
           <div className={`stat ${wk.fish >= 1 ? 'good' : 'warn'}`}>
             <b>{wk.fish}</b>
-            <span>рыба</span>
+            <span>🐟 рыба</span>
             <small>{wk.fish >= 1 ? 'норма: раз в неделю' : 'на неделе не было'}</small>
           </div>
           <div className={`stat ${wk.meals && wk.veggy / wk.meals >= 0.5 ? 'good' : 'warn'}`}>
             <b>
               {wk.veggy}/{wk.meals}
             </b>
-            <span>с овощами</span>
+            <span>🥦 с овощами</span>
             <small>хорошо — половина и больше</small>
           </div>
           <div className={`stat ${wk.redMeat <= 3 ? 'good' : 'warn'}`}>
             <b>{wk.redMeat}</b>
-            <span>красное мясо</span>
+            <span>🥩 красное мясо</span>
             <small>до 3 раз в неделю</small>
           </div>
         </div>

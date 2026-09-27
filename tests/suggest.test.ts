@@ -187,8 +187,8 @@ describe('свойства блюд', () => {
       for (const i of r.ingredients)
         for (const k of [i.p, ...(i.alt ?? [])]) expect(PRODUCT_BY_KEY.has(k), `${r.id}: ${k}`).toBe(true);
   });
-  it('около сотни рецептов, у каждого есть продукты и шаги', () => {
-    expect(BUILTIN_RECIPES.length).toBeGreaterThanOrEqual(100);
+  it('больше 150 рецептов, у каждого есть продукты и шаги', () => {
+    expect(BUILTIN_RECIPES.length).toBeGreaterThanOrEqual(150);
     for (const r of BUILTIN_RECIPES) {
       expect(r.ingredients.length, r.id).toBeGreaterThan(0);
       expect(r.steps.length, r.id).toBeGreaterThan(0);

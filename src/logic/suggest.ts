@@ -4,7 +4,7 @@ import { PRODUCT_BY_KEY } from '../data/products';
 import { recipeIdForDish } from '../data/recipes';
 import type { EatenRow, Person, RatingRow, Reaction, Recipe } from '../types';
 import { checkRecipe, type RecipeCheck, type Stock } from './availability';
-import { daysBetween, daysLeftText, parseDate } from './dates';
+import { daysBetween, parseDate } from './dates';
 
 export type Slot = 'breakfast' | 'lunch' | 'dinner';
 
@@ -152,8 +152,9 @@ export function scoreRecipe(check: RecipeCheck, slot: Slot, ctx: SuggestContext)
   // Продукты, которые скоро испортятся.
   if (check.expiring.length) {
     score += Math.min(W.expiringMax, check.expiring.length * W.expiringEach);
+    // Сроки видны в ленте «скоро испортится», здесь — только названия.
     const names = check.expiring
-      .map((e) => `${(PRODUCT_BY_KEY.get(e.key)?.name ?? e.key).toLowerCase()} (${daysLeftText(e.daysLeft)})`)
+      .map((e) => (PRODUCT_BY_KEY.get(e.key)?.name ?? e.key).replace(/\s*\(.*\)\s*$/, '').toLowerCase())
       .join(', ');
     reasons.push(`спасает: ${names}`);
   }

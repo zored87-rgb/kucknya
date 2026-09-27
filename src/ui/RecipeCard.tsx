@@ -12,8 +12,14 @@ import { reactionsFor } from '../logic/suggest';
 import type { Person, Reaction, Recipe } from '../types';
 import { CookedSheet } from './CookedSheet';
 import { IconCheck, IconSwap } from './icons';
+import { dishEmoji, dishTone } from './emoji';
 import { productLabel } from './labels';
 import { toast } from './toast';
+
+/** «1 ч 30 мин, из них 30 активно» → «1 ч 30 мин» — подробности видно в раскрытой карточке. */
+function shortTime(t: string): string {
+  return t.split(',')[0];
+}
 
 const CUISINE: Record<string, string> = { ru: 'русская', es: 'испанская', world: 'мировая' };
 const TYPE: Record<string, string> = {
@@ -126,12 +132,15 @@ export function RecipeCard({
   k,
   defaultMeal,
   showAvailability,
+  featured,
 }: {
   check: RecipeCheck;
   reasons?: string[];
   k: Kitchen;
   defaultMeal?: string;
   showAvailability?: boolean;
+  /** Первая, главная рекомендация — крупнее. */
+  featured?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [cooking, setCooking] = useState(false);
@@ -140,12 +149,16 @@ export function RecipeCard({
   const disliked = react.Крис === 'dislike' || react.Кристина === 'dislike';
 
   return (
-    <article className={`card recipe${open ? ' open' : ''}${disliked ? ' disliked' : ''}`}>
+    <article className={`card recipe${open ? ' open' : ''}${disliked ? ' disliked' : ''}${featured ? ' featured' : ''}`}>
       <button className="recipe-head" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+        <span className={`dish-tile ${dishTone(r.type)}`} aria-hidden>
+          {dishEmoji(r)}
+        </span>
         <div className="recipe-title">
+          {featured && <span className="eyebrow">Советуем</span>}
           <h4>{r.name}</h4>
           <div className="recipe-meta">
-            <span>⏱ {r.time}</span>
+            <span>⏱ {shortTime(r.time)}</span>
             {r.cuisine && <span>{CUISINE[r.cuisine]}</span>}
             {(react.Крис === 'like' || react.Кристина === 'like') && <span>👍</span>}
             {disliked && <span>👎</span>}
@@ -173,7 +186,7 @@ export function RecipeCard({
       {open && (
         <div className="recipe-body">
           <div className="muted small">
-            {TYPE[r.type]}
+            ⏱ {r.time} · {TYPE[r.type]}
             {r.origin ? ` · ${r.origin}` : ''}
             {r.cost_eur_for_two ? ` · ~${r.cost_eur_for_two} € на двоих` : ''}
           </div>

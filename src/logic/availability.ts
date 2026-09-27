@@ -9,8 +9,8 @@ import { daysBetween, parseDate } from './dates';
 
 /** Срок, после которого продукт считается «скоро испортится». */
 export const EXPIRING_DAYS = 2;
-/** Хватает, если есть хотя бы 70% от нужного: 400 г фарша вместо 500 — нормально. */
-const ENOUGH_RATIO = 0.7;
+/** Хватает, если есть хотя бы половина: рецепты рассчитаны с запасом, 250 г курицы на двоих — нормально. */
+const ENOUGH_RATIO = 0.5;
 
 export interface StockItem {
   key: string;
