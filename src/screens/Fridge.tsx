@@ -11,6 +11,7 @@ import { EXPIRING_DAYS } from '../logic/availability';
 import { daysBetween, daysLeftText, parseDate } from '../logic/dates';
 import { PLACES, type FridgeRow, type Product } from '../types';
 import { productEmoji } from '../ui/emoji';
+import { Pantry } from '../ui/Pantry';
 import { IconList } from '../ui/icons';
 import { Empty, Section, Sheet } from '../ui/kit';
 import { draftFor, productOfRow, ProductForm, type ProductDraft } from '../ui/ProductForm';
@@ -115,6 +116,8 @@ export function Fridge({ k }: { k: Kitchen }) {
             </ul>
           </Section>
         ))}
+
+      <Pantry k={k} />
 
       {draft && <ProductForm initial={draft} allowMore={!draft.id} onClose={() => setDraft(null)} />}
       {bulk && <BulkAdd onClose={() => setBulk(false)} />}

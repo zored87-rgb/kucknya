@@ -168,3 +168,65 @@ export function estimateList(names: string[]): { store: string; total: number }[
   const totals = REF_BY_STORE.map((s) => ({ store: s.store, total: common.reduce((sum, k) => sum + s.prices[k].price, 0) }));
   return Object.assign(totals, { common: common.length, unknown: names.length - common.length });
 }
+
+export interface PlanItem {
+  name: string;
+  /** Сколько примерно стоит (упаковка, приведённая к одному размеру между магазинами). */
+  cost: number | null;
+}
+
+export interface StorePlanGroup {
+  store: string;
+  items: PlanItem[];
+  subtotal: number;
+}
+
+export interface ShoppingPlan {
+  groups: StorePlanGroup[];
+  /** Для этих продуктов цены нет ни в одном магазине. */
+  other: string[];
+  /** Сколько сэкономите, если покупать в нескольких магазинах, а не всё в одном самом дешёвом. */
+  savings: number;
+}
+
+/**
+ * Разложить список по магазинам: каждый продукт — туда, где он дешевле.
+ * Чтобы сравнивать честно, цены приводятся к одному размеру упаковки (по цене за кг/шт).
+ */
+export function planByStore(names: string[], prices: PriceRow[]): ShoppingPlan {
+  const groups = new Map<string, StorePlanGroup>();
+  const other: string[] = [];
+  const costs: Map<string, number>[] = [];
+  for (const name of names) {
+    const list = pricesFor(name, prices);
+    if (!list.length) {
+      other.push(name);
+      continue;
+    }
+    // Размер «одной покупки» — упаковка первого магазина с понятным количеством.
+    const basisRow = list.find((p) => p.unit != null);
+    const basis = basisRow ? basisRow.price / (basisRow.unit as number) : null;
+    const cost = (p: StorePrice) => (p.unit != null && basis != null ? p.unit * basis : p.price);
+    const byStore = new Map(list.map((p) => [p.store, cost(p)]));
+    if (list.length > 1 && list.every((p) => p.unit != null)) costs.push(byStore);
+    const best = list[0];
+    const g = groups.get(best.store) ?? { store: best.store, items: [], subtotal: 0 };
+    const c = cost(best);
+    g.items.push({ name, cost: c });
+    g.subtotal += c;
+    groups.set(best.store, g);
+  }
+  // Экономия: сумма «каждый продукт в самом дешёвом» против «всё в одном магазине».
+  let savings = 0;
+  if (costs.length) {
+    const split = costs.reduce((s, m) => s + Math.min(...m.values()), 0);
+    const stores = [...new Set(costs.flatMap((m) => [...m.keys()]))].filter((st) => costs.every((m) => m.has(st)));
+    const single = stores.map((st) => costs.reduce((s, m) => s + (m.get(st) as number), 0));
+    if (single.length) savings = Math.max(0, Math.min(...single) - split);
+  }
+  return {
+    groups: [...groups.values()].sort((a, b) => b.items.length - a.items.length),
+    other,
+    savings,
+  };
+}

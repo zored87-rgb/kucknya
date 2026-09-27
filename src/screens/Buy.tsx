@@ -7,7 +7,8 @@ import { matchProduct, normalize } from '../data/ingredients';
 import type { Kitchen } from '../hooks/useKitchen';
 import { basket, keyBuys, longNotEaten, mealRecipes } from '../logic/keyBuys';
 import { closedReason } from '../logic/mercadona';
-import { cheapestAdvice, estimateList, money, OCU_2026, pricesFor, spending } from '../logic/money';
+import { cheapestAdvice, money, OCU_2026, planByStore, pricesFor, spending } from '../logic/money';
+import { PANTRY_REASON } from '../ui/Pantry';
 import { addDays, formatDate, parseDate, toIso } from '../logic/dates';
 import type { Product, ReceiptRow, ShoppingRow } from '../types';
 import { dishEmoji, dishTone, productEmoji } from '../ui/emoji';
@@ -49,12 +50,22 @@ export function Buy({ k }: { k: Kitchen }) {
   const bought = list.filter((s) => s.bought);
   const inList = new Set(pending.map((p) => normalize(p.name)));
   const names = pending.map((p) => p.name);
-  const estimate = estimateList(names);
   const closed = closedNote(new Date(), k.holidays);
 
   const toggle = (item: ShoppingRow) => {
     if (item.bought) {
       mutate({ op: 'shopping.upsert', row: { id: item.id, bought: false } });
+      return;
+    }
+    // Продукт кладовой: купили — снова «всегда есть», в холодильник вносить не нужно.
+    if (item.reason === PANTRY_REASON) {
+      const low = item.name.toLowerCase();
+      const items = k.pantry.some((p) => normalize(p) === normalize(low)) ? k.pantry : [...k.pantry, low];
+      mutate([
+        { op: 'shopping.upsert', row: { id: item.id, bought: true } },
+        { op: 'pantry.set', items },
+      ]);
+      toast(`${item.name} — снова в кладовой`);
       return;
     }
     // Купил — сразу предложить положить в холодильник.
@@ -64,6 +75,31 @@ export function Buy({ k }: { k: Kitchen }) {
 
   const addItem = (name: string) => {
     mutate({ op: 'shopping.upsert', row: { id: newId(), name, qty: '', reason: '', bought: false } });
+  };
+
+  const plan = useMemo(() => planByStore(names, prices), [names.join('|'), prices]);
+  const byName = new Map(pending.map((p) => [p.name, p]));
+
+  const renderItem = (name: string) => {
+    const s = byName.get(name);
+    if (!s) return null;
+    return (
+      <li key={s.id} className="item">
+        <label className="check big">
+          <input type="checkbox" checked={false} onChange={() => toggle(s)} />
+          <span className="item-emoji small" aria-hidden>
+            {s.reason === PANTRY_REASON ? '🧂' : productEmoji(matchProduct(s.name)?.product.key)}
+          </span>
+          <span className="item-main static">
+            <span className="item-name">{s.name}</span>
+            <PriceHint name={s.name} prices={prices} />
+          </span>
+        </label>
+        <button className="icon-btn" aria-label="Удалить" onClick={() => mutate({ op: 'shopping.delete', id: s.id })}>
+          ✕
+        </button>
+      </li>
+    );
   };
 
   const wk = k.history.week;
@@ -96,36 +132,32 @@ export function Buy({ k }: { k: Kitchen }) {
             </div>
           ) : (
             <>
-              <div className="chip-row">
-                {estimate.common > 0 &&
-                  [...estimate]
-                    .sort((a, b) => a.total - b.total)
-                    .map((e, i) => (
-                      <span key={e.store} className={`chip static${i === 0 && estimate.length > 1 ? ' green' : ''}`}>
-                        {e.store} ≈ {money(e.total)}
-                      </span>
-                    ))}
-                <StorePlan names={names} prices={prices} />
-              </div>
-              <ul className="list">
-                {pending.map((s) => (
-                  <li key={s.id} className="item">
-                    <label className="check big">
-                      <input type="checkbox" checked={false} onChange={() => toggle(s)} />
-                      <span className="item-emoji small" aria-hidden>
-                        {productEmoji(matchProduct(s.name)?.product.key)}
-                      </span>
-                      <span className="item-main static">
-                        <span className="item-name">{s.name}</span>
-                        <PriceHint name={s.name} prices={prices} />
-                      </span>
-                    </label>
-                    <button className="icon-btn" aria-label="Удалить" onClick={() => mutate({ op: 'shopping.delete', id: s.id })}>
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              {plan.savings >= 0.3 && plan.groups.length > 1 && (
+                <div className="chip-row">
+                  <span className="chip static green">💰 В двух магазинах выйдет дешевле на ≈ {money(plan.savings)}</span>
+                </div>
+              )}
+              {plan.groups.map((g) => (
+                <div key={g.store} className="store-group">
+                  <div className="store-head">
+                    <span className={`store-dot ${storeClass(g.store)}`} />
+                    <b>{g.store}</b>
+                    <span className="muted">≈ {money(g.subtotal)}</span>
+                  </div>
+                  <ul className="list">{g.items.map((i) => renderItem(i.name))}</ul>
+                </div>
+              ))}
+              {plan.other.length > 0 && (
+                <div className="store-group">
+                  {plan.groups.length > 0 && (
+                    <div className="store-head">
+                      <span className="store-dot" />
+                      <b>Где удобно</b>
+                    </div>
+                  )}
+                  <ul className="list">{plan.other.map((n) => renderItem(n))}</ul>
+                </div>
+              )}
             </>
           )}
 
@@ -348,22 +380,12 @@ function PriceHint({ name, prices }: { name: string; prices: Parameters<typeof p
   );
 }
 
-/** Какой магазин выгоднее для списка — чипами. */
-function StorePlan({ names, prices }: { names: string[]; prices: Parameters<typeof pricesFor>[1] }) {
-  const byStore = new Map<string, number>();
-  for (const n of names) {
-    const a = cheapestAdvice(n, prices);
-    if (a) byStore.set(a.cheapest.store, (byStore.get(a.cheapest.store) ?? 0) + 1);
-  }
-  return (
-    <>
-      {[...byStore.entries()].map(([store, n]) => (
-        <span key={store} className="chip static green">
-          {store} выгоднее · {n}
-        </span>
-      ))}
-    </>
-  );
+function storeClass(store: string): string {
+  const n = store.toLowerCase();
+  if (n.includes('carrefour')) return 'carrefour';
+  if (n.includes('mercadona')) return 'mercadona';
+  if (n.includes('kuups')) return 'kuups';
+  return '';
 }
 
 function RecentReceipts({ receipts }: { receipts: ReceiptRow[] }) {

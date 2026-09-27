@@ -1981,3 +1981,192 @@ select {
   border-top: 0;
   padding: 0;
 }
+
+/* Список по магазинам */
+.store-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.store-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  padding: 0 4px;
+}
+
+.store-head .muted {
+  margin-left: auto;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.store-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--muted);
+  flex: none;
+}
+
+.store-dot.carrefour { background: #1f5fbf; }
+.store-dot.mercadona { background: #0a8f4f; }
+.store-dot.kuups { background: #e0602a; }
+
+/* Кладовая */
+.chip.pantry {
+  background: var(--surface);
+  border-color: transparent;
+  box-shadow: var(--shadow);
+  font-weight: 700;
+}
+
+.chip.pantry.out {
+  background: transparent;
+  box-shadow: none;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+/* Режим готовки — на весь экран, крупно */
+.cook-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--safe-t) + 8px) 16px calc(var(--safe-b) + 12px);
+  animation: fade 0.15s ease-out;
+}
+
+.cm-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cm-emoji {
+  font-size: 28px;
+}
+
+.cm-title {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cm-timers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.cm-timer {
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-timer small {
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.cm-timer.done {
+  background: var(--green);
+  color: #fff;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+.cm-progress {
+  display: flex;
+  gap: 4px;
+  margin: 14px 0 6px;
+}
+
+.cm-progress span {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.cm-progress span.past {
+  background: var(--accent-2);
+}
+
+.cm-progress span.on {
+  background: var(--accent);
+}
+
+.cm-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: 8px 4px;
+}
+
+.cm-num {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cm-step {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.cm-ings h3 {
+  font-size: 22px;
+  font-weight: 850;
+  margin-bottom: 12px;
+}
+
+.cm-ings .ing {
+  font-size: 18px;
+}
+
+.cm-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cm-times .btn {
+  font-size: 17px;
+  min-height: 52px;
+}
+
+.cm-nav {
+  display: flex;
+  gap: 10px;
+}
+
+.cm-nav .btn {
+  flex: 1;
+  min-height: 56px;
+  font-size: 17px;
+}

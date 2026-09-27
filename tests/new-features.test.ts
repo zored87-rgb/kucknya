@@ -124,3 +124,31 @@ describe('деньги', () => {
     expect(pricesFor('фарш', []).find((p) => p.store === 'Mercadona')!.unit).toBeCloseTo(8.2);
   });
 });
+
+describe('список по магазинам', async () => {
+  const { planByStore } = await import('../src/logic/money');
+  it('каждый продукт — туда, где дешевле, и считается экономия', () => {
+    // Лук и капуста дешевле в Carrefour, курица и сыр — в Mercadona (по справочным ценам).
+    const p = planByStore(['Лук', 'Капуста', 'Курица', 'Сыр', 'Кимчи'], []);
+    const by = Object.fromEntries(p.groups.map((g) => [g.store, g.items.map((i) => i.name)]));
+    expect(by.Carrefour).toEqual(expect.arrayContaining(['Лук', 'Капуста']));
+    expect(by.Mercadona).toEqual(expect.arrayContaining(['Курица', 'Сыр']));
+    expect(p.other).toEqual(['Кимчи']);
+    expect(p.savings).toBeGreaterThan(0);
+  });
+  it('ваша цена важнее справочной', () => {
+    const p = planByStore(['Лук'], [{ id: 'x', date: '28.09.2026', product: 'Лук', store: 'Kuups', price: '0.50', per: '1 кг' }]);
+    expect(p.groups[0].store).toBe('Kuups');
+  });
+});
+
+describe('режим готовки', async () => {
+  const { stepTimes } = await import('../src/ui/CookMode');
+  it('находит время в шаге', () => {
+    expect(stepTimes('Обжарить 8 мин, потом ещё 3-4 мин.').map((t) => t.seconds)).toEqual([480, 240]);
+    expect(stepTimes('Варить 1 ч на слабом огне').map((t) => t.seconds)).toEqual([3600]);
+    expect(stepTimes('Духовка 200°C 40 мин').map((t) => t.label)).toEqual(['40 мин']);
+    expect(stepTimes('Посолить и перемешать')).toEqual([]);
+    expect(stepTimes('по 30 сек с каждой стороны')).toEqual([]);
+  });
+});

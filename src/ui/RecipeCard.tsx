@@ -11,7 +11,8 @@ import type { IngredientCheck, RecipeCheck } from '../logic/availability';
 import { reactionsFor } from '../logic/suggest';
 import type { Person, Reaction, Recipe } from '../types';
 import { CookedSheet } from './CookedSheet';
-import { IconCheck, IconSwap } from './icons';
+import { CookMode } from './CookMode';
+import { IngredientRow } from './IngredientRow';
 import { dishEmoji, dishTone } from './emoji';
 import { productLabel } from './labels';
 import { toast } from './toast';
@@ -80,52 +81,6 @@ export function Reactions({ recipe, k }: { recipe: Recipe; k: Kitchen }) {
   );
 }
 
-function IngredientRow({ c }: { c: IngredientCheck }) {
-  const name = productLabel(c.ing.p);
-  const q = c.ing.q ? <span className="ing-q">{c.ing.q}</span> : null;
-  if (c.have === 'pantry' || c.have === 'enough') {
-    return (
-      <li className="ing ok">
-        <span className="ing-mark">{c.substituted ? <IconSwap /> : <IconCheck />}</span>
-        <span className="ing-name">
-          {c.substituted ? (
-            <>
-              {productLabel(c.use!)} <span className="muted">вместо «{name.toLowerCase()}»</span>
-            </>
-          ) : (
-            name
-          )}
-          {c.have === 'pantry' && <span className="muted"> · кладовая</span>}
-          {c.daysLeft != null && c.daysLeft <= 2 && <span className="tag red">скоро испортится</span>}
-        </span>
-        {q}
-      </li>
-    );
-  }
-  if (c.ing.opt) {
-    return (
-      <li className="ing opt">
-        <span className="ing-mark">○</span>
-        <span className="ing-name">
-          {name} <span className="muted">· по желанию</span>
-        </span>
-        {q}
-      </li>
-    );
-  }
-  return (
-    <li className="ing no">
-      <span className="ing-mark">✕</span>
-      <span className="ing-name">
-        {name}
-        {c.have === 'short' && <span className="muted"> · маловато</span>}
-        {c.ing.alt?.length ? <span className="muted"> · или {c.ing.alt.map((a) => productLabel(a).toLowerCase()).join(', ')}</span> : null}
-      </span>
-      {q}
-    </li>
-  );
-}
-
 export function RecipeCard({
   check,
   reasons = [],
@@ -149,6 +104,7 @@ export function RecipeCard({
 }) {
   const [open, setOpen] = useState(!!defaultOpen);
   const [cooking, setCooking] = useState(false);
+  const [mode, setMode] = useState(false);
   const r = check.recipe;
   const react = reactionsFor(r.id, k.view.ratings);
   const disliked = react.Крис === 'dislike' || react.Кристина === 'dislike';
@@ -214,12 +170,25 @@ export function RecipeCard({
                   В покупки
                 </button>
               )}
-              <button className="btn primary" onClick={() => setCooking(true)}>
+              <button className="btn ghost" onClick={() => setCooking(true)}>
                 Приготовили
+              </button>
+              <button className="btn primary" onClick={() => setMode(true)}>
+                ▶ Готовить
               </button>
             </div>
           </div>
         </div>
+      )}
+      {mode && (
+        <CookMode
+          check={check}
+          onClose={() => setMode(false)}
+          onDone={() => {
+            setMode(false);
+            setCooking(true);
+          }}
+        />
       )}
       {cooking && <CookedSheet check={check} k={k} defaultMeal={defaultMeal} onClose={() => setCooking(false)} />}
     </article>
