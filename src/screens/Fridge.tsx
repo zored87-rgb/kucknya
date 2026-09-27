@@ -11,6 +11,7 @@ import { EXPIRING_DAYS } from '../logic/availability';
 import { daysBetween, daysLeftText, parseDate } from '../logic/dates';
 import { PLACES, type FridgeRow, type Product } from '../types';
 import { productEmoji } from '../ui/emoji';
+import { IconList } from '../ui/icons';
 import { Empty, Section, Sheet } from '../ui/kit';
 import { draftFor, productOfRow, ProductForm, type ProductDraft } from '../ui/ProductForm';
 import { ProductPicker } from '../ui/ProductPicker';
@@ -65,12 +66,13 @@ export function Fridge({ k }: { k: Kitchen }) {
 
   return (
     <>
-      <ProductPicker onPick={(p) => setDraft(draftFor(p))} onRaw={(t) => setDraft(draftFor(undefined, t))} />
-      <button className="btn ghost wide" onClick={() => setBulk(true)}>
-        Добавить списком после магазина
-      </button>
+      <div className="search-row">
+        <ProductPicker onPick={(p) => setDraft(draftFor(p))} onRaw={(t) => setDraft(draftFor(undefined, t))} />
+        <button className="square-btn" onClick={() => setBulk(true)} aria-label="Добавить списком после магазина" title="Списком">
+          <IconList />
+        </button>
+      </div>
 
-      {rows.length > 0 && <p className="muted small">Нажми на продукт, чтобы поправить. «−» — убавить, «✕» — закончилось (можно вернуть).</p>}
       {rows.length === 0 && <Empty>Холодильник пуст. Добавь продукты — и во вкладке «Готовим» появятся блюда.</Empty>}
 
       {groups
@@ -97,7 +99,6 @@ export function Fridge({ k }: { k: Kitchen }) {
                             {dl != null ? daysLeftText(dl) : row.expires}
                           </span>
                         )}
-                        {row.note && <span className="muted">{row.note}</span>}
                       </span>
                     </button>
                     {counted && (
@@ -141,7 +142,7 @@ function BulkAdd({ onClose }: { onClose: () => void }) {
 
   return (
     <Sheet
-      title="Список после магазина"
+      title="Списком"
       onClose={onClose}
       footer={
         <button className="btn primary wide" onClick={add} disabled={!lines.length}>
@@ -149,11 +150,12 @@ function BulkAdd({ onClose }: { onClose: () => void }) {
         </button>
       }
     >
-      <p className="muted small">
-        По продукту на строку или через запятую: «6 луковиц, фарш 500, молоко». Можно надиктовать — нажми 🎤 на клавиатуре. Срок
-        годности подставится сам.
-      </p>
-      <textarea rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder={'лук 6\nкартошка 8\nфарш 500\nсметана\nмолоко 2'} />
+      <textarea
+        rows={6}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={'6 луковиц, фарш 500, молоко…\n\n🎤 можно надиктовать с клавиатуры'}
+      />
       {lines.length > 0 && (
         <ul className="list compact">
           {lines.map((l, i) => (

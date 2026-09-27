@@ -204,10 +204,10 @@ export function ProductForm({
         <ExpiryInput value={d.expires} onChange={(expires) => set({ expires })} />
       </Field>
       <Field label="Заметка">
-        <input value={d.note} onChange={(e) => set({ note: e.target.value })} placeholder="открыта, для супа…" />
+        <input value={d.note} onChange={(e) => set({ note: e.target.value })} placeholder="по желанию" />
       </Field>
       {!editing && (
-        <Field label="Цена — по желанию, чтобы знать, где дешевле">
+        <Field label="Цена">
           <div className="price-row">
             <input
               value={price}
@@ -222,7 +222,6 @@ export function ProductForm({
               ))}
             </select>
           </div>
-          {price && <span className="muted small">за {d.qty || 'указанное количество'}</span>}
         </Field>
       )}
     </Sheet>

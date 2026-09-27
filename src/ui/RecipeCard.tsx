@@ -133,6 +133,8 @@ export function RecipeCard({
   defaultMeal,
   showAvailability,
   featured,
+  defaultOpen,
+  bare,
 }: {
   check: RecipeCheck;
   reasons?: string[];
@@ -141,15 +143,18 @@ export function RecipeCard({
   showAvailability?: boolean;
   /** Первая, главная рекомендация — крупнее. */
   featured?: boolean;
+  defaultOpen?: boolean;
+  /** Без рамки карточки — внутри шторки. */
+  bare?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(!!defaultOpen);
   const [cooking, setCooking] = useState(false);
   const r = check.recipe;
   const react = reactionsFor(r.id, k.view.ratings);
   const disliked = react.Крис === 'dislike' || react.Кристина === 'dislike';
 
   return (
-    <article className={`card recipe${open ? ' open' : ''}${disliked ? ' disliked' : ''}${featured ? ' featured' : ''}`}>
+    <article className={`${bare ? 'recipe bare' : 'card recipe'}${open ? ' open' : ''}${disliked ? ' disliked' : ''}${featured ? ' featured' : ''}`}>
       <button className="recipe-head" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         <span className={`dish-tile ${dishTone(r.type)}`} aria-hidden>
           {dishEmoji(r)}
@@ -166,7 +171,7 @@ export function RecipeCard({
           </div>
           {reasons.length > 0 && (
             <div className="reasons">
-              {reasons.slice(0, 3).map((x) => (
+              {reasons.slice(0, 1).map((x) => (
                 <span key={x} className={`tag${x.startsWith('спасает') ? ' red' : x.startsWith('👍') ? ' green' : ''}`}>
                   {x}
                 </span>
@@ -195,7 +200,6 @@ export function RecipeCard({
               <IngredientRow key={i} c={c} />
             ))}
           </ul>
-          <p className="muted small">Соль, перец и масло — из кладовой.</p>
           {r.tip && <p className="tip">💡 {r.tip}</p>}
           <ol className="steps">
             {r.steps.map((s, i) => (

@@ -84,3 +84,12 @@ export const IconSearch = () => (
     <path d="m16 16 4 4" />
   </svg>
 );
+
+export const IconList = () => (
+  <svg {...base} width={22} height={22} aria-hidden>
+    <path d="M9 6h11M9 12h11M9 18h11" />
+    <circle cx="4.5" cy="6" r="1.2" />
+    <circle cx="4.5" cy="12" r="1.2" />
+    <circle cx="4.5" cy="18" r="1.2" />
+  </svg>
+);

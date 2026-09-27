@@ -30,10 +30,9 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
 
       <Section title="Кто пользуется этим телефоном">
         <Segmented<Person> value={k.me} options={PEOPLE.map((p) => ({ value: p, label: p }))} onChange={(me) => setConfig({ me })} />
-        <p className="muted small">От этого зависят твои 👍/👎 и завтраки.</p>
       </Section>
 
-      <Section title="Кладовая — всегда есть дома" hint="Эти продукты не нужно вносить в холодильник. «Паста», «специи», «масло» — это группы.">
+      <Section title="Кладовая" hint="Всегда есть дома">
         <div className="chips">
           {pantry.map((p) => (
             <button key={p} className="chip on removable" onClick={() => setPantry(pantry.filter((x) => x !== p))}>
@@ -58,7 +57,7 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
         </button>
       </Section>
 
-      <Section title="Магазины" hint="Для чеков и цен. Нажми, чтобы убрать.">
+      <Section title="Магазины">
         <div className="chips">
           {k.stores.map((p) => (
             <button key={p} className="chip on removable" onClick={() => k.stores.length > 1 && mutate({ op: 'stores.set', items: k.stores.filter((x) => x !== p) })}>
@@ -81,13 +80,13 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
         </div>
       </Section>
 
-      <Section title="Голосом через Siri" hint="«Привет, Siri, в холодильник» → «6 луковиц, фарш 500». Как настроить — docs/SIRI.md в репозитории.">
-        <Field label="Адрес для команды">
+      <Section title="Siri" hint="«Привет, Siri, в холодильник»">
+        <Field label="Адрес">
           <input value={st.config.url} readOnly onFocus={(e) => e.target.select()} />
         </Field>
       </Section>
 
-      <Section title="Ближайшие праздники" hint="В эти дни и по воскресеньям Mercadona закрыт. Список правится в таблице, лист «Настройки».">
+      <Section title="Праздники" hint="Mercadona закрыт">
         <ul className="list compact">
           {upcoming.map((h) => (
             <li key={h.date} className="item">

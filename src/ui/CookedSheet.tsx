@@ -103,21 +103,20 @@ export function CookedSheet({ check, k, defaultMeal, onClose }: { check: RecipeC
         />
       </Field>
       <div className="field">
-        <span className="field-label">Осталось на потом</span>
+        <span className="field-label">Осталось порций</span>
         <div className="qty-row">
           <button type="button" className="round-btn" onClick={() => setRest((x) => Math.max(0, x - 1))} aria-label="Меньше">
             −
           </button>
-          <div className="portions">{rest > 0 ? `🍲 ${portionsText(rest)}` : 'ничего не осталось'}</div>
+          <div className="portions">{rest > 0 ? `🍲 ${rest}` : '—'}</div>
           <button type="button" className="round-btn" onClick={() => setRest((x) => x + 1)} aria-label="Больше">
             +
           </button>
         </div>
-        {rest > 0 && <span className="muted small">Положу в холодильник — завтра предложу доесть.</span>}
       </div>
       {left.length > 0 && (
         <div className="field">
-          <span className="field-label">Что осталось в холодильнике</span>
+          <span className="field-label">Осталось в холодильнике</span>
           <ul className="left-list">
             {left.map((l, i) => (
               <li key={l.key} className={l.finished ? 'done' : ''}>
@@ -129,7 +128,6 @@ export function CookedSheet({ check, k, defaultMeal, onClose }: { check: RecipeC
                   </label>
                 </div>
                 {l.known && !l.finished && <QtyInput product={PRODUCT_BY_KEY.get(l.key)} value={l.qty} onChange={(qty) => patch(i, { qty })} />}
-                {!l.known && !l.finished && <p className="muted small">Количество не записано — оставим как есть.</p>}
               </li>
             ))}
           </ul>
