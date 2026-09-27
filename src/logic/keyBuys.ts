@@ -34,24 +34,34 @@ export function keyBuys(recipes: Recipe[], stock: Stock, limit = 5): KeyBuy[] {
     const check = checkRecipe(r, stock);
     if (check.ready || check.banned || !check.missing.length) continue;
     // Продукты, которые закрывают каждую недостающую строку.
-    let common: Set<string> | null = null;
+    let common: string[] | null = null;
     for (const m of check.missing) {
-      const c = new Set(candidates(m.ing).filter((k) => !stock.pantry.has(k)));
-      common = common ? new Set([...common].filter((k) => c.has(k))) : c;
+      const c = candidates(m.ing).filter((k) => !stock.pantry.has(k));
+      common = common === null ? c : common.filter((k: string) => c.includes(k));
     }
     for (const k of common ?? []) {
       unlocks.set(k, [...(unlocks.get(k) ?? []), r]);
       if (check.missing.some((m) => m.ing.p === k)) primary.set(k, (primary.get(k) ?? 0) + 1);
     }
   }
-  return [...unlocks.entries()]
+  const sorted = [...unlocks.entries()]
     .map(([key, list]) => ({ key, product: PRODUCT_BY_KEY.get(key), unlocks: list }))
     .sort(
       (a, b) =>
         b.unlocks.length - a.unlocks.length ||
         (primary.get(b.key) ?? 0) - (primary.get(a.key) ?? 0) ||
         a.key.localeCompare(b.key, 'ru'),
-    )
+    );
+  // Из одного семейства (бёдра, филе, голени — всё курица) показываем только лучший вариант.
+  const seen = new Set<string>();
+  return sorted
+    .filter((k) => {
+      const fam = k.product?.family;
+      if (!fam) return true;
+      if (seen.has(fam)) return false;
+      seen.add(fam);
+      return true;
+    })
     .slice(0, limit);
 }
 

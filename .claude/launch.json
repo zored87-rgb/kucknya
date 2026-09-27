@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "mock-backend", "runtimeExecutable": "node", "runtimeArgs": ["scripts/mock-server.mjs"], "port": 8787 },
+    { "name": "app", "runtimeExecutable": "npx", "runtimeArgs": ["vite", "--port", "5173", "--host", "127.0.0.1"], "port": 5173 }
+  ]
+}

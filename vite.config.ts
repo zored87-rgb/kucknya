@@ -2,12 +2,16 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import pkg from './package.json';
 
 // На GitHub Pages сайт живёт в подпапке /<имя репо>/. Локально — в корне.
 const base = process.env.BASE_PATH ?? '/';
 
 export default defineConfig({
   base,
+  define: {
+    __APP_VERSION__: JSON.stringify(`${pkg.version} · ${new Date().toISOString().slice(0, 10)}`),
+  },
   plugins: [
     react(),
     VitePWA({

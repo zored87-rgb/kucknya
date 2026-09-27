@@ -149,3 +149,21 @@ describe('свои рецепты', () => {
     expect(recipeIdForDish('Что-то своё', BUILTIN_RECIPES)).toBeNull();
   });
 });
+
+describe('офлайн-операции', async () => {
+  const { applyAll, EMPTY_SNAPSHOT } = await import('../src/api/ops');
+  it('добавить → изменить → удалить; оценки у каждого свои', () => {
+    const s = applyAll(EMPTY_SNAPSHOT, [
+      { op: 'fridge.upsert', row: { id: 'a', name: 'Лук', qty: '6 луковиц' } },
+      { op: 'fridge.upsert', row: { id: 'b', name: 'Фарш', qty: '500 г' } },
+      { op: 'fridge.upsert', row: { id: 'a', qty: '4 луковицы' } },
+      { op: 'fridge.delete', id: 'b' },
+      { op: 'rating.set', recipeId: 'borsch', dish: 'Борщ', person: 'Крис', value: 'like' },
+      { op: 'rating.set', recipeId: 'borsch', dish: '', person: 'Кристина', value: 'dislike' },
+      { op: 'pantry.set', items: ['соль'] },
+    ]);
+    expect(s.fridge).toEqual([{ id: 'a', name: 'Лук', where: '', qty: '4 луковицы', expires: '', note: '' }]);
+    expect(s.ratings).toEqual([{ recipeId: 'borsch', dish: 'Борщ', Крис: 'like', Кристина: 'dislike' }]);
+    expect(s.settings.pantry).toEqual(['соль']);
+  });
+});

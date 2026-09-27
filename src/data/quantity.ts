@@ -72,6 +72,8 @@ export function formatQty(n: number | null, product?: Product): string {
   if (product.unit === 'г') return n >= 1000 && n % 100 === 0 ? `${n / 1000} кг` : `${Math.round(n)} г`;
   if (product.unit === 'мл') return n >= 1000 && n % 100 === 0 ? `${n / 1000} л` : `${Math.round(n)} мл`;
   const forms = product.forms ?? ['шт', 'шт', 'шт'];
+  // Штуки — с точностью до четверти: 0.4 лимона → ½ лимона.
+  if (n > 0) n = Math.max(0.25, Math.round(n * 4) / 4);
   const whole = Math.floor(n + 1e-9);
   const rest = n - whole;
   const fr = FRAC_TEXT.find(([v]) => Math.abs(v - rest) < 0.07);
