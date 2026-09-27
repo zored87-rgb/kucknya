@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { newId, type OpBody } from '../api/ops';
 import { mutate } from '../api/store';
-import { matchProduct } from '../data/ingredients';
+import { parseBulk } from '../data/bulk';
+import { dishOf, isLeftover, portions, portionsText } from '../data/leftovers';
 import { formatQty, parseQty, stepFor } from '../data/quantity';
 import type { Kitchen } from '../hooks/useKitchen';
 import { EXPIRING_DAYS } from '../logic/availability';
@@ -11,7 +12,7 @@ import { daysBetween, daysLeftText, parseDate } from '../logic/dates';
 import { PLACES, type FridgeRow, type Product } from '../types';
 import { productEmoji } from '../ui/emoji';
 import { Empty, Section, Sheet } from '../ui/kit';
-import { draftFor, productOfRow, ProductForm, shortName, type ProductDraft } from '../ui/ProductForm';
+import { draftFor, productOfRow, ProductForm, type ProductDraft } from '../ui/ProductForm';
 import { ProductPicker } from '../ui/ProductPicker';
 import { toast } from '../ui/toast';
 
@@ -44,6 +45,12 @@ export function Fridge({ k }: { k: Kitchen }) {
   };
 
   const minus = (row: FridgeRow, p: Product | undefined) => {
+    if (isLeftover(row)) {
+      const left = portions(row) - 1;
+      if (left <= 0) return finish(row);
+      mutate({ op: 'fridge.upsert', row: { id: row.id, qty: portionsText(left) } });
+      return;
+    }
     const n = parseQty(row.qty, p).n;
     if (n == null) return;
     const next = Math.round((n - stepFor(p)) * 100) / 100;
@@ -75,14 +82,14 @@ export function Fridge({ k }: { k: Kitchen }) {
                 const p = productOfRow(row);
                 const dl = daysLeft(row, k.today);
                 const soon = dl != null && dl <= EXPIRING_DAYS;
-                const counted = parseQty(row.qty, p).n != null;
+                const counted = isLeftover(row) || parseQty(row.qty, p).n != null;
                 return (
                   <li key={row.id} className={`item${soon ? ' soon' : ''}`}>
                     <span className="item-emoji" aria-hidden>
-                      {productEmoji(p?.key)}
+                      {isLeftover(row) ? '🍲' : productEmoji(p?.key)}
                     </span>
                     <button className="item-main" onClick={() => edit(row)}>
-                      <span className="item-name">{row.name}</span>
+                      <span className="item-name">{isLeftover(row) ? `${dishOf(row)} (готовое)` : row.name}</span>
                       <span className="item-sub">
                         {row.qty && <span>{row.qty}</span>}
                         {row.expires && (
@@ -114,34 +121,6 @@ export function Fridge({ k }: { k: Kitchen }) {
   );
 }
 
-interface BulkLine {
-  text: string;
-  product: Product | undefined;
-  name: string;
-  qty: string;
-  on: boolean;
-}
-
-/** «лук 6», «фарш 500», «сметана» — по строке, приложение само узнаёт продукт. */
-export function parseBulk(text: string): BulkLine[] {
-  return text
-    .split('\n')
-    .map((l) => l.trim().replace(/^[-•*]\s*/, ''))
-    .filter(Boolean)
-    .map((line) => {
-      const m = line.match(/^(.*?)[\s,:–-]+(\d[\d.,/½¼¾]*\s*[^\d]*)$/);
-      const namePart = (m ? m[1] : line).trim();
-      const qtyPart = m ? m[2].trim() : '';
-      const product = matchProduct(namePart)?.product;
-      let qty = '';
-      if (qtyPart) {
-        const n = parseQty(/^\d[\d.,]*$/.test(qtyPart) && product?.unit === 'г' ? `${qtyPart} г` : qtyPart, product).n;
-        qty = n != null && product ? formatQty(n, product) : qtyPart;
-      } else if (product && product.unit === 'шт') qty = formatQty(1, product);
-      return { text: line, product, name: product ? shortName(product) : namePart, qty, on: true };
-    });
-}
-
 function BulkAdd({ onClose }: { onClose: () => void }) {
   const [text, setText] = useState('');
   const lines = parseBulk(text);
@@ -152,7 +131,7 @@ function BulkAdd({ onClose }: { onClose: () => void }) {
       .filter((_, i) => !off.has(i))
       .map((l) => ({
         op: 'fridge.upsert',
-        row: { id: newId(), name: l.name, where: l.product?.where ?? 'холодильник', qty: l.qty, expires: '', note: '' },
+        row: { id: newId(), name: l.name, where: l.where, qty: l.qty, expires: l.expires, note: '' },
       }));
     if (!ops.length) return;
     mutate(ops);
@@ -170,7 +149,10 @@ function BulkAdd({ onClose }: { onClose: () => void }) {
         </button>
       }
     >
-      <p className="muted small">По продукту на строку, количество после названия. Сроки потом можно поправить, нажав на продукт.</p>
+      <p className="muted small">
+        По продукту на строку или через запятую: «6 луковиц, фарш 500, молоко». Можно надиктовать — нажми 🎤 на клавиатуре. Срок
+        годности подставится сам.
+      </p>
       <textarea rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder={'лук 6\nкартошка 8\nфарш 500\nсметана\nмолоко 2'} />
       {lines.length > 0 && (
         <ul className="list compact">
@@ -191,6 +173,7 @@ function BulkAdd({ onClose }: { onClose: () => void }) {
                 />
                 <span>
                   <b>{l.name}</b> {l.qty && <span className="muted">· {l.qty}</span>}
+                  {l.expires && <span className="muted"> · до {l.expires.slice(0, 5)}</span>}
                   {!l.product && <span className="tag">нет в каталоге</span>}
                 </span>
               </label>

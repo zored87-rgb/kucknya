@@ -1,7 +1,7 @@
 // Изменения данных. Одни и те же операции применяются локально (сразу, оптимистично)
 // и отправляются в Apps Script (сразу или позже, если нет сети).
 
-import type { EatenRow, FridgeRow, MyRecipeRow, Person, Reaction, ShoppingRow, Snapshot } from '../types';
+import type { EatenRow, FridgeRow, MyRecipeRow, Person, PriceRow, Reaction, ReceiptRow, ShoppingRow, Snapshot } from '../types';
 
 type WithId<T> = Partial<T> & { id: string };
 
@@ -14,7 +14,13 @@ export type OpBody =
   | { op: 'shopping.delete'; id: string }
   | { op: 'rating.set'; recipeId: string; dish: string; person: Person; value: Reaction }
   | { op: 'myRecipe.upsert'; row: WithId<MyRecipeRow> }
-  | { op: 'pantry.set'; items: string[] };
+  | { op: 'pantry.set'; items: string[] }
+  | { op: 'stores.set'; items: string[] }
+  | { op: 'inbox.delete'; id: string }
+  | { op: 'receipt.upsert'; row: WithId<ReceiptRow> }
+  | { op: 'receipt.delete'; id: string }
+  | { op: 'price.upsert'; row: WithId<PriceRow> }
+  | { op: 'price.delete'; id: string };
 
 export type Op = OpBody & { opId: string };
 
@@ -25,6 +31,9 @@ export const EMPTY_SNAPSHOT: Snapshot = {
   ratings: [],
   myRecipes: [],
   settings: { pantry: [], holidays: [] },
+  inbox: [],
+  receipts: [],
+  prices: [],
 };
 
 function upsert<T extends { id: string }>(list: T[], row: WithId<T>, blank: T): T[] {
@@ -38,6 +47,8 @@ function upsert<T extends { id: string }>(list: T[], row: WithId<T>, blank: T): 
 const BLANK_FRIDGE: FridgeRow = { id: '', name: '', where: '', qty: '', expires: '', note: '' };
 const BLANK_EATEN: EatenRow = { id: '', date: '', meal: '', dish: '', who: '', score: '', recipeId: '' };
 const BLANK_SHOP: ShoppingRow = { id: '', name: '', qty: '', reason: '', bought: false };
+const BLANK_RECEIPT: ReceiptRow = { id: '', date: '', store: '', total: '', note: '' };
+const BLANK_PRICE: PriceRow = { id: '', date: '', product: '', store: '', price: '', per: '' };
 const BLANK_MY: MyRecipeRow = { id: '', name: '', type: '', cuisine: '', time: '', ingredients: '', steps: '', egg: false };
 
 export function applyOp(s: Snapshot, op: OpBody): Snapshot {
@@ -67,6 +78,18 @@ export function applyOp(s: Snapshot, op: OpBody): Snapshot {
       return { ...s, myRecipes: upsert(s.myRecipes, op.row, BLANK_MY) };
     case 'pantry.set':
       return { ...s, settings: { ...s.settings, pantry: op.items } };
+    case 'stores.set':
+      return { ...s, settings: { ...s.settings, stores: op.items } };
+    case 'inbox.delete':
+      return { ...s, inbox: (s.inbox ?? []).filter((x) => x.id !== op.id) };
+    case 'receipt.upsert':
+      return { ...s, receipts: upsert(s.receipts ?? [], op.row, BLANK_RECEIPT) };
+    case 'receipt.delete':
+      return { ...s, receipts: (s.receipts ?? []).filter((x) => x.id !== op.id) };
+    case 'price.upsert':
+      return { ...s, prices: upsert(s.prices ?? [], op.row, BLANK_PRICE) };
+    case 'price.delete':
+      return { ...s, prices: (s.prices ?? []).filter((x) => x.id !== op.id) };
   }
 }
 

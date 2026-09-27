@@ -8,6 +8,7 @@ import { slotForTime, suggest, type Slot } from '../logic/suggest';
 import { productEmoji } from '../ui/emoji';
 import { Empty, plural, Section, Segmented } from '../ui/kit';
 import { productLabel } from '../ui/labels';
+import { Leftovers } from '../ui/Leftovers';
 import { RecipeCard } from '../ui/RecipeCard';
 
 const SLOT_MEAL: Record<Slot, string> = { breakfast: 'завтрак', lunch: 'обед', dinner: 'ужин' };
@@ -46,6 +47,8 @@ export function Cook({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
           {expiring.length > 0 && ` · ${expiring.length} скоро испортится`}
         </p>
       </div>
+
+      {slot !== 'breakfast' && <Leftovers k={k} />}
 
       <Segmented<Slot>
         value={slot}

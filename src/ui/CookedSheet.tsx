@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { newId, type OpBody } from '../api/ops';
 import { mutate } from '../api/store';
 import { PRODUCT_BY_KEY } from '../data/products';
+import { defaultPortions, leftoverExpiry, leftoverName, portionsText } from '../data/leftovers';
 import { formatQty, parseQty } from '../data/quantity';
 import type { Kitchen } from '../hooks/useKitchen';
 import { usageFor, type RecipeCheck } from '../logic/availability';
@@ -41,6 +42,7 @@ export function CookedSheet({ check, k, defaultMeal, onClose }: { check: RecipeC
       return { key: u.key, known, qty: known ? formatQty(rest, p) : '', finished, before: item.qty };
     }),
   );
+  const [rest, setRest] = useState(() => defaultPortions(r));
   const patch = (i: number, p: Partial<Left>) => setLeft((l) => l.map((x, j) => (j === i ? { ...x, ...p } : x)));
 
   const save = () => {
@@ -63,8 +65,14 @@ export function CookedSheet({ check, k, defaultMeal, onClose }: { check: RecipeC
       ops.push({ op: 'fridge.upsert', row: { id: rows[0].id, qty: formatQty(n, p) } });
       rows.slice(1).forEach((row) => ops.push({ op: 'fridge.delete', id: row.id }));
     });
+    if (rest > 0) {
+      ops.push({
+        op: 'fridge.upsert',
+        row: { id: newId(), name: leftoverName(r), where: 'холодильник', qty: portionsText(rest), expires: leftoverExpiry(r), note: 'готовое блюдо' },
+      });
+    }
     mutate(ops);
-    toast(`Записано: ${r.name}`);
+    toast(rest > 0 ? `Записано. В холодильнике: ${r.name}, ${portionsText(rest)}` : `Записано: ${r.name}`);
     onClose();
   };
 
@@ -93,6 +101,19 @@ export function CookedSheet({ check, k, defaultMeal, onClose }: { check: RecipeC
           onChange={setWho}
         />
       </Field>
+      <div className="field">
+        <span className="field-label">Осталось на потом</span>
+        <div className="qty-row">
+          <button type="button" className="round-btn" onClick={() => setRest((x) => Math.max(0, x - 1))} aria-label="Меньше">
+            −
+          </button>
+          <div className="portions">{rest > 0 ? `🍲 ${portionsText(rest)}` : 'ничего не осталось'}</div>
+          <button type="button" className="round-btn" onClick={() => setRest((x) => x + 1)} aria-label="Больше">
+            +
+          </button>
+        </div>
+        {rest > 0 && <span className="muted small">Положу в холодильник — завтра предложу доесть.</span>}
+      </div>
       {left.length > 0 && (
         <div className="field">
           <span className="field-label">Что осталось в холодильнике</span>

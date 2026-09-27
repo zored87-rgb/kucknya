@@ -167,3 +167,10 @@ describe('офлайн-операции', async () => {
     expect(s.settings.pantry).toEqual(['соль']);
   });
 });
+
+describe('названия, которые приложение пишет в таблицу, узнаются обратно', async () => {
+  const { shortName } = await import('../src/data/bulk');
+  it('для каждого продукта каталога', () => {
+    for (const p of PRODUCTS) expect(productKeyOf(shortName(p)), shortName(p)).toBe(p.key);
+  });
+});

@@ -40,6 +40,8 @@ export interface Product {
   redMeat?: boolean;
   /** Никогда не предлагать (чеддер, кислый йогурт). */
   banned?: boolean;
+  /** Сколько дней хранится свежим — для автоматического «годен до». */
+  shelfDays?: number;
 }
 
 export type RecipeType = 'breakfast' | 'batch_lunch' | 'dinner' | 'weekend' | 'backup' | 'extra';
@@ -135,6 +137,35 @@ export interface MyRecipeRow {
 export interface Settings {
   pantry: string[];
   holidays: { date: string; name: string }[];
+  /** Магазины, где покупаете. Пусто — стандартный список. */
+  stores?: string[];
+}
+
+/** Строка, надиктованная через Siri: приложение разберёт её и положит в холодильник. */
+export interface InboxRow {
+  id: string;
+  date: string;
+  text: string;
+}
+
+/** Чек: сколько вышло за поход в магазин. */
+export interface ReceiptRow {
+  id: string;
+  date: string;
+  store: string;
+  total: string;
+  note: string;
+}
+
+/** Цена продукта в конкретном магазине. */
+export interface PriceRow {
+  id: string;
+  date: string;
+  product: string;
+  store: string;
+  price: string;
+  /** За сколько: «500 г», «1 пачка», «1 кг». */
+  per: string;
 }
 
 export interface Snapshot {
@@ -144,4 +175,7 @@ export interface Snapshot {
   ratings: RatingRow[];
   myRecipes: MyRecipeRow[];
   settings: Settings;
+  inbox?: InboxRow[];
+  receipts?: ReceiptRow[];
+  prices?: PriceRow[];
 }

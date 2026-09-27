@@ -151,7 +151,7 @@ beforeEach(() => {
 
 describe('Apps Script', () => {
   it('setup: лист переименован, листы созданы, id проставлены, код доступа есть', () => {
-    expect(main.sheets.map((s) => s.name)).toEqual(['Холодильник', 'Съели', 'Покупки', 'Оценки', 'Мои рецепты', 'Настройки']);
+    expect(main.sheets.map((s) => s.name)).toEqual(['Холодильник', 'Съели', 'Покупки', 'Оценки', 'Мои рецепты', 'Настройки', 'Входящие', 'Чеки', 'Цены']);
     const fridge = main.sheets[0];
     expect(fridge.rows[0]).toEqual(['Продукт', 'Где', 'Сколько', 'Годен до', 'Заметка', 'id']);
     expect(fridge.rows[1][5]).toMatch(/^uuid-/);
@@ -224,5 +224,40 @@ describe('Apps Script', () => {
     expect(r.results[0].ok).toBe(false);
     expect(r.results[1].ok).toBe(true);
     expect(r.data.eaten.some((e: { dish: string }) => e.dish === 'Плов')).toBe(true);
+  });
+
+  it('quickAdd от Siri: строка во «Входящие», потом приложение её удаляет', () => {
+    const token = env.props.TOKEN;
+    expect(call({ action: 'quickAdd', token, text: '6 луковиц, фарш 500' })).toMatchObject({ ok: true, message: expect.stringContaining('6 луковиц') });
+    const r = call({ action: 'bootstrap', token });
+    expect(r.data.inbox).toHaveLength(1);
+    expect(r.data.inbox[0].text).toBe('6 луковиц, фарш 500');
+    const after = call({ action: 'batch', token, ops: [{ op: 'inbox.delete', id: r.data.inbox[0].id }] });
+    expect(after.data.inbox).toHaveLength(0);
+    expect(call({ action: 'quickAdd', text: 'x' }).ok).toBe(false);
+  });
+
+  it('чеки, цены и магазины', () => {
+    const token = env.props.TOKEN;
+    const r = call({
+      action: 'batch',
+      token,
+      ops: [
+        { op: 'receipt.upsert', row: { id: 'r1', date: '28.09.2026', store: 'Carrefour', total: '43.20', note: '' } },
+        { op: 'price.upsert', row: { id: 'p1', date: '28.09.2026', product: 'Фарш', store: 'Carrefour', price: '3.99', per: '500 г' } },
+        { op: 'stores.set', items: ['Mercadona', 'Carrefour', 'Kuups', 'Lidl'] },
+      ],
+    });
+    expect(r.data.receipts[0]).toMatchObject({ store: 'Carrefour', total: '43.20', date: '28.09.2026' });
+    expect(r.data.prices[0]).toMatchObject({ product: 'Фарш', price: '3.99', per: '500 г' });
+    expect(r.data.settings.stores).toEqual(['Mercadona', 'Carrefour', 'Kuups', 'Lidl']);
+    expect(r.data.settings.pantry).toContain('паста');
+  });
+
+  it('новая строка встаёт сразу под данными, даже если ниже 1000 пустых галочек', () => {
+    const shop = main.getSheetByName('Покупки')!;
+    for (let i = 2; i <= 1000; i++) shop.set(i, 4, false);
+    call({ action: 'batch', token: env.props.TOKEN, ops: [{ op: 'shopping.upsert', row: { id: 's9', name: 'Лук', bought: false } }] });
+    expect(shop.rows[1][0]).toBe('Лук');
   });
 });

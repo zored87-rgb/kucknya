@@ -1,7 +1,9 @@
 // Каркас: шапка, вкладки, нижняя навигация, обновление жестом вниз.
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { isConfigured, sync, useStore } from './api/store';
+import type { OpBody } from './api/ops';
+import { isConfigured, mutate, sync, useStore } from './api/store';
+import { parseBulk } from './data/bulk';
 import { useKitchen } from './hooks/useKitchen';
 import { Buy } from './screens/Buy';
 import { Cook } from './screens/Cook';
@@ -11,7 +13,7 @@ import { Recipes } from './screens/Recipes';
 import { Settings } from './screens/Settings';
 import { Setup } from './screens/Setup';
 import { IconBook, IconCart, IconFridge, IconGear, IconHistory, IconPot } from './ui/icons';
-import { dismissToast, useToast } from './ui/toast';
+import { dismissToast, toast, useToast } from './ui/toast';
 import { usePullToRefresh } from './ui/usePullToRefresh';
 
 type Tab = 'cook' | 'fridge' | 'buy' | 'eaten' | 'recipes' | 'settings';
@@ -23,6 +25,8 @@ const TABS: { id: Exclude<Tab, 'settings'>; label: string; title: string; icon: 
   { id: 'eaten', label: 'Съели', title: 'Что ели', icon: <IconHistory /> },
   { id: 'recipes', label: 'Рецепты', title: 'Рецепты', icon: <IconBook /> },
 ];
+
+const handledInbox = new Set<string>();
 
 function tabFromHash(): Tab {
   const h = location.hash.replace('#', '') as Tab;
@@ -46,6 +50,27 @@ function Shell() {
   const error = useStore((s) => s.error);
   const hasData = useStore((s) => s.server !== null);
   const pull = usePullToRefresh(() => sync());
+
+  // Надиктованное через Siri лежит в листе «Входящие» — разбираем и кладём в холодильник.
+  const inbox = useStore((s) => s.view.inbox);
+  useEffect(() => {
+    if (!inbox?.length) return;
+    const fresh = inbox.filter((row) => !handledInbox.has(row.id));
+    if (!fresh.length) return;
+    const ops: OpBody[] = [];
+    const names: string[] = [];
+    for (const row of fresh) {
+      handledInbox.add(row.id);
+      parseBulk(row.text).forEach((l, i) => {
+        // id из id входящей строки: если оба телефона разберут одновременно, строка не задвоится.
+        ops.push({ op: 'fridge.upsert', row: { id: `${row.id}-${i}`, name: l.name, where: l.where, qty: l.qty, expires: l.expires, note: '' } });
+        names.push(`${l.name}${l.qty ? ` ${l.qty}` : ''}`);
+      });
+      ops.push({ op: 'inbox.delete', id: row.id });
+    }
+    mutate(ops);
+    if (names.length) toast(`От Siri в холодильник: ${names.join(', ')}`);
+  }, [inbox]);
 
   useEffect(() => {
     const on = () => setTab(tabFromHash());

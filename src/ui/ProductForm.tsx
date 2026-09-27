@@ -1,20 +1,19 @@
 // Добавить или поправить продукт в холодильнике. Количество — в понятных единицах.
 
 import { useState } from 'react';
-import { newId } from '../api/ops';
-import { mutate } from '../api/store';
+import { newId, type OpBody } from '../api/ops';
+import { getState, mutate } from '../api/store';
+import { autoExpiry, shortName } from '../data/bulk';
 import { PRODUCT_BY_KEY } from '../data/products';
 import { formatQty, parseQty, quickAmounts, stepFor } from '../data/quantity';
 import { fridgeKey } from '../logic/availability';
 import { addDays, formatDate, parseDate, toIso } from '../logic/dates';
+import { DEFAULT_STORES } from '../logic/money';
 import { PLACES, type FridgeRow, type Place, type Product } from '../types';
 import { Field, Segmented, Sheet } from './kit';
 import { toast } from './toast';
 
-/** «Сыр (гауда, эдам и т.п.)» → «Сыр» — так и пишем в таблицу. */
-export function shortName(p: Product): string {
-  return p.name.replace(/\s*\(.*\)\s*$/, '');
-}
+export { shortName };
 
 export function productOfRow(row: Pick<FridgeRow, 'name'>): Product | undefined {
   return PRODUCT_BY_KEY.get(fridgeKey(row as FridgeRow));
@@ -90,9 +89,21 @@ export function draftFor(product: Product | undefined, name?: string): ProductDr
     name: product ? shortName(product) : name ?? '',
     qty: product ? formatQty(product.unit === 'шт' ? 1 : product.unit === 'г' ? 500 : 1000, product) : '',
     where: product?.where ?? 'холодильник',
-    expires: '',
+    expires: autoExpiry(product),
     note: '',
   };
+}
+
+const LAST_STORE = 'kukhnya.lastStore';
+
+function lastStore(stores: string[]): string {
+  try {
+    const s = localStorage.getItem(LAST_STORE);
+    if (s && stores.includes(s)) return s;
+  } catch {
+    /* нет доступа к localStorage — берём первый магазин */
+  }
+  return stores[0];
 }
 
 export function ProductForm({
@@ -111,6 +122,9 @@ export function ProductForm({
 }) {
   const [d, setD] = useState(initial);
   const editing = !!initial.id;
+  const stores = getState().view.settings.stores?.length ? getState().view.settings.stores! : DEFAULT_STORES;
+  const [store, setStore] = useState(() => lastStore(stores));
+  const [price, setPrice] = useState('');
   const set = (patch: Partial<ProductDraft>) => setD((x) => ({ ...x, ...patch }));
 
   const save = (more: boolean) => {
@@ -123,7 +137,20 @@ export function ProductForm({
       expires: d.expires,
       note: d.note.trim(),
     };
-    mutate({ op: 'fridge.upsert', row });
+    const ops: OpBody[] = [{ op: 'fridge.upsert', row }];
+    const p = parseFloat(price.replace(',', '.'));
+    if (!editing && !isNaN(p) && p > 0) {
+      ops.push({
+        op: 'price.upsert',
+        row: { id: newId(), date: formatDate(new Date()), product: row.name, store, price: p.toFixed(2), per: row.qty },
+      });
+      try {
+        localStorage.setItem(LAST_STORE, store);
+      } catch {
+        /* не запомним магазин — не страшно */
+      }
+    }
+    mutate(ops);
     onSaved?.(row);
     toast(editing ? 'Сохранено' : `Добавлено: ${row.name}`);
     if (!more) onClose();
@@ -178,6 +205,25 @@ export function ProductForm({
       <Field label="Заметка">
         <input value={d.note} onChange={(e) => set({ note: e.target.value })} placeholder="открыта, для супа…" />
       </Field>
+      {!editing && (
+        <Field label="Цена — по желанию, чтобы знать, где дешевле">
+          <div className="price-row">
+            <input
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              inputMode="decimal"
+              placeholder="0,00 €"
+              aria-label="Цена"
+            />
+            <select value={store} onChange={(e) => setStore(e.target.value)} aria-label="Магазин">
+              {stores.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          {price && <span className="muted small">за {d.qty || 'указанное количество'}</span>}
+        </Field>
+      )}
     </Sheet>
   );
 }

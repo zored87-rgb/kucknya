@@ -13,6 +13,7 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LC7o3yIus1-5o1fz_Dlvm
 export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
   const st = useStore((s) => s);
   const [item, setItem] = useState('');
+  const [store, setStore] = useState('');
   const pantry = k.pantry;
   const setPantry = (items: string[]) => mutate({ op: 'pantry.set', items });
 
@@ -55,6 +56,35 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
         <button className="link" onClick={() => setPantry(DEFAULT_PANTRY)}>
           Вернуть стандартный список
         </button>
+      </Section>
+
+      <Section title="Магазины" hint="Для чеков и цен. Нажми, чтобы убрать.">
+        <div className="chips">
+          {k.stores.map((p) => (
+            <button key={p} className="chip on removable" onClick={() => k.stores.length > 1 && mutate({ op: 'stores.set', items: k.stores.filter((x) => x !== p) })}>
+              {p} ✕
+            </button>
+          ))}
+        </div>
+        <div className="inline-form">
+          <input value={store} onChange={(e) => setStore(e.target.value)} placeholder="добавить: Lidl, Consum…" />
+          <button
+            className="btn"
+            onClick={() => {
+              const v = store.trim();
+              if (v && !k.stores.includes(v)) mutate({ op: 'stores.set', items: [...k.stores, v] });
+              setStore('');
+            }}
+          >
+            +
+          </button>
+        </div>
+      </Section>
+
+      <Section title="Голосом через Siri" hint="«Привет, Siri, в холодильник» → «6 луковиц, фарш 500». Как настроить — docs/SIRI.md в репозитории.">
+        <Field label="Адрес для команды">
+          <input value={st.config.url} readOnly onFocus={(e) => e.target.select()} />
+        </Field>
       </Section>
 
       <Section title="Ближайшие праздники" hint="В эти дни и по воскресеньям Mercadona закрыт. Список правится в таблице, лист «Настройки».">

@@ -130,10 +130,13 @@ export interface SuggestContext {
   today: Date;
   /** Кто смотрит (для завтраков). */
   me: Person;
+  /** Блюда, которые уже стоят готовыми в холодильнике. */
+  leftovers?: Set<string>;
 }
 
 function eligible(r: Recipe, slot: Slot, ctx: SuggestContext): boolean {
   if (r.type === 'extra') return false;
+  if (ctx.leftovers?.has(r.id)) return false;
   if (slot === 'breakfast') {
     if (r.type !== 'breakfast') return false;
     return reactionsFor(r.id, ctx.ratings)[ctx.me] !== 'dislike';

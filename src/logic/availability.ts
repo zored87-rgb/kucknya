@@ -3,6 +3,7 @@
 import { productKeyOf, resolvePantry } from '../data/ingredients';
 import { PRODUCT_BY_KEY, PRODUCTS } from '../data/products';
 import { parseQty } from '../data/quantity';
+import { isLeftover } from '../data/leftovers';
 import { rawKey } from '../data/recipes';
 import type { FridgeRow, Ingredient, Product, Recipe } from '../types';
 import { daysBetween, parseDate } from './dates';
@@ -35,7 +36,7 @@ export function fridgeKey(row: FridgeRow): string {
 export function buildStock(fridge: FridgeRow[], pantryItems: string[], today: Date): Stock {
   const items = new Map<string, StockItem>();
   for (const row of fridge) {
-    if (!row.name?.trim()) continue;
+    if (!row.name?.trim() || isLeftover(row)) continue;
     const key = fridgeKey(row);
     const product = PRODUCT_BY_KEY.get(key);
     const q = parseQty(row.qty, product).n;

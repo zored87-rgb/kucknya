@@ -6,6 +6,7 @@
  *
  * Действия:
  *   bootstrap                      — все данные одним ответом
+ *   quickAdd {text}                — строка от Siri: «6 луковиц, фарш 500» → лист «Входящие»
  *   batch {ops: [...]}             — пачка изменений (так же отправляется офлайн-очередь), в ответ — свежие данные
  *
  * Операции внутри batch:
@@ -14,7 +15,10 @@
  *   shopping.upsert {row} shopping.delete {id}
  *   rating.set {recipeId, dish, person, value: 'like'|'dislike'|''}
  *   myRecipe.upsert {row}
- *   pantry.set {items: [...]}
+ *   pantry.set {items: [...]}     stores.set {items: [...]}
+ *   inbox.delete {id}
+ *   receipt.upsert {row}  receipt.delete {id}
+ *   price.upsert {row}    price.delete {id}
  *
  * Строки находятся по скрытой колонке id: номера строк съезжают, а id — нет.
  * Повторная отправка той же операции ничего не ломает.
@@ -60,6 +64,23 @@ var SHEETS = {
     name: 'Настройки',
     fields: { kind: 'Тип', value: 'Значение', comment: 'Комментарий' },
   },
+  inbox: {
+    name: 'Входящие',
+    fields: { date: 'Дата', text: 'Текст', id: 'id' },
+    hidden: ['id'],
+  },
+  receipts: {
+    name: 'Чеки',
+    fields: { date: 'Дата', store: 'Магазин', total: 'Сумма €', note: 'Заметка', id: 'id' },
+    dates: ['date'],
+    hidden: ['id'],
+  },
+  prices: {
+    name: 'Цены',
+    fields: { date: 'Дата', product: 'Продукт', store: 'Магазин', price: 'Цена €', per: 'За', id: 'id' },
+    dates: ['date'],
+    hidden: ['id'],
+  },
 };
 
 var DEFAULT_PANTRY = ['соль', 'перец', 'масло', 'мука', 'специи', 'чеснок', 'сахар', 'tomate triturado', 'соевый соус', 'мёд', 'майонез', 'кетчуп', 'рис', 'паста'];
@@ -95,6 +116,13 @@ function doPost(e) {
         return json_({ ok: true });
       case 'bootstrap':
         return json_({ ok: true, data: withLock_(readAll_) });
+      case 'quickAdd':
+        return json_(withLock_(function () {
+          var text = String(body.text || '').trim();
+          if (!text) return { ok: false, error: 'empty', message: 'Ничего не расслышал' };
+          upsert_('inbox', { id: Utilities.getUuid(), date: Utilities.formatDate(new Date(), TZ, 'dd.MM.yyyy'), text: text });
+          return { ok: true, message: 'Записал в холодильник: ' + text };
+        }));
       case 'batch':
         return json_(withLock_(function () {
           var results = (body.ops || []).map(applyOpSafe_);
@@ -140,8 +168,18 @@ function ss_() {
 }
 
 function sheet_(key) {
-  var sh = ss_().getSheetByName(SHEETS[key].name);
-  if (!sh) throw new Error('Нет листа «' + SHEETS[key].name + '». Запустите setup().');
+  var def = SHEETS[key];
+  var ss = ss_();
+  var sh = ss.getSheetByName(def.name);
+  if (!sh) {
+    // Новые листы (Входящие, Чеки, Цены) появляются сами — setup() перезапускать не нужно.
+    sh = ss.insertSheet(def.name);
+    var headers = Object.keys(def.fields).map(function (f) { return def.fields[f]; });
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+    var cols = columns_(key, sh);
+    (def.hidden || []).forEach(function (f) { sh.hideColumns(cols[f]); });
+  }
   return sh;
 }
 
@@ -225,10 +263,12 @@ function readAll_() {
   var settingsRows = readSheet_('settings');
   var pantry = [];
   var holidays = [];
+  var stores = [];
   settingsRows.forEach(function (r) {
     var kind = String(r.kind).toLowerCase();
     if (kind === 'кладовая' && r.value) pantry.push(r.value);
     if (kind === 'праздник' && r.value) holidays.push({ date: normDate_(r.value), name: r.comment || 'праздник' });
+    if (kind === 'магазин' && r.value) stores.push(r.value);
   });
   var ratings = readSheet_('ratings').map(function (r) {
     return { recipeId: r.recipeId, dish: r.dish, 'Крис': reactionIn_(r['Крис']), 'Кристина': reactionIn_(r['Кристина']) };
@@ -239,7 +279,10 @@ function readAll_() {
     shopping: readSheet_('shopping'),
     ratings: ratings,
     myRecipes: readSheet_('myRecipes'),
-    settings: { pantry: pantry, holidays: holidays },
+    settings: { pantry: pantry, holidays: holidays, stores: stores },
+    inbox: readSheet_('inbox'),
+    receipts: readSheet_('receipts'),
+    prices: readSheet_('prices'),
   };
 }
 
@@ -272,8 +315,11 @@ function applyOp_(op) {
   var key = parts[0];
   var verb = parts[1];
   if (key === 'rating' && verb === 'set') return setRating_(op);
-  if (key === 'pantry' && verb === 'set') return setPantry_(op.items || []);
+  if (key === 'pantry' && verb === 'set') return setKind_('кладовая', op.items || [], 'всегда есть дома');
+  if (key === 'stores' && verb === 'set') return setKind_('магазин', op.items || [], '');
   if (key === 'myRecipe') key = 'myRecipes';
+  if (key === 'receipt') key = 'receipts';
+  if (key === 'price') key = 'prices';
   if (!SHEETS[key]) throw new Error('unknown op ' + op.op);
   if (verb === 'upsert') return upsert_(key, op.row || {});
   if (verb === 'delete') return deleteById_(key, op.id);
@@ -302,17 +348,29 @@ function upsert_(key, row) {
   var r = findRow_(sh, cols.id, row.id);
   var fields = Object.keys(row).filter(function (f) { return cols[f]; });
   if (r < 0) {
-    var width = sh.getLastColumn();
-    var line = [];
-    for (var i = 0; i < width; i++) line.push('');
-    fields.forEach(function (f) { line[cols[f] - 1] = cellIn_(key, f, row[f]); });
-    sh.appendRow(line);
-    r = sh.getLastRow();
+    r = firstEmptyRow_(sh, cols);
+    fields.forEach(function (f) { sh.getRange(r, cols[f]).setValue(cellIn_(key, f, row[f])); });
   } else {
     // Меняем только переданные поля: колонки, которые приложение не знает, не трогаем.
     fields.forEach(function (f) { sh.getRange(r, cols[f]).setValue(cellIn_(key, f, row[f])); });
   }
   (SHEETS[key].dates || []).forEach(function (f) { sh.getRange(r, cols[f]).setNumberFormat('dd.mm.yyyy'); });
+}
+
+/**
+ * Первая строка без данных. Галочки (FALSE) не считаются данными — иначе в «Покупках»
+ * новые строки уходили бы за 1000-ю строку.
+ */
+function firstEmptyRow_(sh, cols) {
+  var last = sh.getLastRow();
+  if (last < 2) return 2;
+  var width = sh.getLastColumn();
+  var values = sh.getRange(2, 1, last - 1, width).getValues();
+  for (var i = values.length - 1; i >= 0; i--) {
+    var filled = values[i].some(function (v) { return v !== '' && v !== false && v !== null; });
+    if (filled) return i + 3;
+  }
+  return 2;
 }
 
 function deleteById_(key, id) {
@@ -341,20 +399,22 @@ function setRating_(op) {
   sh.getRange(r, cols[op.person]).setValue(reactionOut_(op.value));
 }
 
-function setPantry_(items) {
+/** Заменить все строки «Настроек» одного типа (кладовая, магазин). */
+function setKind_(kind, items, comment) {
   var sh = sheet_('settings');
   var cols = columns_('settings', sh);
   var last = sh.getLastRow();
   if (last >= 2) {
     var kinds = sh.getRange(2, cols.kind, last - 1, 1).getValues();
     for (var i = kinds.length - 1; i >= 0; i--) {
-      if (String(kinds[i][0]).toLowerCase() === 'кладовая') sh.deleteRow(i + 2);
+      if (String(kinds[i][0]).toLowerCase() === kind) sh.deleteRow(i + 2);
     }
   }
   items.forEach(function (v) {
     var line = ['', '', ''];
-    line[cols.kind - 1] = 'кладовая';
+    line[cols.kind - 1] = kind;
     line[cols.value - 1] = v;
+    line[cols.comment - 1] = comment;
     sh.appendRow(line);
   });
 }
@@ -423,6 +483,8 @@ function setup() {
   var hasHolidays = existing.some(function (r) { return String(r.kind).toLowerCase() === 'праздник'; });
   if (!hasPantry) DEFAULT_PANTRY.forEach(function (v) { st.appendRow(['кладовая', v, 'всегда есть дома']); });
   if (!hasHolidays) DEFAULT_HOLIDAYS.forEach(function (h) { st.appendRow(['праздник', h[0], h[1]]); });
+  var hasStores = existing.some(function (r) { return String(r.kind).toLowerCase() === 'магазин'; });
+  if (!hasStores) ['Mercadona', 'Carrefour', 'Kuups'].forEach(function (v) { st.appendRow(['магазин', v, '']); });
 
   // Проставить id существующим строкам.
   ['fridge', 'eaten', 'shopping', 'myRecipes'].forEach(readSheet_);

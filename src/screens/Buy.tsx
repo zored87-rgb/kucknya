@@ -7,9 +7,11 @@ import { matchProduct, normalize } from '../data/ingredients';
 import type { Kitchen } from '../hooks/useKitchen';
 import { basket, keyBuys, longNotEaten, mealRecipes } from '../logic/keyBuys';
 import { mercadonaWarning } from '../logic/mercadona';
-import type { Product, ShoppingRow } from '../types';
+import { cheapestAdvice, money, pricesFor, spending } from '../logic/money';
+import { formatDate, parseDate, toIso } from '../logic/dates';
+import type { Product, ReceiptRow, ShoppingRow } from '../types';
 import { productEmoji } from '../ui/emoji';
-import { Empty, plural, Section } from '../ui/kit';
+import { Empty, Field, plural, Section, Segmented, Sheet } from '../ui/kit';
 import { productLabel } from '../ui/labels';
 import { draftFor, ProductForm, type ProductDraft } from '../ui/ProductForm';
 import { ProductPicker } from '../ui/ProductPicker';
@@ -30,6 +32,10 @@ function addToList(names: string[], reason: string) {
 export function Buy({ k }: { k: Kitchen }) {
   const [toFridge, setToFridge] = useState<{ draft: ProductDraft; item: ShoppingRow } | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
+  const [receipt, setReceipt] = useState(false);
+  const prices = k.view.prices ?? [];
+  const receipts = k.view.receipts ?? [];
+  const spent = useMemo(() => spending(receipts, k.today), [receipts, k.today]);
   const warning = mercadonaWarning(new Date(), k.holidays);
   const meals = useMemo(() => mealRecipes(k.recipes, k.view.ratings), [k.recipes, k.view.ratings]);
   const top = useMemo(() => keyBuys(meals, k.stock), [meals, k.stock]);
@@ -63,6 +69,7 @@ export function Buy({ k }: { k: Kitchen }) {
       <Section title="Список покупок">
         <ProductPicker placeholder="Что купить…" onPick={(p: Product) => addItem(productLabel(p.key))} onRaw={addItem} />
         {pending.length === 0 && bought.length === 0 && <Empty>Список пуст. Ниже — что стоит купить.</Empty>}
+        <StorePlan names={pending.map((p) => p.name)} prices={prices} />
         {pending.length > 0 && (
         <ul className="list">
           {pending.map((s) => (
@@ -73,6 +80,7 @@ export function Buy({ k }: { k: Kitchen }) {
                   <b>{s.name}</b>
                   {s.qty && <span className="muted"> · {s.qty}</span>}
                   {s.reason && <span className="item-sub muted">{s.reason}</span>}
+                  <PriceHint name={s.name} prices={prices} />
                 </span>
               </label>
               <button className="icon-btn" aria-label="Удалить" onClick={() => mutate({ op: 'shopping.delete', id: s.id })}>
@@ -177,6 +185,50 @@ export function Buy({ k }: { k: Kitchen }) {
         )}
       </Section>
 
+      <Section
+        title="💶 Расходы"
+        hint="Записывайте сумму по чеку — увидите, сколько уходит на еду и где."
+        action={
+          <button className="pill accent" onClick={() => setReceipt(true)}>
+            + чек
+          </button>
+        }
+      >
+        <div className="stats">
+          <div className="stat">
+            <b>{money(spent.week)}</b>
+            <span>за 7 дней</span>
+            <small>в среднем {money(spent.avgWeek)}/нед.</small>
+          </div>
+          <div className="stat">
+            <b>{money(spent.month)}</b>
+            <span>в этом месяце</span>
+            <small>прошлый: {money(spent.prevMonth)}</small>
+          </div>
+          <div className="stat">
+            <b>{receipts.length}</b>
+            <span>{plural(receipts.length, 'чек', 'чека', 'чеков')}</span>
+            <small>всего записано</small>
+          </div>
+        </div>
+        {spent.byStore.length > 0 && (
+          <ul className="list compact">
+            {spent.byStore.map((b) => (
+              <li key={b.store} className="item">
+                <span className="item-main static">
+                  <span className="item-name">{b.store}</span>
+                  <span className="item-sub">
+                    {b.count} {plural(b.count, 'поход', 'похода', 'походов')} в этом месяце
+                  </span>
+                </span>
+                <b>{money(b.total)}</b>
+              </li>
+            ))}
+          </ul>
+        )}
+        {receipts.length > 0 && <RecentReceipts receipts={receipts} />}
+      </Section>
+
       <Section title="Баланс недели" hint="Обеды и ужины за последние 7 дней. Подсказки учитываются в «Готовим».">
         <div className="stats">
           <div className={`stat ${wk.fish >= 1 ? 'good' : 'warn'}`}>
@@ -199,6 +251,7 @@ export function Buy({ k }: { k: Kitchen }) {
         </div>
       </Section>
 
+      {receipt && <ReceiptSheet stores={k.stores} onClose={() => setReceipt(false)} />}
       {toFridge && (
         <ProductForm
           initial={toFridge.draft}
@@ -211,5 +264,122 @@ export function Buy({ k }: { k: Kitchen }) {
         />
       )}
     </>
+  );
+}
+
+/** «💡 дешевле в Carrefour: 3,99 € (−12%)» — по ценам, которые вы записывали. */
+function PriceHint({ name, prices }: { name: string; prices: Parameters<typeof pricesFor>[1] }) {
+  const advice = cheapestAdvice(name, prices);
+  if (advice) {
+    const c = advice.cheapest;
+    return (
+      <span className="advice">
+        💡 дешевле в {c.store}: {money(c.price)}
+        {c.per ? ` за ${c.per}` : ''} (−{advice.savePct}%)
+      </span>
+    );
+  }
+  const one = pricesFor(name, prices)[0];
+  if (!one) return null;
+  return (
+    <span className="advice muted">
+      было {money(one.price)}
+      {one.per ? ` за ${one.per}` : ''} в {one.store}
+    </span>
+  );
+}
+
+/** Какие покупки выгоднее в каком магазине. */
+function StorePlan({ names, prices }: { names: string[]; prices: Parameters<typeof pricesFor>[1] }) {
+  const byStore = new Map<string, string[]>();
+  for (const n of names) {
+    const a = cheapestAdvice(n, prices);
+    if (a) byStore.set(a.cheapest.store, [...(byStore.get(a.cheapest.store) ?? []), n.toLowerCase()]);
+  }
+  if (!byStore.size) return null;
+  return (
+    <div className="banner green">
+      🛍{' '}
+      {[...byStore.entries()].map(([store, list], i) => (
+        <span key={store}>
+          {i > 0 && '; '}
+          в <b>{store}</b> выгоднее: {list.join(', ')}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function RecentReceipts({ receipts }: { receipts: ReceiptRow[] }) {
+  const recent = [...receipts].sort((a, b) => (parseDate(b.date)?.getTime() ?? 0) - (parseDate(a.date)?.getTime() ?? 0)).slice(0, 5);
+  return (
+    <ul className="list compact">
+      {recent.map((r) => (
+        <li key={r.id} className="item">
+          <span className="item-emoji" aria-hidden>
+            🧾
+          </span>
+          <span className="item-main static">
+            <span className="item-name">{r.store}</span>
+            <span className="item-sub">
+              {r.date}
+              {r.note && ` · ${r.note}`}
+            </span>
+          </span>
+          <b>{money(parseFloat(String(r.total).replace(',', '.')) || 0)}</b>
+          <button
+            className="icon-btn"
+            aria-label="Удалить чек"
+            onClick={() => {
+              mutate({ op: 'receipt.delete', id: r.id });
+              toast('Чек удалён', () => mutate({ op: 'receipt.upsert', row: r }));
+            }}
+          >
+            ✕
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ReceiptSheet({ stores, onClose }: { stores: string[]; onClose: () => void }) {
+  const [store, setStore] = useState(stores[0]);
+  const [total, setTotal] = useState('');
+  const [date, setDate] = useState(toIso(new Date()));
+  const [note, setNote] = useState('');
+  const value = parseFloat(total.replace(',', '.'));
+  const save = () => {
+    if (isNaN(value) || value <= 0) return;
+    mutate({
+      op: 'receipt.upsert',
+      row: { id: newId(), date: formatDate(parseDate(date) ?? new Date()), store, total: value.toFixed(2), note: note.trim() },
+    });
+    toast(`Чек записан: ${money(value)} в ${store}`);
+    onClose();
+  };
+  return (
+    <Sheet
+      title="Чек из магазина"
+      onClose={onClose}
+      footer={
+        <button className="btn primary wide" onClick={save} disabled={isNaN(value) || value <= 0}>
+          Записать
+        </button>
+      }
+    >
+      <Field label="Магазин">
+        <Segmented small value={store} options={stores.map((s) => ({ value: s, label: s }))} onChange={setStore} />
+      </Field>
+      <Field label="Сумма по чеку, €">
+        <input className="big-input" value={total} onChange={(e) => setTotal(e.target.value)} inputMode="decimal" placeholder="0,00" autoFocus />
+      </Field>
+      <Field label="Когда">
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      </Field>
+      <Field label="Заметка">
+        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="на неделю, к празднику…" />
+      </Field>
+    </Sheet>
   );
 }
