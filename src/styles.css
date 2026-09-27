@@ -965,6 +965,7 @@ h4 {
 .sheet-backdrop {
   position: fixed;
   inset: 0;
+  overscroll-behavior: contain;
   z-index: 50;
   background: rgb(0 0 0 / 40%);
   display: flex;
@@ -1007,6 +1008,9 @@ h4 {
 
 .sheet-body {
   overflow: auto;
+  overscroll-behavior: contain;
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 8px 16px 16px;
   display: flex;
   flex-direction: column;
@@ -1337,12 +1341,9 @@ h1, h2, h3, h4, .btn, .segmented button, .bottom-nav button {
   font-weight: 650;
 }
 
-.recipe {
-  transition: transform 0.12s ease;
-}
-
-.recipe:active {
-  transform: scale(0.992);
+.recipe-head:active {
+  background: var(--surface-2);
+  border-radius: var(--radius);
 }
 
 .recipe.featured {
@@ -1609,4 +1610,8 @@ select {
 .item b {
   flex: none;
   font-variant-numeric: tabular-nums;
+}
+
+.sheet.tall {
+  height: 88dvh;
 }

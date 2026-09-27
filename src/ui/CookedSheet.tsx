@@ -78,6 +78,7 @@ export function CookedSheet({ check, k, defaultMeal, onClose }: { check: RecipeC
 
   return (
     <Sheet
+      tall
       title={`Приготовили: ${r.name}`}
       onClose={onClose}
       footer={

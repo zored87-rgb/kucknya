@@ -168,6 +168,7 @@ export function ProductForm({
 
   return (
     <Sheet
+      tall
       title={title ?? (editing ? d.name : `Добавить: ${d.name}`)}
       onClose={onClose}
       footer={

@@ -1,24 +1,51 @@
 // Мелкие общие компоненты: шторка снизу, переключатель, заголовок секции.
 
 import { useEffect, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { IconClose } from './icons';
 
-export function Sheet({ title, onClose, children, footer }: { title: string; onClose: () => void; children: ReactNode; footer?: ReactNode }) {
+export function Sheet({
+  title,
+  onClose,
+  children,
+  footer,
+  tall,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+  footer?: ReactNode;
+  /** Постоянная высота: содержимое меняется, а шторка не прыгает. */
+  tall?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+  // Один раз на открытие: onClose часто новая функция на каждый рендер, и перезапуск
+  // этого эффекта дёргал страницу под шторкой.
   useEffect(() => {
-    // Не прокручивать страницу под шторкой.
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    // Не прокручивать страницу под шторкой. На iPhone overflow:hidden не помогает —
+    // фиксируем body на месте и потом возвращаем прокрутку туда же.
+    const y = window.scrollY;
+    const body = document.body.style;
+    const prev = { position: body.position, top: body.top, width: body.width, overflow: body.overflow };
+    body.position = 'fixed';
+    body.top = `-${y}px`;
+    body.width = '100%';
+    body.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close.current();
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = prev;
+      Object.assign(body, prev);
+      window.scrollTo(0, y);
       window.removeEventListener('keydown', onKey);
     };
-  }, [onClose]);
-  return (
+  }, []);
+  // В body, а не внутри карточки: у карточки бывает transform, и тогда position:fixed
+  // считается от карточки — шторка застревает внутри неё (так было в «Рецептах» на iPhone).
+  return createPortal(
     <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet" ref={ref} role="dialog" aria-label={title} onClick={(e) => e.stopPropagation()}>
+      <div className={`sheet${tall ? ' tall' : ''}`} ref={ref} role="dialog" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-handle" />
         <div className="sheet-head">
           <h2>{title}</h2>
@@ -29,7 +56,8 @@ export function Sheet({ title, onClose, children, footer }: { title: string; onC
         <div className="sheet-body">{children}</div>
         {footer && <div className="sheet-foot">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
