@@ -84,12 +84,16 @@ describe('деньги', () => {
       P('Фарш свино-говяжий', 'Carrefour', '7.00', '1 кг'),
       P('Молоко', 'Kuups', '1.10', '1 пакет'),
     ];
-    const a = cheapestAdvice('фарш', prices)!;
+    const a = cheapestAdvice('фарш', prices, false)!;
     expect(a.cheapest.store).toBe('Carrefour');
     expect(a.others[0].price).toBe(4.2);
     expect(a.savePct).toBe(17);
-    expect(cheapestAdvice('молоко', prices)).toBeNull(); // один магазин — сравнивать не с чем
-    expect(pricesFor('молоко', prices)[0].store).toBe('Kuups');
+    expect(cheapestAdvice('молоко', prices, false)).toBeNull(); // один магазин — сравнивать не с чем
+    expect(pricesFor('молоко', prices, false)[0].store).toBe('Kuups');
+    // Со справочными ценами Mercadona (0,96 € за пакет) сравнение появляется уже с одной вашей ценой.
+    const withRef = cheapestAdvice('молоко', prices)!;
+    expect(withRef.cheapest).toMatchObject({ store: 'Mercadona', ref: true });
+    expect(withRef.others[0].store).toBe('Kuups');
   });
 
   it('расходы по чекам', () => {
@@ -99,5 +103,19 @@ describe('деньги', () => {
     expect(s.month).toBeCloseTo(90.5);
     expect(s.prevMonth).toBeCloseTo(12);
     expect(s.byStore[0]).toMatchObject({ store: 'Mercadona', count: 2 });
+  });
+
+  it('справочные цены Mercadona есть для основных продуктов и считают список', async () => {
+    const { REF_PRICES } = await import('../src/data/refPrices');
+    const { estimateList } = await import('../src/logic/money');
+    for (const k of ['картошка', 'лук', 'фарш', 'куриное филе', 'молоко', 'яйца', 'рис', 'спагетти', 'сметана'].filter((k) => k !== 'сметана'))
+      expect(REF_PRICES[k], k).toBeDefined();
+    for (const k of Object.keys(REF_PRICES)) expect(PRODUCT_BY_KEY.has(k), k).toBe(true);
+    const e = estimateList(['Лук', 'Фарш', 'Кимчи']);
+    expect(e.known).toBe(2);
+    expect(e.unknown).toBe(1);
+    expect(e.total).toBeCloseTo(3.2 + 4.1);
+    // Цена за кг у справочной: фарш 4,10 € за 500 г → 8,20 €/кг
+    expect(pricesFor('фарш', [])[0].unit).toBeCloseTo(8.2);
   });
 });

@@ -7,7 +7,7 @@ import { matchProduct, normalize } from '../data/ingredients';
 import type { Kitchen } from '../hooks/useKitchen';
 import { basket, keyBuys, longNotEaten, mealRecipes } from '../logic/keyBuys';
 import { mercadonaWarning } from '../logic/mercadona';
-import { cheapestAdvice, money, pricesFor, spending } from '../logic/money';
+import { cheapestAdvice, estimateList, money, OCU_2026, pricesFor, spending } from '../logic/money';
 import { formatDate, parseDate, toIso } from '../logic/dates';
 import type { Product, ReceiptRow, ShoppingRow } from '../types';
 import { productEmoji } from '../ui/emoji';
@@ -70,6 +70,7 @@ export function Buy({ k }: { k: Kitchen }) {
         <ProductPicker placeholder="Что купить…" onPick={(p: Product) => addItem(productLabel(p.key))} onRaw={addItem} />
         {pending.length === 0 && bought.length === 0 && <Empty>Список пуст. Ниже — что стоит купить.</Empty>}
         <StorePlan names={pending.map((p) => p.name)} prices={prices} />
+        <ListEstimate names={pending.map((p) => p.name)} />
         {pending.length > 0 && (
         <ul className="list">
           {pending.map((s) => (
@@ -187,7 +188,13 @@ export function Buy({ k }: { k: Kitchen }) {
 
       <Section
         title="💶 Расходы"
-        hint="Записывайте сумму по чеку — увидите, сколько уходит на еду и где."
+        hint={
+          <>
+            Записывайте сумму по чеку — увидите, сколько уходит на еду и где. В среднем по стране (OCU 2026, меньше — дешевле):
+            Mercadona {OCU_2026.Mercadona}, Carrefour {OCU_2026.Carrefour}, Carrefour Market {OCU_2026['Carrefour Market']}, Carrefour Express{' '}
+            {OCU_2026['Carrefour Express']}. Kuups в исследовании нет — сравним по вашим ценам.
+          </>
+        }
         action={
           <button className="pill accent" onClick={() => setReceipt(true)}>
             + чек
@@ -283,7 +290,7 @@ function PriceHint({ name, prices }: { name: string; prices: Parameters<typeof p
   if (!one) return null;
   return (
     <span className="advice muted">
-      было {money(one.price)}
+      {one.ref ? '≈' : 'было'} {money(one.price)}
       {one.per ? ` за ${one.per}` : ''} в {one.store}
     </span>
   );
@@ -381,5 +388,18 @@ function ReceiptSheet({ stores, onClose }: { stores: string[]; onClose: () => vo
         <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="на неделю, к празднику…" />
       </Field>
     </Sheet>
+  );
+}
+
+/** «Список ≈ 18 € в Mercadona» — по справочным ценам, по одной упаковке. */
+function ListEstimate({ names }: { names: string[] }) {
+  if (!names.length) return null;
+  const e = estimateList(names);
+  if (!e.known) return null;
+  return (
+    <p className="muted small">
+      🧮 Примерно {money(e.total)} в Mercadona
+      {e.unknown > 0 && ` + ещё ${e.unknown} без цены`} — по одной упаковке, цены сайта Mercadona на 27.09.2026.
+    </p>
   );
 }

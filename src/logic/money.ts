@@ -4,10 +4,27 @@ import { productKeyOf } from '../data/ingredients';
 import { PRODUCT_BY_KEY } from '../data/products';
 import { parseQty } from '../data/quantity';
 import { rawKey } from '../data/recipes';
+import { REF_DATE, REF_PRICES, REF_STORE } from '../data/refPrices';
 import type { PriceRow, ReceiptRow } from '../types';
 import { daysBetween, parseDate } from './dates';
 
 export const DEFAULT_STORES = ['Mercadona', 'Carrefour', 'Kuups'];
+
+/**
+ * Индекс цен OCU 2026 по сетям (меньше — дешевле; 100 — самая дешёвая сеть в исследовании).
+ * https://www.ocu.org/consumo-familia/supermercados/informe/cadenas-mas-baratas
+ * Kuups (Transgourmet, бывшие Vidal) в исследовании нет.
+ */
+export const OCU_2026: Record<string, number> = {
+  Mercadona: 105,
+  Carrefour: 109,
+  'Carrefour Market': 108,
+  'Carrefour Express': 121,
+  Lidl: 105,
+  Alcampo: 103,
+  Consum: 107,
+  Dia: 112,
+};
 
 export function money(n: number): string {
   return `${n.toFixed(2).replace('.', ',')} €`;
@@ -30,6 +47,10 @@ export interface StorePrice {
   unitLabel: string;
   per: string;
   date: string;
+  /** Справочная цена с сайта магазина, а не ваша. */
+  ref?: boolean;
+  /** Какой товар имеется в виду (для справочных). */
+  item?: string;
 }
 
 /** Цена за единицу: 3,99 € за 500 г → 7,98 €/кг. */
@@ -42,8 +63,8 @@ export function unitPrice(price: number, per: string, productKey: string): { uni
   return { unit: price / n, label: `€/${p?.forms?.[0] ?? 'шт'}` };
 }
 
-/** Последняя известная цена продукта в каждом магазине. */
-export function pricesFor(name: string, prices: PriceRow[]): StorePrice[] {
+/** Последняя известная цена продукта в каждом магазине. Ваши цены важнее справочных. */
+export function pricesFor(name: string, prices: PriceRow[], withRef = true): StorePrice[] {
   const key = keyOf(name);
   const latest = new Map<string, PriceRow>();
   for (const row of prices) {
@@ -59,6 +80,11 @@ export function pricesFor(name: string, prices: PriceRow[]): StorePrice[] {
     const u = unitPrice(price, row.per, key);
     out.push({ store: row.store, price, unit: u.unit, unitLabel: u.label, per: row.per, date: row.date });
   }
+  const ref = REF_PRICES[key];
+  if (withRef && ref && !latest.has(REF_STORE)) {
+    const u = unitPrice(ref.price, ref.per, key);
+    out.push({ store: REF_STORE, price: ref.price, unit: u.unit, unitLabel: u.label, per: ref.per, date: REF_DATE, ref: true, item: ref.item });
+  }
   // Сравниваем по цене за единицу, если она есть у всех; иначе по цене.
   const byUnit = out.every((x) => x.unit != null);
   return out.sort((a, b) => (byUnit ? (a.unit as number) - (b.unit as number) : a.price - b.price));
@@ -72,8 +98,8 @@ export interface Advice {
 }
 
 /** «Дешевле в Carrefour» — только если есть цены хотя бы из двух магазинов. */
-export function cheapestAdvice(name: string, prices: PriceRow[]): Advice | null {
-  const list = pricesFor(name, prices);
+export function cheapestAdvice(name: string, prices: PriceRow[], withRef = true): Advice | null {
+  const list = pricesFor(name, prices, withRef);
   if (list.length < 2) return null;
   const [a, b] = list;
   const va = a.unit ?? a.price;
@@ -126,4 +152,18 @@ export function spending(receipts: ReceiptRow[], today: Date): Spending {
     avgWeek: weeks.size ? last8 / weeks.size : 0,
     byStore: [...byStore.entries()].map(([store, v]) => ({ store, ...v })).sort((a, b) => b.total - a.total),
   };
+}
+
+/** Примерная стоимость списка покупок в Mercadona: по одной упаковке каждого продукта. */
+export function estimateList(names: string[]): { total: number; known: number; unknown: number } {
+  let total = 0;
+  let known = 0;
+  for (const n of names) {
+    const ref = REF_PRICES[keyOf(n)];
+    if (ref) {
+      total += ref.price;
+      known++;
+    }
+  }
+  return { total, known, unknown: names.length - known };
 }
