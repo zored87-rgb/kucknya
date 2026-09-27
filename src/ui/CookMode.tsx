@@ -6,13 +6,8 @@ import type { RecipeCheck } from '../logic/availability';
 import { dishEmoji } from './emoji';
 import { IconClose } from './icons';
 import { IngredientRow } from './IngredientRow';
-
-interface Timer {
-  id: number;
-  label: string;
-  endsAt: number;
-  done: boolean;
-}
+import { TimerChips } from './TimerBar';
+import { startTimer, systemTimerEnabled } from './timers';
 
 /** Время из текста шага: «8 мин», «3-4 мин», «1 ч», «1.5 ч». Секунды не берём — это «на глаз». */
 export function stepTimes(text: string): { label: string; seconds: number }[] {
@@ -28,14 +23,6 @@ export function stepTimes(text: string): { label: string; seconds: number }[] {
     out.push({ label: m[0].replace(/\s+/g, ' '), seconds });
   }
   return out;
-}
-
-function fmt(ms: number): string {
-  const s = Math.max(0, Math.ceil(ms / 1000));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return h ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}` : `${m}:${String(sec).padStart(2, '0')}`;
 }
 
 export function CookMode({ check, onClose, onDone }: { check: RecipeCheck; onClose: () => void; onDone: () => void }) {
@@ -56,9 +43,6 @@ export function CookMode({ check, onClose, onDone }: { check: RecipeCheck; onClo
     )),
   ];
   const [page, setPage] = useState(0);
-  const [timers, setTimers] = useState<Timer[]>([]);
-  const [, setTick] = useState(0);
-  const audio = useRef<AudioContext | null>(null);
   const touchX = useRef<number | null>(null);
   const last = page === pages.length - 1;
 
@@ -83,56 +67,8 @@ export function CookMode({ check, onClose, onDone }: { check: RecipeCheck; onClo
       document.removeEventListener('visibilitychange', onVis);
       void lock?.release().catch(() => undefined);
       body.overflow = prev;
-      void audio.current?.close().catch(() => undefined);
     };
   }, []);
-
-  // Тикаем раз в секунду, пока есть таймеры.
-  useEffect(() => {
-    if (!timers.some((t) => !t.done)) return;
-    const id = setInterval(() => {
-      const now = Date.now();
-      setTimers((list) =>
-        list.map((t) => {
-          if (!t.done && t.endsAt <= now) {
-            beep();
-            return { ...t, done: true };
-          }
-          return t;
-        }),
-      );
-      setTick((x) => x + 1);
-    }, 1000);
-    return () => clearInterval(id);
-  }, [timers]);
-
-  const beep = () => {
-    const ctx = audio.current;
-    if (!ctx) return;
-    for (let i = 0; i < 3; i++) {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.frequency.value = 880;
-      g.gain.value = 0.25;
-      o.connect(g).connect(ctx.destination);
-      const t = ctx.currentTime + i * 0.4;
-      o.start(t);
-      o.stop(t + 0.25);
-    }
-  };
-
-  const startTimer = (label: string, seconds: number) => {
-    // Звук на iPhone разрешён только после нажатия — создаём его здесь.
-    if (!audio.current) {
-      try {
-        audio.current = new AudioContext();
-      } catch {
-        /* без звука — таймер всё равно покажет «готово» */
-      }
-    }
-    void audio.current?.resume();
-    setTimers((list) => [...list, { id: Date.now(), label, endsAt: Date.now() + seconds * 1000, done: false }]);
-  };
 
   const go = (d: number) => setPage((p) => Math.min(pages.length - 1, Math.max(0, p + d)));
   const times = page > 0 ? stepTimes(r.steps[page - 1]) : [];
@@ -149,20 +85,7 @@ export function CookMode({ check, onClose, onDone }: { check: RecipeCheck; onClo
         </button>
       </header>
 
-      {timers.length > 0 && (
-        <div className="cm-timers">
-          {timers.map((t) => (
-            <button
-              key={t.id}
-              className={`cm-timer${t.done ? ' done' : ''}`}
-              onClick={() => setTimers((l) => l.filter((x) => x.id !== t.id))}
-              aria-label={t.done ? `Таймер ${t.label} готов, убрать` : `Таймер ${t.label}, отменить`}
-            >
-              {t.done ? '🔔 готово' : `⏱ ${fmt(t.endsAt - Date.now())}`} <small>{t.label}</small> ✕
-            </button>
-          ))}
-        </div>
-      )}
+      <TimerChips big />
 
       <div className="cm-progress" aria-hidden>
         {pages.map((_, i) => (
@@ -182,10 +105,13 @@ export function CookMode({ check, onClose, onDone }: { check: RecipeCheck; onClo
       >
         {page > 0 && <span className="cm-num">Шаг {page} из {r.steps.length}</span>}
         {pages[page]}
+        {times.length > 0 && !systemTimerEnabled() && (
+          <p className="cm-hint">Чтобы таймер звонил в других приложениях — ⚙️ → «Таймер в фоне».</p>
+        )}
         {times.length > 0 && (
           <div className="cm-times">
             {times.map((t) => (
-              <button key={t.seconds} className="btn ghost" onClick={() => startTimer(t.label, t.seconds)}>
+              <button key={t.seconds} className="btn ghost" onClick={() => startTimer(t.label, t.seconds, r.name)}>
                 ⏱ {t.label}
               </button>
             ))}

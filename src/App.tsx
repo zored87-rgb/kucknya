@@ -13,6 +13,7 @@ import { Recipes } from './screens/Recipes';
 import { Settings } from './screens/Settings';
 import { Setup } from './screens/Setup';
 import { IconBook, IconCart, IconFridge, IconGear, IconHistory, IconPot } from './ui/icons';
+import { TimerChips, useTimerTicker } from './ui/TimerBar';
 import { dismissToast, toast, useToast } from './ui/toast';
 import { usePullToRefresh } from './ui/usePullToRefresh';
 
@@ -50,6 +51,7 @@ function Shell() {
   const error = useStore((s) => s.error);
   const hasData = useStore((s) => s.server !== null);
   const pull = usePullToRefresh(() => sync());
+  useTimerTicker();
 
   // Надиктованное через Siri лежит в листе «Входящие» — разбираем и кладём в холодильник.
   const inbox = useStore((s) => s.view.inbox);
@@ -100,6 +102,7 @@ function Shell() {
         </div>
       </header>
 
+      <TimerChips />
       <main className="content">
         {!hasData && syncing ? (
           <div className="empty">Загружаю данные из таблицы…</div>

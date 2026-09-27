@@ -7,6 +7,7 @@ import type { Kitchen } from '../hooks/useKitchen';
 import { daysBetween, parseDate } from '../logic/dates';
 import { PEOPLE, type Person } from '../types';
 import { Field, Section, Segmented } from '../ui/kit';
+import { setSystemTimer, shortcutUrl, SHORTCUT_NAME, systemTimerEnabled } from '../ui/timers';
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LC7o3yIus1-5o1fz_DlvmW75Hiq0ZjNEnC3h01mbYCE/edit';
 
@@ -14,6 +15,7 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
   const st = useStore((s) => s);
   const [item, setItem] = useState('');
   const [store, setStore] = useState('');
+  const [sysTimer, setSysTimer] = useState(systemTimerEnabled);
   const pantry = k.pantry;
   const setPantry = (items: string[]) => mutate({ op: 'pantry.set', items });
 
@@ -78,6 +80,38 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
             +
           </button>
         </div>
+      </Section>
+
+      <Section title="Таймер в фоне" hint="Звонит, даже если «Кухня» свёрнута">
+        <Segmented<'on' | 'off'>
+          value={sysTimer ? 'on' : 'off'}
+          options={[
+            { value: 'off', label: 'Только в приложении' },
+            { value: 'on', label: 'Через «Часы»' },
+          ]}
+          onChange={(v) => {
+            setSystemTimer(v === 'on');
+            setSysTimer(v === 'on');
+          }}
+        />
+        {sysTimer && (
+          <>
+            <ol className="steps small">
+              <li>
+                «Команды» → <b>+</b> → действие <b>«Запустить таймер»</b>.
+              </li>
+              <li>
+                Нажми на время → <b>«Входные данные команды»</b>, единицы — <b>минуты</b>.
+              </li>
+              <li>
+                Назови команду <b>«{SHORTCUT_NAME}»</b>.
+              </li>
+            </ol>
+            <button className="btn ghost" onClick={() => (window.location.href = shortcutUrl(1))}>
+              Проверить: таймер на 1 минуту
+            </button>
+          </>
+        )}
       </Section>
 
       <Section title="Siri" hint="«Привет, Siri, в холодильник»">

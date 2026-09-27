@@ -2170,3 +2170,27 @@ select {
   min-height: 56px;
   font-size: 17px;
 }
+
+.timer-bar {
+  position: sticky;
+  top: calc(var(--safe-t) + 58px);
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0 16px 6px;
+  max-width: 640px;
+  margin: 0 auto;
+  scrollbar-width: none;
+}
+
+.timer-bar .cm-timer {
+  flex: none;
+  box-shadow: var(--shadow);
+}
+
+.cm-hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}

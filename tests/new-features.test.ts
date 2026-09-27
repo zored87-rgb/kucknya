@@ -152,3 +152,25 @@ describe('режим готовки', async () => {
     expect(stepTimes('по 30 сек с каждой стороны')).toEqual([]);
   });
 });
+
+describe('таймеры', async () => {
+  const t = await import('../src/ui/timers');
+  it('считают от времени окончания: вернулся после паузы — сразу «готово»', () => {
+    const now = Date.now();
+    t.startTimer('8 мин', 480, 'Плов');
+    const done: string[] = [];
+    t.checkTimers((x) => done.push(x.label));
+    expect(done).toEqual([]);
+    // «Прошло» 10 минут, пока приложение спало.
+    const orig = Date.now;
+    Date.now = () => now + 600_000;
+    t.checkTimers((x) => done.push(`${x.label} — ${x.dish}`));
+    Date.now = orig;
+    expect(done).toEqual(['8 мин — Плов']);
+  });
+  it('ссылка на быструю команду', () => {
+    expect(t.shortcutUrl(10)).toBe('shortcuts://run-shortcut?name=%D0%9A%D1%83%D1%85%D0%BD%D1%8F%20%D1%82%D0%B0%D0%B9%D0%BC%D0%B5%D1%80&input=text&text=10');
+    expect(t.formatLeft(65_000)).toBe('1:05');
+    expect(t.formatLeft(3_725_000)).toBe('1:02:05');
+  });
+});
