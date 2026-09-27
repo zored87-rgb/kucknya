@@ -97,7 +97,14 @@ export function Buy({ k }: { k: Kitchen }) {
           ) : (
             <>
               <div className="chip-row">
-                {estimate.known > 0 && <span className="chip static">≈ {money(estimate.total)}</span>}
+                {estimate.common > 0 &&
+                  [...estimate]
+                    .sort((a, b) => a.total - b.total)
+                    .map((e, i) => (
+                      <span key={e.store} className={`chip static${i === 0 && estimate.length > 1 ? ' green' : ''}`}>
+                        {e.store} ≈ {money(e.total)}
+                      </span>
+                    ))}
                 <StorePlan names={names} prices={prices} />
               </div>
               <ul className="list">

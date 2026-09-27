@@ -23,7 +23,7 @@ print('товаров:', len(out))
 # Для «шт» — текст количества (штуки, банки, пачки); для «г» — None: возьмём вес упаковки.
 M = [
  ('картошка','Patatas','Malla','≈33 картофелины (5 кг)'),
- ('лук','Cebollas','Malla','≈7 луковиц (1 кг)'),
+ ('лук','Cebollas','Malla','≈7 луковиц (1 кг)'),  # берётся сетка 1 кг — см. фильтр по цене ниже
  ('лук красный','Cebollas rojas','Malla','≈3 луковицы (0,5 кг)'),
  ('лук зелёный','Cebollas tiernas','Manojo','1 пучок'),
  ('лук-порей','Puerros','Manojo','3 стебля'),
@@ -37,7 +37,7 @@ M = [
  ('баклажан','Berenjena','Pieza','1 баклажан'),
  ('перец болгарский','Pimiento rojo','Pieza','1 перец'),
  ('помидоры','Tomates','Malla','≈13 помидоров (2 кг)'),
- ('помидоры черри','Tomates cherry','Bandeja','1 упаковка'),
+ ('помидоры черри','Tomates cherry','Bandeja','2 упаковки по 250 г'),
  ('огурцы','Pepino','Pieza','1 огурец'),
  ('огурцы солёные','Pepinillos agridulces Hacendado','Tarro','1 банка'),
  ('шампиньоны','Champiñones blancos','Bandeja',None),
@@ -80,7 +80,7 @@ M = [
  ('креветки','Gamba pelada cruda tamaño mediano Hacendado ultracongelada','Paquete',None),
  ('крабовые палочки','Palitos de surimi Hacendado ultracongelados','Paquete','1 упаковка'),
  ('молоко','Leche entera Hacendado','Brik','1 пакет'),
- ('сливки','Nata ligera para cocinar Hacendado','Brik','1 пакет'),
+ ('сливки','Nata ligera para cocinar Hacendado','Pack-3','3 пакета'),
  ('масло сливочное','Mantequilla con sal Hacendado','Pastilla',None),
  ('творог','Queso fresco batido desnatado 0% MG Hacendado','Tarrina','1 пачка'),
  ('йогурт','Yogur natural con azúcar de caña Hacendado','Pack-6','6 стаканчиков'),
@@ -140,6 +140,9 @@ for key,name,pack,per in M:
     c=[it for it in items if it['name']==name and (pack is None or it['pack']==pack)]
     if not c: miss.append((key,name,pack)); continue
     it=c[0]
+    if key=='лук':
+        one=[x for x in c if x['size'] and abs(float(x['size'])-1.0)<0.01]
+        it=one[0] if one else it
     price=float(it['price'])
     if per is None:
         size=it['size']
@@ -170,5 +173,9 @@ f"export const REF_DATE = '{today}';",
 for o in out:
     lines.append(f"  {json.dumps(o['key'],ensure_ascii=False)}: {{ item: {json.dumps(o['item'],ensure_ascii=False)}, price: {o['price']}, per: {json.dumps(o['per'],ensure_ascii=False)} }},")
 lines.append("};")
-open(os.path.join(os.path.dirname(__file__), '..', 'src', 'data', 'refPrices.ts'), 'w').write('\n'.join(lines)+'\n')
+path=os.path.join(os.path.dirname(__file__), '..', 'src', 'data', 'refPrices.ts')
+# Блок Carrefour собирается вручную (сайт закрыт от автоматического доступа) — сохраняем его как есть.
+old=open(path).read()
+tail=old[old.index('\n// Справочные цены Carrefour'):] if '// Справочные цены Carrefour' in old else ''
+open(path,'w').write('\n'.join(lines)+'\n'+tail)
 print(len(out))

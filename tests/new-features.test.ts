@@ -90,10 +90,13 @@ describe('деньги', () => {
     expect(a.savePct).toBe(17);
     expect(cheapestAdvice('молоко', prices, false)).toBeNull(); // один магазин — сравнивать не с чем
     expect(pricesFor('молоко', prices, false)[0].store).toBe('Kuups');
-    // Со справочными ценами Mercadona (0,96 € за пакет) сравнение появляется уже с одной вашей ценой.
+    // Со справочными ценами (Mercadona и Carrefour по 0,96 € за пакет) Kuups оказывается дороже.
     const withRef = cheapestAdvice('молоко', prices)!;
-    expect(withRef.cheapest).toMatchObject({ store: 'Mercadona', ref: true });
-    expect(withRef.others[0].store).toBe('Kuups');
+    expect(withRef.cheapest).toMatchObject({ ref: true, price: 0.96 });
+    expect(withRef.others.map((o) => o.store)).toContain('Kuups');
+    // Фарш: Carrefour 7,98 €/кг против Mercadona 8,20 €/кг — по справочным ценам без ваших.
+    const farsh = cheapestAdvice('фарш', [])!;
+    expect(farsh.cheapest.store).toBe('Carrefour');
   });
 
   it('расходы по чекам', () => {
@@ -110,12 +113,14 @@ describe('деньги', () => {
     const { estimateList } = await import('../src/logic/money');
     for (const k of ['картошка', 'лук', 'фарш', 'куриное филе', 'молоко', 'яйца', 'рис', 'спагетти', 'сметана'].filter((k) => k !== 'сметана'))
       expect(REF_PRICES[k], k).toBeDefined();
-    for (const k of Object.keys(REF_PRICES)) expect(PRODUCT_BY_KEY.has(k), k).toBe(true);
+    const { REF_PRICES_CARREFOUR } = await import('../src/data/refPrices');
+    for (const k of [...Object.keys(REF_PRICES), ...Object.keys(REF_PRICES_CARREFOUR)]) expect(PRODUCT_BY_KEY.has(k), k).toBe(true);
     const e = estimateList(['Лук', 'Фарш', 'Кимчи']);
-    expect(e.known).toBe(2);
+    expect(e.common).toBe(2);
     expect(e.unknown).toBe(1);
-    expect(e.total).toBeCloseTo(3.2 + 4.1);
+    expect(e.find((x) => x.store === 'Mercadona')!.total).toBeCloseTo(1.7 + 4.1);
+    expect(e.find((x) => x.store === 'Carrefour')!.total).toBeCloseTo(1.59 + 3.99);
     // Цена за кг у справочной: фарш 4,10 € за 500 г → 8,20 €/кг
-    expect(pricesFor('фарш', [])[0].unit).toBeCloseTo(8.2);
+    expect(pricesFor('фарш', []).find((p) => p.store === 'Mercadona')!.unit).toBeCloseTo(8.2);
   });
 });

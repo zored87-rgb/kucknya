@@ -4,7 +4,7 @@ import { productKeyOf } from '../data/ingredients';
 import { PRODUCT_BY_KEY } from '../data/products';
 import { parseQty } from '../data/quantity';
 import { rawKey } from '../data/recipes';
-import { REF_DATE, REF_PRICES, REF_STORE } from '../data/refPrices';
+import { REF_BY_STORE } from '../data/refPrices';
 import type { PriceRow, ReceiptRow } from '../types';
 import { daysBetween, parseDate } from './dates';
 
@@ -80,10 +80,13 @@ export function pricesFor(name: string, prices: PriceRow[], withRef = true): Sto
     const u = unitPrice(price, row.per, key);
     out.push({ store: row.store, price, unit: u.unit, unitLabel: u.label, per: row.per, date: row.date });
   }
-  const ref = REF_PRICES[key];
-  if (withRef && ref && !latest.has(REF_STORE)) {
-    const u = unitPrice(ref.price, ref.per, key);
-    out.push({ store: REF_STORE, price: ref.price, unit: u.unit, unitLabel: u.label, per: ref.per, date: REF_DATE, ref: true, item: ref.item });
+  if (withRef) {
+    for (const { store, date, prices: refs } of REF_BY_STORE) {
+      const ref = refs[key];
+      if (!ref || latest.has(store)) continue;
+      const u = unitPrice(ref.price, ref.per, key);
+      out.push({ store, price: ref.price, unit: u.unit, unitLabel: u.label, per: ref.per, date, ref: true, item: ref.item });
+    }
   }
   // Сравниваем по цене за единицу, если она есть у всех; иначе по цене.
   const byUnit = out.every((x) => x.unit != null);
@@ -101,11 +104,12 @@ export interface Advice {
 export function cheapestAdvice(name: string, prices: PriceRow[], withRef = true): Advice | null {
   const list = pricesFor(name, prices, withRef);
   if (list.length < 2) return null;
-  const [a, b] = list;
-  const va = a.unit ?? a.price;
-  const vb = b.unit ?? b.price;
-  if (vb <= 0 || va >= vb) return null;
-  return { cheapest: a, others: list.slice(1), savePct: Math.round((1 - va / vb) * 100) };
+  const val = (p: StorePrice) => p.unit ?? p.price;
+  const [a] = list;
+  // При равной цене в двух магазинах сравниваем с первым, где дороже.
+  const b = list.find((p) => val(p) > val(a) + 1e-9);
+  if (!b || val(b) <= 0) return null;
+  return { cheapest: a, others: list.slice(1), savePct: Math.round((1 - val(a) / val(b)) * 100) };
 }
 
 export interface Spending {
@@ -154,16 +158,13 @@ export function spending(receipts: ReceiptRow[], today: Date): Spending {
   };
 }
 
-/** Примерная стоимость списка покупок в Mercadona: по одной упаковке каждого продукта. */
-export function estimateList(names: string[]): { total: number; known: number; unknown: number } {
-  let total = 0;
-  let known = 0;
-  for (const n of names) {
-    const ref = REF_PRICES[keyOf(n)];
-    if (ref) {
-      total += ref.price;
-      known++;
-    }
-  }
-  return { total, known, unknown: names.length - known };
+/**
+ * Примерная стоимость списка в каждом магазине — по одной упаковке каждого продукта.
+ * Считаем только продукты, у которых есть цена во всех магазинах, чтобы суммы было честно сравнивать.
+ */
+export function estimateList(names: string[]): { store: string; total: number }[] & { common: number; unknown: number } {
+  const keys = names.map(keyOf);
+  const common = keys.filter((k) => REF_BY_STORE.every((s) => s.prices[k]));
+  const totals = REF_BY_STORE.map((s) => ({ store: s.store, total: common.reduce((sum, k) => sum + s.prices[k].price, 0) }));
+  return Object.assign(totals, { common: common.length, unknown: names.length - common.length });
 }
