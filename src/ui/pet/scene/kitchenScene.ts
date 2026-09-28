@@ -5,7 +5,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Face } from '../Cat';
 import { Cat3D } from './cat3d';
-import { basketTexture, calendarTexture, floorTexture, glyphTexture, numberTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
+import { basketTexture, calendarTexture, floorTexture, glyphTexture, dateTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
 
 export type Target = 'fridge' | 'recipes' | 'eaten' | 'buy' | 'feed' | 'settings';
 
@@ -21,6 +21,9 @@ export interface SceneState {
   night: boolean;
   spoiling: boolean;
   weekMeals: number;
+  /** Сегодняшнее число и месяц (0–11) — на календаре. */
+  day: number;
+  month: number;
   /** Погода за окном: clear, partly, cloudy, fog, drizzle, rain, snow, storm. */
   weather: string;
   clouds: number;
@@ -159,7 +162,7 @@ export class KitchenScene {
   // ---------- Построение ----------
 
   private buildLights() {
-    this.hemi = new THREE.HemisphereLight('#fff4e6', '#8a6a4a', 1.4);
+    this.hemi = new THREE.HemisphereLight('#fff8ee', '#a58a70', 1.5);
     this.scene.add(this.hemi);
     this.sun = new THREE.DirectionalLight('#fff1dc', 2.2);
     this.sun.position.set(2.2, 5, 4);
@@ -507,8 +510,9 @@ export class KitchenScene {
       this.scene.add(this.food);
     }
     // Число в календаре
-    const num = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.4), new THREE.MeshBasicMaterial({ map: numberTexture(this.state.weekMeals ?? 0), transparent: true }));
-    num.position.set(1.5, 1.68, -2.92);
+    const today = new Date();
+    const num = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.62), new THREE.MeshBasicMaterial({ map: dateTexture(this.state.day ?? today.getDate(), this.state.month ?? today.getMonth()), transparent: true }));
+    num.position.set(1.5, 1.75, -2.925);
     this.calendarNum = num;
     model.add(num);
     // Стрелки часов
@@ -580,21 +584,23 @@ export class KitchenScene {
     }
     if (s.night !== prev.night) {
       // Запечённая комната: ночью — тёплый полумрак
-      for (const m of this.baked) m.color.set(s.night ? '#a9a4c2' : '#ffffff');
-      this.hemi.intensity = s.night ? 1.0 : 1.4;
-      this.sun.intensity = s.night ? 1.3 : 2.2;
-      this.sun.color.set(s.night ? '#ffd9a8' : '#fff1dc');
+      for (const m of this.baked) m.color.set(s.night ? '#bdb8d2' : '#ffffff');
+      // Ночью мягкий нейтральный свет лампы — шёрстка остаётся серой, а не бурой
+      this.hemi.intensity = s.night ? 1.25 : 1.5;
+      this.hemi.color.set(s.night ? '#f4f1ff' : '#fff8ee');
+      this.sun.intensity = s.night ? 1.6 : 2.2;
+      this.sun.color.set(s.night ? '#fff0de' : '#fff6ea');
       this.lamp.intensity = s.night ? 3 : 0;
     }
-    if (s.weekMeals !== prev.weekMeals && this.calendarNum) {
+    if ((s.day !== prev.day || s.month !== prev.month) && this.calendarNum) {
       const m = this.calendarNum.material as THREE.MeshBasicMaterial;
       m.map?.dispose();
-      m.map = numberTexture(s.weekMeals);
+      m.map = dateTexture(s.day, s.month);
       m.needsUpdate = true;
     }
-    if (s.weekMeals !== prev.weekMeals) {
+    if (s.day !== prev.day) {
       this.calendarMat.map?.dispose();
-      this.calendarMat.map = calendarTexture(s.weekMeals);
+      this.calendarMat.map = calendarTexture(s.day);
       this.calendarMat.needsUpdate = true;
     }
     this.stink.visible = s.spoiling;

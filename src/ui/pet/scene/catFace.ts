@@ -37,17 +37,18 @@ export class CatFace {
   /** Моргание сверху всего: 1 — не моргает. */
   blink = 1;
   readonly blush = new THREE.Group();
+  blushMat: THREE.MeshBasicMaterial | null = null;
 
   constructor(surface: Surface, lidColor: string) {
     const lidMat = new THREE.MeshPhysicalMaterial({ color: lidColor, roughness: 0.95, sheen: 0.5, sheenColor: new THREE.Color('#c9cdd3'), side: THREE.DoubleSide });
     const beadMat = new THREE.MeshPhysicalMaterial({ color: '#0b0b10', roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05, sheen: 0.3, sheenColor: new THREE.Color('#3a4a6a') });
     const glint = new THREE.MeshBasicMaterial({ color: '#ffffff' });
     // У Геры глазки-бусинки маленькие и близко к переносице
-    const R = 0.058;
+    const R = 0.074;
 
     // Глаза
     for (const side of [-1, 1]) {
-      const s = surface(side * 0.22, 1.45);
+      const s = surface(side * 0.23, 1.44);
       if (!s) continue;
       const root = new THREE.Group();
       orient(root, s, -0.02);
@@ -56,10 +57,11 @@ export class CatFace {
       const bead = new THREE.Group();
       const ball = new THREE.Mesh(new THREE.SphereGeometry(R, 32, 20), beadMat);
       ball.scale.z = 0.8;
-      const g1 = new THREE.Mesh(new THREE.SphereGeometry(R * 0.26, 12, 8), glint);
-      g1.position.set(R * 0.35, R * 0.4, R * 0.62);
-      const g2 = new THREE.Mesh(new THREE.SphereGeometry(R * 0.11, 8, 6), glint);
-      g2.position.set(-R * 0.3, -R * 0.35, R * 0.7);
+      // Большой блик и маленький — «живые» милые глазки
+      const g1 = new THREE.Mesh(new THREE.SphereGeometry(R * 0.34, 16, 10), glint);
+      g1.position.set(R * 0.3, R * 0.36, R * 0.6);
+      const g2 = new THREE.Mesh(new THREE.SphereGeometry(R * 0.15, 10, 8), glint);
+      g2.position.set(-R * 0.32, -R * 0.3, R * 0.68);
       bead.add(ball, g1, g2);
       // Верхнее веко: купол, который поворачивается вперёд-вниз и закрывает глаз
       const topTilt = new THREE.Group();
@@ -170,7 +172,8 @@ export class CatFace {
     }
 
     // Румянец
-    const blushMat = new THREE.MeshBasicMaterial({ color: '#f28c8c', transparent: true, opacity: 0.4, depthWrite: false });
+    const blushMat = new THREE.MeshBasicMaterial({ color: '#ff9aa6', transparent: true, opacity: 0.3, depthWrite: false });
+    this.blushMat = blushMat;
     for (const side of [-1, 1]) {
       const s = surface(side * 0.42, 1.27);
       if (!s) continue;
@@ -179,7 +182,6 @@ export class CatFace {
       orient(b, s, 0.008);
       this.blush.add(b);
     }
-    this.blush.visible = false;
     this.group.add(this.blush);
   }
 

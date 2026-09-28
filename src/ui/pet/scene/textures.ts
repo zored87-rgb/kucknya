@@ -353,7 +353,7 @@ export function calendarTexture(n: number): THREE.CanvasTexture {
     g.fillStyle = '#fff';
     g.font = '800 34px "Nunito Variable", sans-serif';
     g.textAlign = 'center';
-    g.fillText('неделя', w / 2, 46);
+    g.fillText('сегодня', w / 2, 46);
     g.fillStyle = '#2a211a';
     g.font = '900 120px "Nunito Variable", sans-serif';
     g.fillText(String(n), w / 2, 200);
@@ -409,14 +409,19 @@ export function basketTexture(): THREE.CanvasTexture {
   return t;
 }
 
-/** Крупное число на прозрачном фоне — поверх запечённого календаря. */
-export function numberTexture(n: number): THREE.CanvasTexture {
-  return canvasTexture(256, 224, (g, w, h) => {
-    g.clearRect(0, 0, w, h);
-    g.fillStyle = '#2a211a';
-    g.font = '900 150px "Nunito Variable", sans-serif';
+const MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
+
+/** Лист календаря поверх запечённого: месяц на красной полосе и сегодняшнее число. */
+export function dateTexture(day: number, month: number): THREE.CanvasTexture {
+  return canvasTexture(256, 256, (g, w) => {
+    g.clearRect(0, 0, w, 256);
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillText(String(n), w / 2, h / 2 + 12);
+    g.fillStyle = '#ffffff';
+    g.font = '800 30px "Nunito Variable", sans-serif';
+    g.fillText(MONTHS[month] ?? '', w / 2, 38);
+    g.fillStyle = '#2a211a';
+    g.font = '900 128px "Nunito Variable", sans-serif';
+    g.fillText(String(day), w / 2, 160);
   });
 }

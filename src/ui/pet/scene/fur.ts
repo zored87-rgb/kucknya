@@ -69,7 +69,7 @@ export function addFur(obj: THREE.Object3D, length: number, lengthAt?: (p: THREE
             float hair = texture2D(uHair, vMapUv * 48.0).r;
             if (hair < uLayer * 1.02) discard;
             // Ближе к коже — темнее: тень между ворсинками
-            diffuseColor.rgb *= mix(0.72, 1.06, uLayer);`,
+            diffuseColor.rgb *= mix(0.9, 1.04, uLayer);`,
           );
       };
       mat.customProgramCacheKey = () => `fur-${hasLen}`;

@@ -32,29 +32,6 @@ export function kindOf(code: number, clouds: number): WeatherKind {
   return 'clear';
 }
 
-export const WEATHER_ICON: Record<WeatherKind, string> = {
-  clear: '☀️',
-  partly: '⛅',
-  cloudy: '☁️',
-  fog: '🌫',
-  drizzle: '🌦',
-  rain: '🌧',
-  snow: '❄️',
-  storm: '⛈',
-};
-
-/** Что Гера говорит о погоде. */
-export const WEATHER_PHRASE: Record<WeatherKind, string> = {
-  clear: 'На улице солнышко ☀️',
-  partly: 'Облачка плывут ⛅',
-  cloudy: 'Пасмурно… самое время для супа',
-  fog: 'Туман, ничего не видно 🌫',
-  drizzle: 'Моросит… хорошо, что мы дома',
-  rain: 'Дождь! Никуда не пойдём 🌧',
-  snow: 'Снег в Валенсии?! ❄️',
-  storm: 'Гроза… мне страшно ⛈',
-};
-
 function load(): Weather | null {
   try {
     const raw = localStorage.getItem(KEY);

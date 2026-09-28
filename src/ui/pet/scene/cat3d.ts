@@ -72,8 +72,8 @@ function sphere(r: number, mat: THREE.Material, seg = 24): THREE.Mesh {
 
 /** Выражение лица для каждого «лица» из Cat.tsx. Кот ленивый: глаза по умолчанию чуть прикрыты. */
 const FACES: Record<Face, FaceTargets> = {
-  smile: { lid: 0.72, lower: 0.15, tilt: 0, mouth: 0, smile: 'smile', eyeScale: 1 },
-  flat: { lid: 0.62, lower: 0, tilt: 0, mouth: 0, smile: 'flat', eyeScale: 1 },
+  smile: { lid: 0.92, lower: 0.08, tilt: 0, mouth: 0, smile: 'smile', eyeScale: 1 },
+  flat: { lid: 0.82, lower: 0, tilt: 0, mouth: 0, smile: 'flat', eyeScale: 1 },
   hungry: { lid: 0.95, lower: 0, tilt: -0.28, mouth: 0.15, smile: 'frown', eyeScale: 1.25 },
   angry: { lid: 0.55, lower: 0.1, tilt: 0.5, mouth: 0.25, smile: 'frown', eyeScale: 0.9 },
   hiss: { lid: 0.42, lower: 0.2, tilt: 0.55, mouth: 0.9, smile: 'frown', eyeScale: 0.85 },
@@ -454,7 +454,8 @@ export class Cat3D {
     this.eating = s.eating;
     this.reaction = s.reaction;
     this.faceKind = s.face;
-    if (this.face) this.face.blush.visible = ['smile', 'meow', 'giggle', 'purr', 'eat'].includes(s.face);
+    // Румянец всегда лёгкий, когда доволен — ярче
+    if (this.face?.blushMat) this.face.blushMat.opacity = ['smile', 'meow', 'giggle', 'purr', 'eat'].includes(s.face) ? 0.5 : 0.25;
     this.tear.visible = s.face === 'sad';
     this.steam.visible = s.face === 'angry' || s.face === 'hiss';
     this.zzz.visible = s.face === 'sleep';
@@ -519,7 +520,7 @@ export class Cat3D {
       face.lid = 0.05;
       face.mouth = b;
     }
-    if (act === 'slowblink') face.lid = 0.72 - 0.65 * b;
+    if (act === 'slowblink') face.lid = 0.9 - 0.8 * b;
     if (act === 'bounce') pose.lift = Math.abs(Math.sin(p * Math.PI * 2)) * 0.18;
     if (act === 'tailflick') pose.tail = Math.sin(p * Math.PI * 6) * 0.35;
     if (act === 'rub') {

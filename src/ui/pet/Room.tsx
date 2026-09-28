@@ -4,7 +4,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { Kitchen } from '../../hooks/useKitchen';
 import { parseDate, daysBetween } from '../../logic/dates';
-import { useWeather, WEATHER_ICON, WEATHER_PHRASE } from '../../logic/weather';
+import { useWeather } from '../../logic/weather';
 import { hungerText, isNight, lastMealAt, levelOf, moodOf, phrase, satiety, xpOf, type Mood } from '../../logic/pet';
 import { productLabel } from '../labels';
 import { Cat, faceOf, type Reaction } from './Cat';
@@ -165,8 +165,6 @@ export function Room({
       const base = phrase(mood, seed);
       return `${base} ${last ? `Я ${hungerText(last, now)}!` : ''}`.trim();
     }
-    // Иногда — про погоду за окном
-    if (weather && (mood === 'happy' || mood === 'peckish') && seed % 3 === 0) return WEATHER_PHRASE[weather.kind];
     return phrase(mood, seed);
   })();
   const bubble = say ?? moodText;
@@ -234,6 +232,8 @@ export function Room({
       night: isNight(new Date(now)),
       spoiling: spoiling.length > 0,
       weekMeals,
+      day: new Date(now).getDate(),
+      month: new Date(now).getMonth(),
       weather: weather?.kind ?? 'clear',
       clouds: weather?.clouds ?? 20,
     }),
@@ -373,11 +373,6 @@ export function Room({
           {toBuy > 0 && (
             <span className="obj-badge pin" style={at('buyTop')}>
               {toBuy}
-            </span>
-          )}
-          {weather && (
-            <span className="obj-label pin small weather-tag" style={at('window', 2)}>
-              {WEATHER_ICON[weather.kind]} {weather.temp}° Валенсия
             </span>
           )}
           <button className="obj-label pin small" style={at('settings', 4)} onClick={() => go('settings')}>
