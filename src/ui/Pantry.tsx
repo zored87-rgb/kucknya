@@ -5,6 +5,7 @@ import { newId, type OpBody } from '../api/ops';
 import { mutate } from '../api/store';
 import { normalize } from '../data/ingredients';
 import type { Kitchen } from '../hooks/useKitchen';
+import { pantryLabel } from './labels';
 import { toast } from './toast';
 
 /** Причина в списке покупок, по которой узнаём продукт кладовой. */
@@ -26,7 +27,7 @@ export function Pantry({ k }: { k: Kitchen }) {
       { op: 'shopping.upsert', row: { id, name: title(item), qty: '', reason: PANTRY_REASON, bought: false } },
     ];
     mutate(ops);
-    toast(`${title(item)} — в списке покупок`, () =>
+    toast(`${pantryLabel(item)} — в списке покупок`, () =>
       mutate([
         { op: 'pantry.set', items: k.pantry },
         { op: 'shopping.delete', id },
@@ -49,7 +50,7 @@ export function Pantry({ k }: { k: Kitchen }) {
       <div className="chips">
         {have.map((p) => (
           <button key={p} className="chip pantry" onClick={() => finish(p)} title="Нажми, если закончилось">
-            {title(p)}
+            {pantryLabel(p)}
           </button>
         ))}
         {out.map((s) => (

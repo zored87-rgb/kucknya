@@ -1,6 +1,7 @@
 // Остатки готовых блюд: «🍲 Борщ — 3 порции» лежат в холодильнике как обычная строка.
 // Помечены значком 🍲 в начале названия, чтобы не путать с продуктами («Курица в томате» — не курица).
 
+import { servingsOf } from '../logic/portions';
 import { addDays, formatDate } from '../logic/dates';
 import type { FridgeRow, Recipe } from '../types';
 import { parseQty } from './quantity';
@@ -35,11 +36,9 @@ export function portionsText(n: number): string {
   return `${n} ${w}`;
 }
 
-/** Сколько порций обычно остаётся: обеды варим на 2-3 дня. */
-export function defaultPortions(recipe: Recipe): number {
-  if (recipe.type === 'batch_lunch') return 4;
-  if (recipe.type === 'weekend') return 2;
-  return 0;
+/** Сколько порций остаётся: всё, что сварили, минус две съеденные сейчас. */
+export function defaultPortions(recipe: Recipe, scale = 1): number {
+  return Math.max(0, Math.round(servingsOf(recipe) * scale) - 2);
 }
 
 /** Супы и рагу хранятся 3 дня, остальное — 2. */

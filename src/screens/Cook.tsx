@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import type { Kitchen } from '../hooks/useKitchen';
 import { EXPIRING_DAYS } from '../logic/availability';
 import { daysLeftText } from '../logic/dates';
-import { slotForTime, suggest, type Scored, type Slot } from '../logic/suggest';
+import { minutesOf } from '../logic/portions';
+import { isLate, slotForTime, suggest, type Scored, type Slot } from '../logic/suggest';
 import { dishEmoji, dishTone, productEmoji } from '../ui/emoji';
 import { plural, Section, Segmented, Sheet } from '../ui/kit';
 import { productLabel } from '../ui/labels';
@@ -24,7 +25,11 @@ export function Cook({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
     .filter((i) => i.daysLeft != null && i.daysLeft <= EXPIRING_DAYS)
     .sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0));
 
-  const ready = more ? s.ready : s.ready.slice(0, SHOW);
+  // Поздно вечером — сначала то, что готовится за 20 минут.
+  const late = slot === 'dinner' && isLate(new Date());
+  const quick = (x: Scored) => Number((minutesOf(x.recipe.time) ?? 99) <= 20);
+  const all = late ? [...s.ready].sort((a, b) => quick(b) - quick(a)) : s.ready;
+  const ready = more ? all : all.slice(0, SHOW);
   const h = new Date().getHours();
   const hello = h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
 
@@ -43,7 +48,7 @@ export function Cook({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
         </div>
         <div className="hero-stats">
           <span>🧊 {k.stock.items.size} дома</span>
-          {expiring.length > 0 && <span>⏳ {expiring.length} горят</span>}
+          {expiring.length > 0 && <span>⏳ {expiring.length} скоро {plural(expiring.length, 'испортится', 'испортятся', 'испортятся')}</span>}
           {k.leftoverRows.length > 0 && <span>🍲 {k.leftoverRows.length} доесть</span>}
         </div>
       </div>
@@ -74,7 +79,7 @@ export function Cook({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
       )}
 
       <Section
-        title={slot === 'breakfast' ? 'Завтраки' : 'Из того, что есть'}
+        title={slot === 'breakfast' ? 'Завтраки' : late ? 'Поздно — сначала быстрое' : 'Из того, что есть'}
       >
         {s.ready.length === 0 ? (
           <div className="empty-hero">

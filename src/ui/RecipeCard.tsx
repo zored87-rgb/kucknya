@@ -1,13 +1,14 @@
 // Карточка блюда: свёрнута — название и почему предлагаем; раскрыта — продукты, шаги, кнопки.
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { newId } from '../api/ops';
 import { getState, mutate } from '../api/store';
 import { normalize } from '../data/ingredients';
 import { PRODUCT_BY_KEY } from '../data/products';
 import { formatQty } from '../data/quantity';
 import type { Kitchen } from '../hooks/useKitchen';
-import type { IngredientCheck, RecipeCheck } from '../logic/availability';
+import { scaledCheck, type IngredientCheck, type RecipeCheck } from '../logic/availability';
+import { pantryItems, scaledQty, scaleStep, servingsOf, servingsText, shortNote } from '../logic/portions';
 import { reactionsFor } from '../logic/suggest';
 import type { Person, Reaction, Recipe } from '../types';
 import { CookedSheet } from './CookedSheet';
@@ -105,7 +106,10 @@ export function RecipeCard({
   const [open, setOpen] = useState(!!defaultOpen);
   const [cooking, setCooking] = useState(false);
   const [mode, setMode] = useState(false);
+  const [scale, setScale] = useState(1);
   const r = check.recipe;
+  // Под ×½ / ×2 заново проверяем, чего хватает.
+  const sc = useMemo(() => scaledCheck(check, k.stock, scale), [check, k.stock, scale]);
   const react = reactionsFor(r.id, k.view.ratings);
   const disliked = react.Крис === 'dislike' || react.Кристина === 'dislike';
 
@@ -151,22 +155,25 @@ export function RecipeCard({
             {r.origin ? ` · ${r.origin}` : ''}
             {r.cost_eur_for_two ? ` · ~${r.cost_eur_for_two} € на двоих` : ''}
           </div>
+          <Portions r={r} scale={scale} setScale={setScale} />
+          <ShortNotice check={sc} k={k} scale={scale} setScale={setScale} />
           <ul className="ings">
-            {check.items.map((c, i) => (
-              <IngredientRow key={i} c={c} />
-            ))}
+            {sc.items.map((c, i) =>
+              c.have === 'pantry' ? null : <IngredientRow key={i} c={c} qText={scaledQty(c.ing, scale)} />,
+            )}
           </ul>
+          <PantryLine check={sc} scale={scale} />
           {r.tip && <p className="tip">💡 {r.tip}</p>}
           <ol className="steps">
             {r.steps.map((s, i) => (
-              <li key={i}>{s}</li>
+              <li key={i}>{scaleStep(s, scale)}</li>
             ))}
           </ol>
           <div className="recipe-actions">
             <Reactions recipe={r} k={k} />
             <div className="row-btns">
-              {check.missing.length > 0 && (
-                <button className="btn ghost" onClick={() => addMissingToShopping(check.missing, r)}>
+              {sc.missing.length > 0 && (
+                <button className="btn ghost" onClick={() => addMissingToShopping(sc.missing, r)}>
                   В покупки
                 </button>
               )}
@@ -182,7 +189,8 @@ export function RecipeCard({
       )}
       {mode && (
         <CookMode
-          check={check}
+          check={sc}
+          scale={scale}
           onClose={() => setMode(false)}
           onDone={() => {
             setMode(false);
@@ -190,7 +198,66 @@ export function RecipeCard({
           }}
         />
       )}
-      {cooking && <CookedSheet check={check} k={k} defaultMeal={defaultMeal} onClose={() => setCooking(false)} />}
+      {cooking && <CookedSheet check={sc} k={k} defaultMeal={defaultMeal} scale={scale} onClose={() => setCooking(false)} />}
     </article>
+  );
+}
+
+const SCALES: [number, string][] = [
+  [0.5, '×½'],
+  [1, '×1'],
+  [2, '×2'],
+];
+
+/** «🍽 2 порции» и кнопки ×½ / ×1 / ×2 — пересчитывают граммы и штуки. */
+export function Portions({ r, scale, setScale }: { r: Recipe; scale: number; setScale: (n: number) => void }) {
+  const n = servingsOf(r) * scale;
+  return (
+    <div className="portions-row">
+      <span className="portions-text">{servingsText(n)}</span>
+      <div className="scale-btns" role="group" aria-label="Сколько готовить">
+        {SCALES.map(([v, label]) => (
+          <button key={v} className={scale === v ? 'on' : ''} onClick={() => setScale(v)} aria-pressed={scale === v}>
+            {label}
+          </button>
+        ))}
+        {!SCALES.some(([v]) => v === scale) && (
+          <button className="on" aria-pressed>
+            ×{String(scale).replace('.', ',')}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** «Есть 250 из 400 г курицы — остального клади в ~1.6 раза меньше». */
+export function ShortNotice({ check, k, scale, setScale }: { check: RecipeCheck; k: Kitchen; scale: number; setScale: (n: number) => void }) {
+  const note = shortNote(check.items, k.stock, scale);
+  if (!note) return null;
+  const p = PRODUCT_BY_KEY.get(note.key);
+  const have = formatQty(note.have, p);
+  const need = formatQty(note.need, p);
+  return (
+    <div className="short-note">
+      <p>
+        {productLabel(note.key)}: есть {have} из {need}. Остального клади в ~{String(note.times).replace('.', ',')} раза меньше.
+      </p>
+      <button className="btn ghost small" onClick={() => setScale(note.fit)}>
+        Пересчитать под то, что есть
+      </button>
+    </div>
+  );
+}
+
+/** «🧂 Из кладовой: соль, перец, масло» — проверить до начала. */
+export function PantryLine({ check, scale }: { check: RecipeCheck; scale: number }) {
+  const items = pantryItems(check.items, check.recipe.steps, scale);
+  if (!items.length) return null;
+  return (
+    <p className="pantry-line">
+      <span aria-hidden>🧂 </span>
+      <b>Из кладовой:</b> {items.map((x) => productLabel(x.key).toLowerCase() + (x.q ? ` (${x.q})` : '')).join(', ')}
+    </p>
   );
 }

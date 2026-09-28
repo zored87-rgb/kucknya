@@ -4,9 +4,11 @@ import type { IngredientCheck } from '../logic/availability';
 import { IconCheck, IconSwap } from './icons';
 import { productLabel } from './labels';
 
-export function IngredientRow({ c }: { c: IngredientCheck }) {
+/** qText — количество с учётом ×½ / ×2. */
+export function IngredientRow({ c, qText }: { c: IngredientCheck; qText?: string }) {
   const name = productLabel(c.ing.p);
-  const q = c.ing.q ? <span className="ing-q">{c.ing.q}</span> : null;
+  const qt = qText ?? c.ing.q;
+  const q = qt ? <span className="ing-q">{qt}</span> : null;
   if (c.have === 'pantry' || c.have === 'enough') {
     return (
       <li className="ing ok">

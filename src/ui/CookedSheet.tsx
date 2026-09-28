@@ -14,6 +14,7 @@ import { Field, Segmented, Sheet } from './kit';
 import { QtyInput } from './ProductForm';
 import { productLabel } from './labels';
 import { toast } from './toast';
+import { mealForTime } from '../logic/suggest';
 
 interface Left {
   key: string;
@@ -24,11 +25,24 @@ interface Left {
   before: number;
 }
 
-export function CookedSheet({ check, k, defaultMeal, onClose }: { check: RecipeCheck; k: Kitchen; defaultMeal?: string; onClose: () => void }) {
+export function CookedSheet({
+  check,
+  k,
+  defaultMeal,
+  scale = 1,
+  onClose,
+}: {
+  check: RecipeCheck;
+  k: Kitchen;
+  defaultMeal?: string;
+  /** Готовили ×½ / ×2 — вычитаем из холодильника столько же. */
+  scale?: number;
+  onClose: () => void;
+}) {
   const r = check.recipe;
   const usage = useMemo(() => usageFor(check, k.stock), [check, k.stock]);
   const [meal, setMeal] = useState<Meal>(
-    (defaultMeal as Meal) ?? (r.type === 'breakfast' ? 'завтрак' : new Date().getHours() < 16 ? 'обед' : 'ужин'),
+    (defaultMeal as Meal) ?? (r.type === 'breakfast' ? 'завтрак' : (mealForTime(new Date()) === 'завтрак' ? 'обед' : mealForTime(new Date()))),
   );
   const [who, setWho] = useState<Who>(r.type === 'breakfast' ? k.me : 'оба');
   const [left, setLeft] = useState<Left[]>(() =>
@@ -36,13 +50,14 @@ export function CookedSheet({ check, k, defaultMeal, onClose }: { check: RecipeC
       const item = k.stock.items.get(u.key)!;
       const p = PRODUCT_BY_KEY.get(u.key);
       const known = !item.unknown;
-      const rest = Math.max(0, item.qty - (u.n ?? 0));
+      const used = u.n != null ? u.n * scale : 0;
+      const rest = Math.max(0, item.qty - used);
       // Количество неизвестно, а рецепт берёт целую упаковку — скорее всего, закончилось.
-      const finished = known ? rest <= 0.01 : (u.n ?? 0) >= 1;
+      const finished = known ? rest <= 0.01 : used >= 1;
       return { key: u.key, known, qty: known ? formatQty(rest, p) : '', finished, before: item.qty };
     }),
   );
-  const [rest, setRest] = useState(() => defaultPortions(r));
+  const [rest, setRest] = useState(() => defaultPortions(r, scale));
   const patch = (i: number, p: Partial<Left>) => setLeft((l) => l.map((x, j) => (j === i ? { ...x, ...p } : x)));
 
   const save = () => {

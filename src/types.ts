@@ -68,6 +68,8 @@ export interface Recipe {
   time: string;
   cost_eur_for_two?: number | null;
   has_egg_as_main: boolean;
+  /** На сколько порций рецепт. Нет — по типу (servingsOf). */
+  servings?: number;
   ingredients: Ingredient[];
   steps: string[];
   /** Совет: «нет сметаны — подайте с мёдом». */

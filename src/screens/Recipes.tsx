@@ -7,6 +7,8 @@ import { normalize } from '../data/ingredients';
 import { parseMyRecipe } from '../data/recipes';
 import type { Kitchen } from '../hooks/useKitchen';
 import { checkRecipe } from '../logic/availability';
+import { minutesOf } from '../logic/portions';
+import { reactionsFor } from '../logic/suggest';
 import type { RecipeType } from '../types';
 import { Empty, Field, Segmented, Sheet } from '../ui/kit';
 import { productLabel } from '../ui/labels';
@@ -24,11 +26,17 @@ const TYPE_MATCH: Record<TypeFilter, RecipeType[]> = {
   weekend: ['weekend'],
 };
 
+/** Карточек за раз: длинная лента тормозит и в ней не найти кнопки. */
+const PAGE = 20;
+
 export function Recipes({ k }: { k: Kitchen }) {
   const [q, setQ] = useState('');
   const [type, setType] = useState<TypeFilter>('all');
   const [cuisine, setCuisine] = useState<CuisineFilter>('all');
   const [onlyReady, setOnlyReady] = useState(false);
+  const [quick, setQuick] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [shown, setShown] = useState(PAGE);
   const [adding, setAdding] = useState(false);
 
   const list = useMemo(() => {
@@ -36,6 +44,12 @@ export function Recipes({ k }: { k: Kitchen }) {
     return k.recipes
       .filter((r) => TYPE_MATCH[type].includes(r.type))
       .filter((r) => cuisine === 'all' || r.cuisine === cuisine)
+      .filter((r) => !quick || (minutesOf(r.time) ?? 999) <= 30)
+      .filter((r) => {
+        if (!liked) return true;
+        const x = reactionsFor(r.id, k.view.ratings);
+        return (x.Крис === 'like' || x.Кристина === 'like') && x.Крис !== 'dislike' && x.Кристина !== 'dislike';
+      })
       .filter((r) => {
         if (!nq) return true;
         if (normalize(r.name).includes(nq)) return true;
@@ -45,12 +59,25 @@ export function Recipes({ k }: { k: Kitchen }) {
       .map((r) => checkRecipe(r, k.stock))
       .filter((c) => !onlyReady || c.ready)
       .sort((a, b) => Number(b.ready) - Number(a.ready) || a.missing.length - b.missing.length || a.recipe.name.localeCompare(b.recipe.name, 'ru'));
-  }, [k.recipes, k.stock, q, type, cuisine, onlyReady]);
+  }, [k.recipes, k.stock, k.view.ratings, q, type, cuisine, onlyReady, quick, liked]);
+
+  // Новый фильтр — снова первые 20.
+  const filterKey = [q, type, cuisine, onlyReady, quick, liked].join('|');
+  const [lastKey, setLastKey] = useState(filterKey);
+  if (lastKey !== filterKey) {
+    setLastKey(filterKey);
+    setShown(PAGE);
+  }
 
   return (
     <>
-      <div className="picker-input">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск: блюдо или продукт" />
+      <div className="search-row">
+        <div className="picker-input">
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Блюдо или продукт" />
+        </div>
+        <button className="square-btn text" onClick={() => setAdding(true)}>
+          + Свой
+        </button>
       </div>
       <Segmented<TypeFilter>
         small
@@ -64,35 +91,42 @@ export function Recipes({ k }: { k: Kitchen }) {
         ]}
         onChange={setType}
       />
-      <div className="chips">
+      <div className="chips scroll">
+        <button className={`chip${onlyReady ? ' on' : ''}`} onClick={() => setOnlyReady((x) => !x)}>
+          ✓ можно сейчас
+        </button>
+        <button className={`chip${quick ? ' on' : ''}`} onClick={() => setQuick((x) => !x)}>
+          ⏱ до 30 мин
+        </button>
+        <button className={`chip${liked ? ' on' : ''}`} onClick={() => setLiked((x) => !x)}>
+          👍 любимые
+        </button>
         {(
           [
-            ['all', 'любая кухня'],
             ['ru', 'русская'],
             ['es', 'испанская'],
             ['world', 'мировая'],
           ] as [CuisineFilter, string][]
         ).map(([v, label]) => (
-          <button key={v} className={`chip${cuisine === v ? ' on' : ''}`} onClick={() => setCuisine(v)}>
+          <button key={v} className={`chip${cuisine === v ? ' on' : ''}`} onClick={() => setCuisine((c) => (c === v ? 'all' : v))}>
             {label}
           </button>
         ))}
-        <button className={`chip${onlyReady ? ' on' : ''}`} onClick={() => setOnlyReady((x) => !x)}>
-          ✓ можно сейчас
-        </button>
       </div>
       <p className="muted small">
         {list.length} из {k.recipes.length}
       </p>
       {list.length === 0 && <Empty>Ничего не нашлось.</Empty>}
       <div className="cards">
-        {list.map((c) => (
+        {list.slice(0, shown).map((c) => (
           <RecipeCard key={c.recipe.id} check={c} k={k} showAvailability />
         ))}
       </div>
-      <button className="btn ghost wide" onClick={() => setAdding(true)}>
-        + Свой рецепт
-      </button>
+      {list.length > shown && (
+        <button className="btn ghost wide" onClick={() => setShown((n) => n + PAGE)}>
+          Показать ещё · осталось {list.length - shown}
+        </button>
+      )}
       {adding && <AddRecipe onClose={() => setAdding(false)} />}
     </>
   );

@@ -8,6 +8,7 @@ import { daysBetween, parseDate } from '../logic/dates';
 import { PEOPLE, type Person } from '../types';
 import { Field, Section, Segmented } from '../ui/kit';
 import { setSystemTimer, shortcutUrl, SHORTCUT_NAME, systemTimerEnabled } from '../ui/timers';
+import { pantryLabel } from '../ui/labels';
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LC7o3yIus1-5o1fz_DlvmW75Hiq0ZjNEnC3h01mbYCE/edit';
 
@@ -37,8 +38,8 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
       <Section title="Кладовая" hint="Всегда есть дома">
         <div className="chips">
           {pantry.map((p) => (
-            <button key={p} className="chip on removable" onClick={() => setPantry(pantry.filter((x) => x !== p))}>
-              {p} ✕
+            <button key={p} className="chip on removable" onClick={() => setPantry(pantry.filter((x) => x !== p))} aria-label={`Убрать ${pantryLabel(p)}`}>
+              {pantryLabel(p)} ✕
             </button>
           ))}
         </div>

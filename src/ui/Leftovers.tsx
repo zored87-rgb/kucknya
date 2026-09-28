@@ -8,10 +8,11 @@ import { daysBetween, daysLeftText, formatDate, parseDate } from '../logic/dates
 import type { FridgeRow, Who } from '../types';
 import { dishEmoji } from './emoji';
 import { toast } from './toast';
+import { mealForTime } from '../logic/suggest';
 
 function eat(row: FridgeRow, n: number, who: Who, k: Kitchen) {
   const left = portions(row) - n;
-  const meal = new Date().getHours() < 11 ? 'завтрак' : new Date().getHours() < 16 ? 'обед' : 'ужин';
+  const meal = mealForTime(new Date());
   const ops: OpBody[] = [
     {
       op: 'eaten.upsert',

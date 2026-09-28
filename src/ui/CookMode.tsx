@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { RecipeCheck } from '../logic/availability';
+import { scaledQty, servingsOf, servingsText, stepsWithQty } from '../logic/portions';
+import { PantryLine } from './RecipeCard';
 import { dishEmoji } from './emoji';
 import { IconClose } from './icons';
 import { IngredientRow } from './IngredientRow';
@@ -25,20 +27,38 @@ export function stepTimes(text: string): { label: string; seconds: number }[] {
   return out;
 }
 
-export function CookMode({ check, onClose, onDone }: { check: RecipeCheck; onClose: () => void; onDone: () => void }) {
+export function CookMode({
+  check,
+  scale = 1,
+  onClose,
+  onDone,
+}: {
+  check: RecipeCheck;
+  scale?: number;
+  onClose: () => void;
+  onDone: () => void;
+}) {
   const r = check.recipe;
+  const steps = stepsWithQty(r.steps, r.ingredients, scale);
   const pages: ReactNode[] = [
     <div key="ing" className="cm-ings">
       <h3>Что понадобится</h3>
+      <p className="muted">{servingsText(servingsOf(r) * scale)}</p>
       <ul className="ings">
-        {check.items.map((c, i) => (
-          <IngredientRow key={i} c={c} />
-        ))}
+        {check.items.map((c, i) =>
+          c.have === 'pantry' ? null : <IngredientRow key={i} c={c} qText={scaledQty(c.ing, scale)} />,
+        )}
       </ul>
+      <PantryLine check={check} scale={scale} />
     </div>,
-    ...r.steps.map((s, i) => (
+    ...steps.map((parts, i) => (
       <p key={i} className="cm-step">
-        {s}
+        {parts.map((x, j) => (
+          <span key={j}>
+            {x.text}
+            {x.q && <span className="cm-q"> ({x.q})</span>}
+          </span>
+        ))}
       </p>
     )),
   ];

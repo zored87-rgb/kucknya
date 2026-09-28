@@ -134,6 +134,21 @@ export function checkRecipe(recipe: Recipe, stock: Stock): RecipeCheck {
   return { recipe, items, missing, ready: !banned && missing.length === 0, expiring, banned };
 }
 
+/** Проверка под ×½ / ×2: хватает ли продуктов на такое количество. Строки рецепта — исходные. */
+export function scaledCheck(check: RecipeCheck, stock: Stock, scale: number): RecipeCheck {
+  if (scale === 1) return check;
+  const r = check.recipe;
+  const back = new Map<Ingredient, Ingredient>();
+  const ingredients = r.ingredients.map((i) => {
+    const s = i.n != null ? { ...i, n: i.n * scale } : i;
+    back.set(s, i);
+    return s;
+  });
+  const c = checkRecipe({ ...r, ingredients }, stock);
+  const fix = (x: IngredientCheck): IngredientCheck => ({ ...x, ing: back.get(x.ing) ?? x.ing });
+  return { ...c, recipe: r, items: c.items.map(fix), missing: c.missing.map(fix) };
+}
+
 /** Замена может быть в других единицах (курица в граммах ↔ бёдра в граммах — ок; сливки ↔ сметана — банки). */
 function altAmount(ing: Ingredient, key: string): number | undefined {
   const a = PRODUCT_BY_KEY.get(ing.p);

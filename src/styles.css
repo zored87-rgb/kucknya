@@ -295,6 +295,12 @@ h4 {
   color: var(--red);
 }
 
+.btn.small {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
 .btn.wide {
   width: 100%;
 }
@@ -682,6 +688,78 @@ h4 {
   color: var(--muted);
   font-size: 13px;
   text-align: right;
+}
+
+/* Порции и ×½ / ×2 */
+.portions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.portions-text {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.scale-btns {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.scale-btns button {
+  min-width: 44px;
+  min-height: 36px;
+  border-radius: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  touch-action: manipulation;
+}
+
+.scale-btns button.on {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+}
+
+.short-note {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  font-size: 14px;
+}
+
+.short-note p {
+  margin: 0;
+}
+
+.short-note .btn {
+  align-self: flex-start;
+}
+
+.pantry-line {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.pantry-line b {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.cm-q {
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .tip {
@@ -1755,8 +1833,17 @@ select {
   align-items: flex-start;
 }
 
-.search-row .picker {
+.search-row .picker,
+.search-row .picker-input {
   flex: 1;
+}
+
+.square-btn.text {
+  width: auto;
+  padding: 0 14px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
 }
 
 .square-btn {
@@ -2193,4 +2280,22 @@ select {
   margin: 0;
   font-size: 14px;
   color: var(--muted);
+}
+
+/* Фильтры в одну строку, листаются вбок */
+.chips.scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin: 0 -16px;
+  padding: 2px 16px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chips.scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.chips.scroll .chip {
+  flex: none;
 }

@@ -6,11 +6,14 @@ import { mutate } from '../api/store';
 import { normalize } from '../data/ingredients';
 import { recipeIdForDish } from '../data/recipes';
 import type { Kitchen } from '../hooks/useKitchen';
+import { checkRecipe } from '../logic/availability';
 import { agoText, daysBetween, formatDate, parseDate, toIso } from '../logic/dates';
-import { reactionsFor } from '../logic/suggest';
+import { spending } from '../logic/money';
+import { reactionsFor, mealForTime } from '../logic/suggest';
 import { MEALS, type EatenRow, type Meal, type Person, type Recipe, type Who } from '../types';
-import { Empty, Field, Section, Segmented, Sheet } from '../ui/kit';
-import { setReaction } from '../ui/RecipeCard';
+import { Empty, Field, plural, Section, Segmented, Sheet } from '../ui/kit';
+import { dishEmoji, dishTone } from '../ui/emoji';
+import { RecipeCard, setReaction } from '../ui/RecipeCard';
 import { toast } from '../ui/toast';
 
 const MEAL_ICON: Record<string, string> = { завтрак: '☀️', обед: '🍲', ужин: '🌙', перекус: '🍎' };
@@ -18,6 +21,7 @@ const MEAL_ICON: Record<string, string> = { завтрак: '☀️', обед: 
 export function Eaten({ k }: { k: Kitchen }) {
   const [adding, setAdding] = useState(false);
   const [limit, setLimit] = useState(40);
+  const [peek, setPeek] = useState<Recipe | null>(null);
   const byId = useMemo(() => new Map(k.recipes.map((r) => [r.id, r])), [k.recipes]);
 
   const rows = useMemo(
@@ -38,11 +42,65 @@ export function Eaten({ k }: { k: Kitchen }) {
 
   const recipeOf = (row: EatenRow): Recipe | undefined => byId.get(row.recipeId || recipeIdForDish(row.dish, k.recipes) || '');
 
+  // Неделя: сколько раз ели дома, сколько разных блюд и сколько ушло на продукты.
+  const week = rows.filter((row) => {
+    const d = parseDate(row.date);
+    const ago = d ? daysBetween(d, k.today) : null;
+    return ago != null && ago >= 0 && ago < 7;
+  });
+  const dishes = new Set(week.map((row) => normalize(row.dish))).size;
+  const spent = spending(k.view.receipts ?? [], k.today).week;
+
+  // Любимое: оба поставили 👍.
+  const favorites = k.recipes.filter((r) => {
+    const x = reactionsFor(r.id, k.view.ratings);
+    return x.Крис === 'like' && x.Кристина === 'like';
+  });
+
   return (
     <>
       <button className="btn primary wide" onClick={() => setAdding(true)}>
         Записать, что ели
       </button>
+      {rows.length > 0 && (
+        <Section title="За неделю">
+          <div className="stats">
+            <div className="stat">
+              <b>{week.length}</b>
+              <span>{plural(week.length, 'раз', 'раза', 'раз')} ели дома</span>
+            </div>
+            <div className="stat">
+              <b>{dishes}</b>
+              <span>{plural(dishes, 'блюдо', 'блюда', 'блюд')}</span>
+            </div>
+            <div className="stat">
+              <b>{spent ? `${Math.round(spent)} €` : '—'}</b>
+              <span>{spent ? 'на продукты' : 'нет чеков'}</span>
+              {spent > 0 && week.length > 0 && <small>~{(spent / week.length).toFixed(1).replace('.', ',')} € за раз</small>}
+            </div>
+          </div>
+        </Section>
+      )}
+      <Section title="❤️ Любимое">
+        {favorites.length === 0 ? (
+          <p className="muted small">Здесь будут блюда, которым вы оба поставили 👍.</p>
+        ) : (
+          <div className="carousel">
+            {favorites.map((r) => (
+              <button key={r.id} className="mini-dish" onClick={() => setPeek(r)}>
+                <span className={`dish-tile ${dishTone(r.type)}`}>{dishEmoji(r)}</span>
+                <span className="mini-name">{r.name}</span>
+                <span className="mini-need">приготовить снова</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </Section>
+      {peek && (
+        <Sheet title={peek.name} onClose={() => setPeek(null)}>
+          <RecipeCard check={checkRecipe(peek, k.stock)} k={k} defaultOpen bare />
+        </Sheet>
+      )}
       {rows.length === 0 && <Empty>Пока пусто. Нажимайте «Приготовили» в карточке блюда — и история появится сама.</Empty>}
       {groups.map((g) => (
         <Section key={g.label} title={g.label[0].toUpperCase() + g.label.slice(1)}>
@@ -108,7 +166,7 @@ function MiniReactions({ recipe, k }: { recipe: Recipe; k: Kitchen }) {
 function AddEaten({ k, onClose }: { k: Kitchen; onClose: () => void }) {
   const [dish, setDish] = useState('');
   const [date, setDate] = useState(toIso(new Date()));
-  const [meal, setMeal] = useState<Meal>(new Date().getHours() < 11 ? 'завтрак' : new Date().getHours() < 16 ? 'обед' : 'ужин');
+  const [meal, setMeal] = useState<Meal>(mealForTime(new Date()));
   const [who, setWho] = useState<Who>('оба');
   const q = normalize(dish);
   const hints = q ? k.recipes.filter((r) => normalize(r.name).includes(q)).slice(0, 6) : [];

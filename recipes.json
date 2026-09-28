@@ -1,6 +1,6 @@
 [
   {
-    "id": "avena", "name": "Овсянка на молоке", "type": "breakfast", "cuisine": null, "origin": null, "time": "5 мин", "cost_eur_for_two": 1, "has_egg_as_main": false,
+    "id": "avena", "name": "Овсянка на молоке", "type": "breakfast", "cuisine": null, "origin": null, "time": "5 мин", "cost_eur_for_two": 1, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "овсянка", "q": "120 г на двоих (Крису 80 г)", "n": 120},
       {"p": "молоко", "q": "500 мл", "n": 0.5},
@@ -18,7 +18,7 @@
     ]
   },
   {
-    "id": "tostada", "name": "Тосты с сыром и ветчиной", "type": "breakfast", "cuisine": null, "origin": null, "time": "7 мин", "cost_eur_for_two": 2, "has_egg_as_main": false,
+    "id": "tostada", "name": "Тосты с сыром и ветчиной", "type": "breakfast", "cuisine": null, "origin": null, "time": "7 мин", "cost_eur_for_two": 2, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хлеб для тостов", "q": "4 ломтика", "alt": ["хлеб", "багет"]},
       {"p": "сыр", "q": "4 ломтика", "n": 60},
@@ -32,7 +32,7 @@
     ]
   },
   {
-    "id": "pan_tomate", "name": "Тостада по-испански с томатом", "type": "breakfast", "cuisine": "es", "origin": "Испания", "time": "5 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false,
+    "id": "pan_tomate", "name": "Тостада по-испански с томатом", "type": "breakfast", "cuisine": "es", "origin": "Испания", "time": "5 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "багет", "q": "1/2", "n": 0.5, "alt": ["хлеб", "хлеб для тостов"]},
       {"p": "помидоры", "q": "1-2", "n": 1},
@@ -48,7 +48,7 @@
     ]
   },
   {
-    "id": "cereales", "name": "Хлопья с молоком", "type": "breakfast", "cuisine": null, "origin": null, "time": "2 мин", "cost_eur_for_two": 1, "has_egg_as_main": false,
+    "id": "cereales", "name": "Хлопья с молоком", "type": "breakfast", "cuisine": null, "origin": null, "time": "2 мин", "cost_eur_for_two": 1, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хлопья", "q": "2 порции", "n": 0.2},
       {"p": "молоко", "q": "400 мл", "n": 0.4},
@@ -62,7 +62,7 @@
     ]
   },
   {
-    "id": "syrniki", "name": "Сырники из заготовки", "type": "breakfast", "cuisine": "ru", "origin": null, "time": "10 мин", "cost_eur_for_two": 1, "has_egg_as_main": false,
+    "id": "syrniki", "name": "Сырники из заготовки", "type": "breakfast", "cuisine": "ru", "origin": null, "time": "10 мин", "cost_eur_for_two": 1, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "сырники", "q": "6 шт", "n": 6},
       {"p": "сметана", "q": "к подаче", "n": 0.2, "alt": ["мёд", "варенье"], "opt": true}
@@ -77,7 +77,7 @@
     "tip": "Нет сметаны — с мёдом или вареньем."
   },
   {
-    "id": "syrniki_fresh", "name": "Сырники из творога", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false,
+    "id": "syrniki_fresh", "name": "Сырники из творога", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "творог", "q": "500 г", "n": 2},
       {"p": "яйца", "q": "1", "n": 1},
@@ -97,7 +97,7 @@
     "tip": "Queso fresco batido жидковат: откинуть на сито на 30 мин или добавить ложку муки."
   },
   {
-    "id": "huevos_fritos", "name": "Яичница", "type": "breakfast", "cuisine": "es", "origin": null, "time": "5 мин", "cost_eur_for_two": 1, "has_egg_as_main": true,
+    "id": "huevos_fritos", "name": "Яичница", "type": "breakfast", "cuisine": "es", "origin": null, "time": "5 мин", "cost_eur_for_two": 1, "has_egg_as_main": true, "servings": 2,
     "ingredients": [
       {"p": "яйца", "q": "4", "n": 4},
       {"p": "хлеб", "q": "к подаче", "alt": ["багет", "хлеб для тостов"], "opt": true},
@@ -112,7 +112,7 @@
     ]
   },
   {
-    "id": "bliny_left", "name": "Блины с мёдом или сметаной", "type": "breakfast", "cuisine": "ru", "origin": null, "time": "5 мин", "cost_eur_for_two": 0.5, "has_egg_as_main": false,
+    "id": "bliny_left", "name": "Блины с мёдом или сметаной", "type": "breakfast", "cuisine": "ru", "origin": null, "time": "5 мин", "cost_eur_for_two": 0.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "блины", "q": "4-6 шт", "n": 4},
       {"p": "сметана", "q": "к подаче", "n": 0.2, "alt": ["мёд", "варенье"], "opt": true}
@@ -125,7 +125,7 @@
     ]
   },
   {
-    "id": "tvorog", "name": "Творог с мёдом или вареньем", "type": "breakfast", "cuisine": "ru", "origin": null, "time": "2 мин", "cost_eur_for_two": 2, "has_egg_as_main": false,
+    "id": "tvorog", "name": "Творог с мёдом или вареньем", "type": "breakfast", "cuisine": "ru", "origin": null, "time": "2 мин", "cost_eur_for_two": 2, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "творог", "q": "1 пачка", "n": 1},
       {"p": "мёд", "q": "1 ст.л.", "alt": ["варенье"]},
@@ -139,14 +139,15 @@
     ]
   },
   {
-    "id": "oladi", "name": "Оладьи на молоке", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false,
+    "id": "oladi", "name": "Оладьи на молоке", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "молоко", "q": "250 мл", "n": 0.25},
       {"p": "яйца", "q": "1", "n": 1},
       {"p": "мука", "q": "около 200 г"},
       {"p": "сахар", "q": "1 ст.л."},
       {"p": "сода", "q": "щепотка"},
-      {"p": "сметана", "q": "к подаче", "n": 0.2, "alt": ["мёд", "варенье"], "opt": true}
+      {"p": "сметана", "q": "к подаче", "n": 0.2, "alt": ["мёд", "варенье"], "opt": true},
+      {"p": "уксус", "q": "1 ст.л.", "opt": true}
     ],
     "steps": [
       "Смешай 250 мл молока с 1 ст.л. уксуса и оставь на 5 мин — молоко слегка скиснет, оладьи будут пышнее.",
@@ -158,7 +159,7 @@
     ]
   },
   {
-    "id": "omlet", "name": "Омлет с сыром и ветчиной", "type": "breakfast", "cuisine": null, "origin": null, "time": "8 мин", "cost_eur_for_two": 2, "has_egg_as_main": true,
+    "id": "omlet", "name": "Омлет с сыром и ветчиной", "type": "breakfast", "cuisine": null, "origin": null, "time": "8 мин", "cost_eur_for_two": 2, "has_egg_as_main": true, "servings": 2,
     "ingredients": [
       {"p": "яйца", "q": "5-6", "n": 5},
       {"p": "молоко", "q": "3 ст.л.", "n": 0.05, "opt": true},
@@ -174,7 +175,7 @@
     ]
   },
   {
-    "id": "vsmyatku", "name": "Яйца всмятку с тостами", "type": "breakfast", "cuisine": null, "origin": null, "time": "8 мин", "cost_eur_for_two": 1, "has_egg_as_main": true,
+    "id": "vsmyatku", "name": "Яйца всмятку с тостами", "type": "breakfast", "cuisine": null, "origin": null, "time": "8 мин", "cost_eur_for_two": 1, "has_egg_as_main": true, "servings": 2,
     "ingredients": [
       {"p": "яйца", "q": "4", "n": 4},
       {"p": "хлеб для тостов", "q": "4 ломтика", "alt": ["хлеб", "багет"]},
@@ -189,7 +190,7 @@
     ]
   },
   {
-    "id": "scramble", "name": "Скрэмбл на тосте с помидором или авокадо", "type": "breakfast", "cuisine": null, "origin": null, "time": "6 мин", "cost_eur_for_two": 2, "has_egg_as_main": true,
+    "id": "scramble", "name": "Скрэмбл на тосте с помидором или авокадо", "type": "breakfast", "cuisine": null, "origin": null, "time": "6 мин", "cost_eur_for_two": 2, "has_egg_as_main": true, "servings": 2,
     "ingredients": [
       {"p": "яйца", "q": "5-6", "n": 5},
       {"p": "хлеб для тостов", "q": "2-4 ломтика", "alt": ["хлеб", "багет"]},
@@ -204,7 +205,7 @@
     ]
   },
   {
-    "id": "glazunya", "name": "Глазунья с помидорами или беконом", "type": "breakfast", "cuisine": null, "origin": null, "time": "7 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": true,
+    "id": "glazunya", "name": "Глазунья с помидорами или беконом", "type": "breakfast", "cuisine": null, "origin": null, "time": "7 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": true, "servings": 2,
     "ingredients": [
       {"p": "яйца", "q": "4-5", "n": 4},
       {"p": "помидоры", "q": "1", "n": 1, "alt": ["бекон"]},
@@ -219,7 +220,7 @@
     ]
   },
   {
-    "id": "shakshuka", "name": "Шакшука", "type": "breakfast", "cuisine": "world", "origin": "Израиль", "time": "20 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": true,
+    "id": "shakshuka", "name": "Шакшука", "type": "breakfast", "cuisine": "world", "origin": "Израиль", "time": "20 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": true, "servings": 2,
     "ingredients": [
       {"p": "яйца", "q": "4", "n": 4},
       {"p": "томаты в банке", "q": "1 банка", "n": 1, "alt": ["помидоры"]},
@@ -239,7 +240,7 @@
     ]
   },
   {
-    "id": "grenki", "name": "Сладкие гренки с корицей", "type": "breakfast", "cuisine": null, "origin": null, "time": "10 мин", "cost_eur_for_two": 1, "has_egg_as_main": false,
+    "id": "grenki", "name": "Сладкие гренки с корицей", "type": "breakfast", "cuisine": null, "origin": null, "time": "10 мин", "cost_eur_for_two": 1, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хлеб для тостов", "q": "4 ломтика", "alt": ["хлеб", "багет"]},
       {"p": "яйца", "q": "2", "n": 2},
@@ -257,7 +258,7 @@
     ]
   },
   {
-    "id": "avocado_toast", "name": "Тост с авокадо", "type": "breakfast", "cuisine": "world", "origin": null, "time": "5 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false,
+    "id": "avocado_toast", "name": "Тост с авокадо", "type": "breakfast", "cuisine": "world", "origin": null, "time": "5 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хлеб для тостов", "q": "2-4 ломтика", "alt": ["хлеб", "багет"]},
       {"p": "авокадо", "q": "1", "n": 1},
@@ -273,7 +274,7 @@
     ]
   },
   {
-    "id": "yogurt_bowl", "name": "Сладкий йогурт с хлопьями и фруктами", "type": "breakfast", "cuisine": null, "origin": null, "time": "2 мин", "cost_eur_for_two": 2, "has_egg_as_main": false,
+    "id": "yogurt_bowl", "name": "Сладкий йогурт с хлопьями и фруктами", "type": "breakfast", "cuisine": null, "origin": null, "time": "2 мин", "cost_eur_for_two": 2, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "йогурт", "q": "2 стаканчика", "n": 2},
       {"p": "хлопья", "q": "горсть", "n": 0.1, "alt": ["овсянка"]},
@@ -287,7 +288,7 @@
     ]
   },
   {
-    "id": "grechka_moloko", "name": "Гречка с молоком", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "20 мин", "cost_eur_for_two": 1, "has_egg_as_main": false,
+    "id": "grechka_moloko", "name": "Гречка с молоком", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "20 мин", "cost_eur_for_two": 1, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "гречка", "q": "150 г", "n": 150},
       {"p": "молоко", "q": "400 мл", "n": 0.4},
@@ -303,7 +304,7 @@
     ]
   },
   {
-    "id": "blinchiki", "name": "Тонкие блинчики на молоке", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "30 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false,
+    "id": "blinchiki", "name": "Тонкие блинчики на молоке", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "30 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false, "servings": 3,
     "ingredients": [
       {"p": "молоко", "q": "500 мл", "n": 0.5},
       {"p": "яйца", "q": "2", "n": 2},
@@ -321,7 +322,7 @@
     ]
   },
   {
-    "id": "kasha_ris", "name": "Рисовая каша на молоке", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 1, "has_egg_as_main": false,
+    "id": "kasha_ris", "name": "Рисовая каша на молоке", "type": "breakfast", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 1, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "рис", "q": "100 г", "n": 100},
       {"p": "молоко", "q": "600 мл", "n": 0.6},
@@ -338,7 +339,7 @@
     ]
   },
   {
-    "id": "pankeyki", "name": "Панкейки", "type": "breakfast", "cuisine": "world", "origin": "США", "time": "20 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false,
+    "id": "pankeyki", "name": "Панкейки", "type": "breakfast", "cuisine": "world", "origin": "США", "time": "20 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "молоко", "q": "250 мл", "n": 0.25},
       {"p": "яйца", "q": "1", "n": 1},
@@ -357,7 +358,7 @@
     ]
   },
   {
-    "id": "buter_syr_ogurets", "name": "Бутерброды со сливочным сыром и огурцом", "type": "breakfast", "cuisine": null, "origin": null, "time": "5 мин", "cost_eur_for_two": 2, "has_egg_as_main": false,
+    "id": "buter_syr_ogurets", "name": "Бутерброды со сливочным сыром и огурцом", "type": "breakfast", "cuisine": null, "origin": null, "time": "5 мин", "cost_eur_for_two": 2, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хлеб", "q": "4 ломтика", "alt": ["хлеб для тостов", "багет"]},
       {"p": "сливочный сыр", "q": "2-3 ст.л.", "n": 0.2, "alt": ["плавленый сыр", "масло сливочное"]},
@@ -372,7 +373,7 @@
     ]
   },
   {
-    "id": "zapekanka_tvorog", "name": "Творожная запеканка", "type": "breakfast", "cuisine": "ru", "origin": "СССР", "time": "45 мин, из них 10 активно", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "zapekanka_tvorog", "name": "Творожная запеканка", "type": "breakfast", "cuisine": "ru", "origin": "СССР", "time": "45 мин, из них 10 активно", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "творог", "q": "500 г", "n": 2},
       {"p": "яйца", "q": "2", "n": 2},
@@ -391,7 +392,7 @@
     ]
   },
   {
-    "id": "banana_oladi", "name": "Банановые оладьи", "type": "breakfast", "cuisine": null, "origin": null, "time": "15 мин", "cost_eur_for_two": 1, "has_egg_as_main": false,
+    "id": "banana_oladi", "name": "Банановые оладьи", "type": "breakfast", "cuisine": null, "origin": null, "time": "15 мин", "cost_eur_for_two": 1, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "банан", "q": "2 спелых", "n": 2},
       {"p": "яйца", "q": "2", "n": 2},
@@ -407,7 +408,7 @@
     ]
   },
   {
-    "id": "tortilla_espanola", "name": "Тортилья эспаньола (картофельный омлет)", "type": "breakfast", "cuisine": "es", "origin": "Испания", "time": "40 мин", "cost_eur_for_two": 3, "has_egg_as_main": true,
+    "id": "tortilla_espanola", "name": "Тортилья эспаньола (картофельный омлет)", "type": "breakfast", "cuisine": "es", "origin": "Испания", "time": "40 мин", "cost_eur_for_two": 3, "has_egg_as_main": true, "servings": 4,
     "ingredients": [
       {"p": "картошка", "q": "4 средних", "n": 4},
       {"p": "яйца", "q": "6", "n": 6},
@@ -424,7 +425,7 @@
     ]
   },
   {
-    "id": "ovsyanoblin", "name": "Овсяноблин с сыром", "type": "breakfast", "cuisine": null, "origin": null, "time": "10 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": true,
+    "id": "ovsyanoblin", "name": "Овсяноблин с сыром", "type": "breakfast", "cuisine": null, "origin": null, "time": "10 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": true, "servings": 2,
     "ingredients": [
       {"p": "овсянка", "q": "4 ст.л.", "n": 40},
       {"p": "яйца", "q": "2", "n": 2},
@@ -441,7 +442,7 @@
     ]
   },
   {
-    "id": "baked_oats", "name": "Запечённая овсянка с бананом", "type": "breakfast", "cuisine": null, "origin": null, "time": "30 мин, из них 5 активно", "cost_eur_for_two": 2, "has_egg_as_main": false,
+    "id": "baked_oats", "name": "Запечённая овсянка с бананом", "type": "breakfast", "cuisine": null, "origin": null, "time": "30 мин, из них 5 активно", "cost_eur_for_two": 2, "has_egg_as_main": false, "servings": 3,
     "ingredients": [
       {"p": "овсянка", "q": "150 г", "n": 150},
       {"p": "банан", "q": "2", "n": 2},
@@ -461,7 +462,7 @@
     ]
   },
   {
-    "id": "lenivye_vareniki", "name": "Ленивые вареники", "type": "breakfast", "cuisine": "ru", "origin": "Украина", "time": "25 мин", "cost_eur_for_two": 2, "has_egg_as_main": false,
+    "id": "lenivye_vareniki", "name": "Ленивые вареники", "type": "breakfast", "cuisine": "ru", "origin": "Украина", "time": "25 мин", "cost_eur_for_two": 2, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "творог", "q": "500 г", "n": 2},
       {"p": "яйца", "q": "1", "n": 1},
@@ -480,7 +481,7 @@
     ]
   },
   {
-    "id": "pashot", "name": "Яйца пашот на тосте с авокадо", "type": "breakfast", "cuisine": "world", "origin": null, "time": "10 мин", "cost_eur_for_two": 3, "has_egg_as_main": true,
+    "id": "pashot", "name": "Яйца пашот на тосте с авокадо", "type": "breakfast", "cuisine": "world", "origin": null, "time": "10 мин", "cost_eur_for_two": 3, "has_egg_as_main": true, "servings": 2,
     "ingredients": [
       {"p": "яйца", "q": "2–4", "n": 3},
       {"p": "хлеб для тостов", "q": "2 ломтика", "alt": ["хлеб", "багет"]},
@@ -497,7 +498,7 @@
     ]
   },
   {
-    "id": "borsch", "name": "Борщ", "type": "batch_lunch", "cuisine": "ru", "origin": "Украина и Россия", "time": "1 ч 30 мин, из них 30 активно", "cost_eur_for_two": 8, "has_egg_as_main": false,
+    "id": "borsch", "name": "Борщ", "type": "batch_lunch", "cuisine": "ru", "origin": "Украина и Россия", "time": "1 ч 30 мин, из них 30 активно", "cost_eur_for_two": 8, "has_egg_as_main": false, "servings": 6,
     "ingredients": [
       {"p": "говядина", "q": "500 г на кости", "n": 500, "alt": ["свинина", "свиные рёбрышки"]},
       {"p": "свёкла", "q": "3 шт", "n": 3, "alt": ["свёкла варёная"]},
@@ -523,7 +524,7 @@
     ]
   },
   {
-    "id": "plov", "name": "Плов с курицей", "type": "batch_lunch", "cuisine": "ru", "origin": "Средняя Азия", "time": "1 ч, из них 20 активно", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "plov", "name": "Плов с курицей", "type": "batch_lunch", "cuisine": "ru", "origin": "Средняя Азия", "time": "1 ч, из них 20 активно", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 6,
     "ingredients": [
       {"p": "куриные бёдра", "q": "800 г", "n": 800, "alt": ["курица", "свинина"]},
       {"p": "морковь", "q": "3 шт", "n": 3},
@@ -543,7 +544,7 @@
     ]
   },
   {
-    "id": "sup_lapsha", "name": "Куриный суп с лапшой", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "sup_lapsha", "name": "Куриный суп с лапшой", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "курица", "q": "800 г (голени или бёдра)", "n": 800, "alt": ["куриные голени", "куриные бёдра"]},
       {"p": "морковь", "q": "1", "n": 1, "opt": true},
@@ -563,7 +564,7 @@
     ]
   },
   {
-    "id": "zharkoe", "name": "Жаркое по-домашнему", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "55 мин, из них 15 активно", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "zharkoe", "name": "Жаркое по-домашнему", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "55 мин, из них 15 активно", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "свинина", "q": "600 г", "n": 600, "alt": ["говядина", "куриные бёдра"]},
       {"p": "картошка", "q": "10 средних (1.5 кг)", "n": 10},
@@ -583,7 +584,7 @@
     ]
   },
   {
-    "id": "syrnyi_sup", "name": "Сырный суп с курицей", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "syrnyi_sup", "name": "Сырный суп с курицей", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "куриное филе", "q": "400 г", "n": 400, "alt": ["курица", "куриные бёдра"]},
       {"p": "плавленый сыр", "q": "200 г", "n": 2},
@@ -603,7 +604,7 @@
     ]
   },
   {
-    "id": "gulyash", "name": "Гуляш из свинины с гречкой", "type": "batch_lunch", "cuisine": "ru", "origin": "Венгрия через СССР", "time": "1 ч 10 мин, из них 20 активно", "cost_eur_for_two": 8, "has_egg_as_main": false,
+    "id": "gulyash", "name": "Гуляш из свинины с гречкой", "type": "batch_lunch", "cuisine": "ru", "origin": "Венгрия через СССР", "time": "1 ч 10 мин, из них 20 активно", "cost_eur_for_two": 8, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "свинина", "q": "700 г", "n": 700, "alt": ["говядина"]},
       {"p": "лук", "q": "2", "n": 2, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -623,7 +624,7 @@
     ]
   },
   {
-    "id": "sup_frikadelki", "name": "Суп с фрикадельками", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "sup_frikadelki", "name": "Суп с фрикадельками", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "фарш", "q": "400 г", "n": 400, "alt": ["фарш куриный", "фарш говяжий"]},
       {"p": "картошка", "q": "3 шт", "n": 3},
@@ -642,7 +643,7 @@
     ]
   },
   {
-    "id": "tefteli", "name": "Тефтели в томатно-сметанном соусе", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "50 мин", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "tefteli", "name": "Тефтели в томатно-сметанном соусе", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "50 мин", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "фарш", "q": "600 г", "n": 600, "alt": ["фарш куриный", "фарш говяжий"]},
       {"p": "лук", "q": "2", "n": 2, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -662,7 +663,7 @@
     ]
   },
   {
-    "id": "shchi", "name": "Щи из свежей капусты", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч 15 мин, из них 20 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "shchi", "name": "Щи из свежей капусты", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч 15 мин, из них 20 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 6,
     "ingredients": [
       {"p": "свинина", "q": "400 г", "n": 400, "alt": ["говядина", "курица", "свиные рёбрышки"]},
       {"p": "капуста", "q": "1/2 кочана", "n": 0.5},
@@ -684,7 +685,7 @@
     ]
   },
   {
-    "id": "sup_chechevica", "name": "Чечевичный суп по-турецки", "type": "batch_lunch", "cuisine": "world", "origin": "Турция", "time": "35 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "sup_chechevica", "name": "Чечевичный суп по-турецки", "type": "batch_lunch", "cuisine": "world", "origin": "Турция", "time": "35 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "чечевица", "q": "250 г (красная)", "n": 250},
       {"p": "морковь", "q": "1", "n": 1},
@@ -706,7 +707,7 @@
     ]
   },
   {
-    "id": "kurica_kartoshka", "name": "Курица с картошкой в духовке", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "kurica_kartoshka", "name": "Курица с картошкой в духовке", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "курица", "q": "1 кг", "n": 1000, "alt": ["куриные голени", "куриные бёдра"]},
       {"p": "картошка", "q": "8 средних", "n": 8},
@@ -725,7 +726,7 @@
     ]
   },
   {
-    "id": "golubtsy_lenivye", "name": "Ленивые голубцы", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "50 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "golubtsy_lenivye", "name": "Ленивые голубцы", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "50 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "фарш", "q": "500 г", "n": 500, "alt": ["фарш куриный", "фарш говяжий"]},
       {"p": "капуста", "q": "1/3 кочана", "n": 0.33, "alt": ["капуста пекинская"]},
@@ -745,7 +746,7 @@
     ]
   },
   {
-    "id": "makarony_flotski", "name": "Макароны по-флотски", "type": "batch_lunch", "cuisine": "ru", "origin": "СССР", "time": "25 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "makarony_flotski", "name": "Макароны по-флотски", "type": "batch_lunch", "cuisine": "ru", "origin": "СССР", "time": "25 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "фарш", "q": "500 г", "n": 500, "alt": ["фарш говяжий", "фарш куриный"]},
       {"p": "лук", "q": "2", "n": 2, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -762,7 +763,7 @@
     ]
   },
   {
-    "id": "lentejas", "name": "Лентехас — испанская чечевица с чоризо", "type": "batch_lunch", "cuisine": "es", "origin": "Испания", "time": "50 мин, из них 15 активно", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "lentejas", "name": "Лентехас — испанская чечевица с чоризо", "type": "batch_lunch", "cuisine": "es", "origin": "Испания", "time": "50 мин, из них 15 активно", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "чечевица", "q": "300 г (коричневая)", "n": 300},
       {"p": "чоризо", "q": "150 г", "n": 150, "opt": true},
@@ -783,7 +784,7 @@
     ]
   },
   {
-    "id": "potaje_garbanzos", "name": "Потаже из нута со шпинатом", "type": "batch_lunch", "cuisine": "es", "origin": "Испания", "time": "35 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "potaje_garbanzos", "name": "Потаже из нута со шпинатом", "type": "batch_lunch", "cuisine": "es", "origin": "Испания", "time": "35 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "нут", "q": "2 банки", "n": 2},
       {"p": "шпинат", "q": "1 пачка", "n": 1},
@@ -804,7 +805,7 @@
     ]
   },
   {
-    "id": "chili", "name": "Чили кон карне", "type": "batch_lunch", "cuisine": "world", "origin": "Техас", "time": "45 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "chili", "name": "Чили кон карне", "type": "batch_lunch", "cuisine": "world", "origin": "Техас", "time": "45 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "фарш говяжий", "q": "500 г", "n": 500, "alt": ["фарш"]},
       {"p": "фасоль", "q": "1 банка", "n": 1},
@@ -827,7 +828,7 @@
     ]
   },
   {
-    "id": "grechka_kupech", "name": "Гречка по-купечески", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "grechka_kupech", "name": "Гречка по-купечески", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "свинина", "q": "500 г", "n": 500, "alt": ["куриное филе", "фарш"]},
       {"p": "гречка", "q": "300 г", "n": 300},
@@ -845,7 +846,7 @@
     ]
   },
   {
-    "id": "sup_losos", "name": "Сливочный суп с лососем", "type": "batch_lunch", "cuisine": "world", "origin": "Финляндия", "time": "30 мин", "cost_eur_for_two": 8, "has_egg_as_main": false,
+    "id": "sup_losos", "name": "Сливочный суп с лососем", "type": "batch_lunch", "cuisine": "world", "origin": "Финляндия", "time": "30 мин", "cost_eur_for_two": 8, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "лосось", "q": "300 г", "n": 300, "alt": ["треска", "хек"]},
       {"p": "картошка", "q": "4", "n": 4},
@@ -864,7 +865,7 @@
     ]
   },
   {
-    "id": "sup_tykva", "name": "Суп-пюре из тыквы", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "35 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "sup_tykva", "name": "Суп-пюре из тыквы", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "35 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "тыква", "q": "800 г", "n": 800},
       {"p": "картошка", "q": "2", "n": 2},
@@ -882,7 +883,7 @@
     ]
   },
   {
-    "id": "zapekanka_farsh", "name": "Картофельная запеканка с фаршем", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 25 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "zapekanka_farsh", "name": "Картофельная запеканка с фаршем", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 25 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "фарш", "q": "500 г", "n": 500, "alt": ["фарш говяжий", "фарш куриный"]},
       {"p": "картошка", "q": "8 средних", "n": 8},
@@ -902,7 +903,7 @@
     ]
   },
   {
-    "id": "kapusta_kolbaski", "name": "Тушёная капуста с колбасками", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия и Польша", "time": "45 мин, из них 15 активно", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "kapusta_kolbaski", "name": "Тушёная капуста с колбасками", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия и Польша", "time": "45 мин, из них 15 активно", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "капуста", "q": "1/2-1 кочан", "n": 0.7},
       {"p": "колбаски", "q": "6 шт", "n": 6, "alt": ["сосиски"]},
@@ -921,7 +922,7 @@
     ]
   },
   {
-    "id": "sup_tomatny", "name": "Томатный суп с гренками", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "sup_tomatny", "name": "Томатный суп с гренками", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "томаты в банке", "q": "2 банки", "n": 2, "alt": ["помидоры"]},
       {"p": "лук", "q": "1", "n": 1, "alt": ["лук красный", "лук-порей"], "opt": true},
@@ -941,7 +942,7 @@
     ]
   },
   {
-    "id": "sup_kurica_ris", "name": "Куриный суп с рисом", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "50 мин, из них 10 активно", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "sup_kurica_ris", "name": "Куриный суп с рисом", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "50 мин, из них 10 активно", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "курица", "q": "500 г", "n": 500, "alt": ["куриные бёдра", "куриные голени", "куриное филе"]},
       {"p": "рис", "q": "80 г", "n": 80},
@@ -960,7 +961,7 @@
     ]
   },
   {
-    "id": "krem_brokkoli", "name": "Крем-суп из брокколи", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "krem_brokkoli", "name": "Крем-суп из брокколи", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "брокколи", "q": "1 кочан", "n": 1, "alt": ["цветная капуста", "кабачок"]},
       {"p": "картошка", "q": "2", "n": 2, "opt": true},
@@ -977,7 +978,7 @@
     ]
   },
   {
-    "id": "gazpacho", "name": "Гаспачо", "type": "batch_lunch", "cuisine": "es", "origin": "Андалусия", "time": "15 мин + охладить", "cost_eur_for_two": 3.5, "has_egg_as_main": false,
+    "id": "gazpacho", "name": "Гаспачо", "type": "batch_lunch", "cuisine": "es", "origin": "Андалусия", "time": "15 мин + охладить", "cost_eur_for_two": 3.5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "помидоры", "q": "6 спелых (1 кг)", "n": 6},
       {"p": "огурцы", "q": "1", "n": 1},
@@ -998,7 +999,7 @@
     "tip": "Летом в Mercadona есть готовый — но свой вкуснее и дешевле."
   },
   {
-    "id": "ragu_ovoshi", "name": "Овощное рагу с курицей", "type": "batch_lunch", "cuisine": "ru", "origin": null, "time": "45 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "ragu_ovoshi", "name": "Овощное рагу с курицей", "type": "batch_lunch", "cuisine": "ru", "origin": null, "time": "45 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "кабачок", "q": "1", "n": 1, "alt": ["баклажан"]},
       {"p": "картошка", "q": "3", "n": 3},
@@ -1017,7 +1018,7 @@
     ]
   },
   {
-    "id": "chana", "name": "Нут в карри с рисом", "type": "batch_lunch", "cuisine": "world", "origin": "Индия", "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "chana", "name": "Нут в карри с рисом", "type": "batch_lunch", "cuisine": "world", "origin": "Индия", "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "нут", "q": "2 банки", "n": 2},
       {"p": "томаты в банке", "q": "1 банка", "n": 1},
@@ -1038,7 +1039,7 @@
     ]
   },
   {
-    "id": "risotto_griby", "name": "Ризотто с грибами", "type": "batch_lunch", "cuisine": "world", "origin": "Италия", "time": "35 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false,
+    "id": "risotto_griby", "name": "Ризотто с грибами", "type": "batch_lunch", "cuisine": "world", "origin": "Италия", "time": "35 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "рис", "q": "250 г (лучше круглый)", "n": 250},
       {"p": "шампиньоны", "q": "300 г", "n": 300},
@@ -1057,7 +1058,7 @@
     ]
   },
   {
-    "id": "kurica_tomat", "name": "Курица в томатном соусе с рисом", "type": "batch_lunch", "cuisine": "es", "origin": null, "time": "40 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false,
+    "id": "kurica_tomat", "name": "Курица в томатном соусе с рисом", "type": "batch_lunch", "cuisine": "es", "origin": null, "time": "40 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "куриные бёдра", "q": "500 г", "n": 500, "alt": ["курица", "куриное филе", "куриные голени"]},
       {"p": "томаты в банке", "q": "1 банка", "n": 1, "alt": ["томато фрито", "помидоры"]},
@@ -1077,7 +1078,7 @@
     ]
   },
   {
-    "id": "fasol_kolbaski", "name": "Фасоль в томате с колбасками", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "fasol_kolbaski", "name": "Фасоль в томате с колбасками", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "фасоль", "q": "2 банки", "n": 2, "alt": ["нут"]},
       {"p": "колбаски", "q": "4", "n": 4, "alt": ["сосиски", "чоризо", "бекон"]},
@@ -1095,7 +1096,7 @@
     ]
   },
   {
-    "id": "rassolnik", "name": "Рассольник", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 20 активно", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "rassolnik", "name": "Рассольник", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 20 активно", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "курица", "q": "400 г", "n": 400, "alt": ["куриные бёдра", "куриные голени", "говядина"]},
       {"p": "огурцы солёные", "q": "3-4 шт с рассолом", "n": 0.4},
@@ -1116,7 +1117,7 @@
     ]
   },
   {
-    "id": "solyanka", "name": "Солянка сборная (по-простому)", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "solyanka", "name": "Солянка сборная (по-простому)", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "колбаски", "q": "4", "n": 4, "alt": ["сосиски"]},
       {"p": "ветчина", "q": "150 г", "n": 150, "alt": ["чоризо", "бекон"], "opt": true},
@@ -1137,7 +1138,7 @@
     ]
   },
   {
-    "id": "grechka_kurica", "name": "Гречка с курицей на сковороде", "type": "batch_lunch", "cuisine": "ru", "origin": null, "time": "35 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "grechka_kurica", "name": "Гречка с курицей на сковороде", "type": "batch_lunch", "cuisine": "ru", "origin": null, "time": "35 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "куриные бёдра", "q": "400 г", "n": 400, "alt": ["курица", "куриное филе"]},
       {"p": "гречка", "q": "250 г", "n": 250},
@@ -1155,7 +1156,7 @@
     ]
   },
   {
-    "id": "risotto_kurica", "name": "Ризотто с курицей и горошком", "type": "batch_lunch", "cuisine": "world", "origin": "Италия", "time": "35 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "risotto_kurica", "name": "Ризотто с курицей и горошком", "type": "batch_lunch", "cuisine": "world", "origin": "Италия", "time": "35 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "рис", "q": "250 г", "n": 250},
       {"p": "куриное филе", "q": "300 г", "n": 300, "alt": ["куриные бёдра", "курица"]},
@@ -1175,7 +1176,7 @@
     ]
   },
   {
-    "id": "harcho", "name": "Суп харчо", "type": "batch_lunch", "cuisine": "ru", "origin": "Грузия", "time": "1 ч 30 мин, из них 25 активно", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "harcho", "name": "Суп харчо", "type": "batch_lunch", "cuisine": "ru", "origin": "Грузия", "time": "1 ч 30 мин, из них 25 активно", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "говядина", "q": "500 г", "n": 500, "alt": ["свинина"]},
       {"p": "рис", "q": "100 г", "n": 100},
@@ -1196,7 +1197,7 @@
     ]
   },
   {
-    "id": "minestrone", "name": "Минестроне", "type": "batch_lunch", "cuisine": "world", "origin": "Италия", "time": "40 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "minestrone", "name": "Минестроне", "type": "batch_lunch", "cuisine": "world", "origin": "Италия", "time": "40 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "кабачок", "q": "1", "n": 1},
       {"p": "морковь", "q": "1", "n": 1, "opt": true},
@@ -1217,7 +1218,7 @@
     ]
   },
   {
-    "id": "uha", "name": "Уха из хека", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "35 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "uha", "name": "Уха из хека", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "35 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "хек", "q": "400 г", "n": 400, "alt": ["треска", "лосось"]},
       {"p": "картошка", "q": "3", "n": 3},
@@ -1237,7 +1238,7 @@
     ]
   },
   {
-    "id": "kurica_tushenaya_griby", "name": "Курица, тушёная с картошкой и грибами", "type": "batch_lunch", "cuisine": "ru", "origin": null, "time": "50 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "kurica_tushenaya_griby", "name": "Курица, тушёная с картошкой и грибами", "type": "batch_lunch", "cuisine": "ru", "origin": null, "time": "50 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "куриные бёдра", "q": "600 г", "n": 600, "alt": ["курица", "куриные голени"]},
       {"p": "картошка", "q": "6", "n": 6},
@@ -1256,7 +1257,7 @@
     ]
   },
   {
-    "id": "albondigas", "name": "Альбондигас — фрикадельки в томатном соусе с картошкой", "type": "batch_lunch", "cuisine": "es", "origin": "Испания", "time": "45 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "albondigas", "name": "Альбондигас — фрикадельки в томатном соусе с картошкой", "type": "batch_lunch", "cuisine": "es", "origin": "Испания", "time": "45 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "фарш", "q": "500 г", "n": 500, "alt": ["фарш говяжий", "фарш куриный"]},
       {"p": "лук", "q": "1", "n": 1, "alt": ["лук красный", "лук-порей"], "opt": true},
@@ -1277,7 +1278,7 @@
     ]
   },
   {
-    "id": "perets_farsh", "name": "Фаршированные перцы", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 25 активно", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "perets_farsh", "name": "Фаршированные перцы", "type": "batch_lunch", "cuisine": "ru", "origin": "Россия", "time": "1 ч, из них 25 активно", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "перец болгарский", "q": "5–6", "n": 5},
       {"p": "фарш", "q": "500 г", "n": 500, "alt": ["фарш куриный"]},
@@ -1297,7 +1298,7 @@
     ]
   },
   {
-    "id": "govyadina_morkov", "name": "Говядина, тушённая с морковью", "type": "batch_lunch", "cuisine": "world", "origin": "Франция", "time": "2 ч, из них 20 активно", "cost_eur_for_two": 9, "has_egg_as_main": false,
+    "id": "govyadina_morkov", "name": "Говядина, тушённая с морковью", "type": "batch_lunch", "cuisine": "world", "origin": "Франция", "time": "2 ч, из них 20 активно", "cost_eur_for_two": 9, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "говядина", "q": "700 г", "n": 700},
       {"p": "морковь", "q": "3", "n": 3},
@@ -1317,7 +1318,7 @@
     ]
   },
   {
-    "id": "zapekanka_makarony", "name": "Запеканка из макарон с фаршем", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "45 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "zapekanka_makarony", "name": "Запеканка из макарон с фаршем", "type": "batch_lunch", "cuisine": "world", "origin": null, "time": "45 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "макароны", "q": "300 г", "n": 300},
       {"p": "фарш", "q": "400 г", "n": 400, "alt": ["фарш куриный", "фарш говяжий"]},
@@ -1337,7 +1338,7 @@
     ]
   },
   {
-    "id": "poke", "name": "Поке-боул с лососем терияки", "type": "dinner", "cuisine": "world", "origin": "Гавайи", "time": "20 мин", "cost_eur_for_two": 9, "has_egg_as_main": false,
+    "id": "poke", "name": "Поке-боул с лососем терияки", "type": "dinner", "cuisine": "world", "origin": "Гавайи", "time": "20 мин", "cost_eur_for_two": 9, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лосось", "q": "~250 г", "n": 250},
       {"p": "рис", "q": "200 г", "n": 200},
@@ -1348,7 +1349,8 @@
       {"p": "нори", "q": "1 лист", "n": 1, "opt": true},
       {"p": "соевый соус", "q": "3 ст.л."},
       {"p": "мёд", "q": "1 ст.л."},
-      {"p": "имбирь", "q": "1 см", "n": 0.1, "opt": true}
+      {"p": "имбирь", "q": "1 см", "n": 0.1, "opt": true},
+      {"p": "уксус", "q": "1 ст.л. в рис", "opt": true}
     ],
     "steps": [
       "Свари рис (200 г). Для поке лучше круглый: промой, залей 300 мл воды, 12 мин под крышкой на слабом огне и 10 мин постоять. Добавь 1 ст.л. уксуса и щепотку сахара.",
@@ -1359,13 +1361,14 @@
     ]
   },
   {
-    "id": "curry", "name": "Курица в карри с рисом", "type": "dinner", "cuisine": "world", "origin": "Индия", "time": "25 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "curry", "name": "Курица в карри с рисом", "type": "dinner", "cuisine": "world", "origin": "Индия", "time": "25 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "курица", "q": "600-700 г", "n": 650, "alt": ["куриное филе", "куриные бёдра"]},
       {"p": "лук", "q": "1", "n": 1, "opt": true, "alt": ["лук красный", "лук-порей"]},
       {"p": "соус карри", "q": "1 банка", "n": 1, "alt": ["карри порошок"]},
       {"p": "сметана", "q": "3 ст.л.", "n": 0.3, "alt": ["сливки", "кокосовое молоко"], "opt": true},
-      {"p": "рис", "q": "200 г", "n": 200}
+      {"p": "рис", "q": "200 г", "n": 200},
+      {"p": "лимон", "q": "немного, по вкусу", "n": 0.25, "opt": true}
     ],
     "steps": [
       "Курицу нарежь кусками 3 см, лук — полукольцами. Рис поставь вариться.",
@@ -1378,7 +1381,7 @@
     "tip": "Нет готового соуса: 1 ст.л. карри-порошка на масле 30 сек, потом 200 мл сливок или кокосового молока."
   },
   {
-    "id": "tabule", "name": "Табуле с руколой", "type": "dinner", "cuisine": "world", "origin": "Ливан", "time": "5 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "tabule", "name": "Табуле с руколой", "type": "dinner", "cuisine": "world", "origin": "Ливан", "time": "5 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "табуле", "q": "1 упаковка", "n": 1},
       {"p": "рукола", "q": "горсть", "n": 0.5, "alt": ["салат", "шпинат"], "opt": true},
@@ -1393,7 +1396,7 @@
     ]
   },
   {
-    "id": "carbonara", "name": "Паста карбонара", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "15 мин", "cost_eur_for_two": 3.5, "has_egg_as_main": false,
+    "id": "carbonara", "name": "Паста карбонара", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "15 мин", "cost_eur_for_two": 3.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
       {"p": "бекон", "q": "150 г кубиками (taquitos)", "n": 150},
@@ -1410,7 +1413,7 @@
     ]
   },
   {
-    "id": "salmon_potato", "name": "Лосось с картошкой и соусом из сметаны с укропом", "type": "dinner", "cuisine": "world", "origin": "Север Европы", "time": "35 мин, из них 10 активно", "cost_eur_for_two": 7.5, "has_egg_as_main": false,
+    "id": "salmon_potato", "name": "Лосось с картошкой и соусом из сметаны с укропом", "type": "dinner", "cuisine": "world", "origin": "Север Европы", "time": "35 мин, из них 10 активно", "cost_eur_for_two": 7.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лосось", "q": "2 куска, ~300 г", "n": 300, "alt": ["треска", "хек"]},
       {"p": "картошка", "q": "7 средних (1 кг)", "n": 7},
@@ -1427,7 +1430,7 @@
     ]
   },
   {
-    "id": "kotlety_pure", "name": "Котлеты с пюре и огурцами в сметане", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "kotlety_pure", "name": "Котлеты с пюре и огурцами в сметане", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "фарш", "q": "500 г (carne picada mixta)", "n": 500, "alt": ["фарш говяжий", "фарш куриный"]},
       {"p": "лук", "q": "1", "n": 1, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -1447,14 +1450,15 @@
     ]
   },
   {
-    "id": "kartoshka_griby", "name": "Жареная картошка с грибами, колбасками и салатом", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "30 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "kartoshka_griby", "name": "Жареная картошка с грибами, колбасками и салатом", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "30 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "картошка", "q": "7 средних (1 кг)", "n": 7},
       {"p": "шампиньоны", "q": "300 г", "n": 300},
       {"p": "лук", "q": "1", "n": 1},
       {"p": "колбаски", "q": "4-6 шт", "n": 4, "alt": ["сосиски"], "opt": true},
       {"p": "огурцы", "q": "2", "n": 2, "opt": true},
-      {"p": "помидоры", "q": "2", "n": 2, "opt": true}
+      {"p": "помидоры", "q": "2", "n": 2, "opt": true},
+      {"p": "сметана", "q": "для салата", "n": 0.2, "opt": true}
     ],
     "steps": [
       "Картошку нарежь брусками, промой от крахмала и тщательно обсуши полотенцем — мокрая не зажарится.",
@@ -1466,7 +1470,7 @@
     ]
   },
   {
-    "id": "pizza", "name": "Пицца домашняя", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "25 мин", "cost_eur_for_two": 5.5, "has_egg_as_main": false,
+    "id": "pizza", "name": "Пицца домашняя", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "25 мин", "cost_eur_for_two": 5.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "тесто для пиццы", "q": "1 (masa de pizza, в холодильнике)", "n": 1},
       {"p": "моцарелла", "q": "200 г", "n": 200, "alt": ["сыр"]},
@@ -1484,7 +1488,7 @@
     ]
   },
   {
-    "id": "befstroganov", "name": "Бефстроганов с пюре", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "35 мин", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "befstroganov", "name": "Бефстроганов с пюре", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "35 мин", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "свинина", "q": "500 г (lomo)", "n": 500, "alt": ["говядина", "куриное филе"]},
       {"p": "лук", "q": "1", "n": 1, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -1503,7 +1507,7 @@
     ]
   },
   {
-    "id": "myaso_fr", "name": "Мясо по-французски", "type": "dinner", "cuisine": "ru", "origin": "СССР", "time": "50 мин, из них 15 активно", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "myaso_fr", "name": "Мясо по-французски", "type": "dinner", "cuisine": "ru", "origin": "СССР", "time": "50 мин, из них 15 активно", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "свинина", "q": "500 г (lomo ломтиками)", "n": 500, "alt": ["куриное филе", "индейка"]},
       {"p": "картошка", "q": "7 средних (1 кг)", "n": 7},
@@ -1521,7 +1525,7 @@
     ]
   },
   {
-    "id": "burger", "name": "Смэш-бургеры с картошкой фри", "type": "dinner", "cuisine": "world", "origin": "США", "time": "35 мин", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "burger", "name": "Смэш-бургеры с картошкой фри", "type": "dinner", "cuisine": "world", "origin": "США", "time": "35 мин", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "булочки для бургеров", "q": "4", "n": 4},
       {"p": "фарш говяжий", "q": "400 г", "n": 400, "alt": ["фарш"]},
@@ -1541,7 +1545,7 @@
     ]
   },
   {
-    "id": "quesadilla", "name": "Кесадилья с курицей и сыром", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "20 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "quesadilla", "name": "Кесадилья с курицей и сыром", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "20 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "тортильи", "q": "1 уп.", "n": 1, "alt": ["лаваш"]},
       {"p": "куриное филе", "q": "300 г", "n": 300, "alt": ["куриные бёдра", "индейка"]},
@@ -1559,12 +1563,14 @@
     ]
   },
   {
-    "id": "nuggets", "name": "Наггетсы в хлопьях с картофельными дольками", "type": "dinner", "cuisine": "world", "origin": "США", "time": "40 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "nuggets", "name": "Наггетсы в хлопьях с картофельными дольками", "type": "dinner", "cuisine": "world", "origin": "США", "time": "40 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "600 г", "n": 600, "alt": ["индейка"]},
       {"p": "картошка", "q": "7 средних (1 кг)", "n": 7},
       {"p": "хлопья", "q": "2 горсти без сахара", "n": 0.2, "alt": ["панировочные сухари"]},
-      {"p": "майонез", "q": "2-3 ложки"}
+      {"p": "майонез", "q": "2-3 ложки"},
+      {"p": "сметана", "q": "для соуса", "n": 0.2, "opt": true},
+      {"p": "горчица", "q": "для соуса с мёдом", "n": 0.05, "opt": true}
     ],
     "steps": [
       "Разогрей духовку до 200°C. Картошку нарежь дольками, смешай с маслом, паприкой и солью, выложи на противень и запекай 15 мин.",
@@ -1575,7 +1581,7 @@
     ]
   },
   {
-    "id": "bolognese", "name": "Паста болоньезе", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "40 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "bolognese", "name": "Паста болоньезе", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "40 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "фарш", "q": "400 г", "n": 400, "alt": ["фарш говяжий", "фарш куриный"]},
       {"p": "лук", "q": "1", "n": 1, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -1594,7 +1600,7 @@
     ]
   },
   {
-    "id": "wings", "name": "Крылышки в медово-соевой глазури с рисом", "type": "dinner", "cuisine": "world", "origin": "Азия", "time": "45 мин, из них 10 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "wings", "name": "Крылышки в медово-соевой глазури с рисом", "type": "dinner", "cuisine": "world", "origin": "Азия", "time": "45 мин, из них 10 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриные крылышки", "q": "1 кг", "n": 1000, "alt": ["куриные голени"]},
       {"p": "соевый соус", "q": "3 ст.л."},
@@ -1613,7 +1619,7 @@
     ]
   },
   {
-    "id": "julien", "name": "Жульен с курицей и грибами", "type": "dinner", "cuisine": "ru", "origin": "СССР", "time": "35 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "julien", "name": "Жульен с курицей и грибами", "type": "dinner", "cuisine": "ru", "origin": "СССР", "time": "35 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "400 г", "n": 400, "alt": ["куриные бёдра"]},
       {"p": "шампиньоны", "q": "300 г", "n": 300},
@@ -1632,7 +1638,7 @@
     ]
   },
   {
-    "id": "tacos", "name": "Тако с курицей, сальсой и авокадо", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "25 мин", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "tacos", "name": "Тако с курицей, сальсой и авокадо", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "25 мин", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "тортильи", "q": "8 маленьких", "n": 1, "alt": ["лаваш"]},
       {"p": "куриные бёдра", "q": "500 г без кости", "n": 500, "alt": ["куриное филе", "фарш говяжий"]},
@@ -1653,7 +1659,7 @@
     ]
   },
   {
-    "id": "wok", "name": "Лапша вок с курицей и овощами", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "20 мин", "cost_eur_for_two": 5.5, "has_egg_as_main": false,
+    "id": "wok", "name": "Лапша вок с курицей и овощами", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "20 мин", "cost_eur_for_two": 5.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лапша для вока", "q": "250 г", "n": 1, "alt": ["спагетти"]},
       {"p": "куриное филе", "q": "400 г", "n": 400, "alt": ["куриные бёдра", "свинина", "креветки"]},
@@ -1675,7 +1681,7 @@
     ]
   },
   {
-    "id": "mac_cheese", "name": "Мак-н-чиз с беконом", "type": "dinner", "cuisine": "world", "origin": "США", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "mac_cheese", "name": "Мак-н-чиз с беконом", "type": "dinner", "cuisine": "world", "origin": "США", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "макароны", "q": "300 г (рожки)", "n": 300},
       {"p": "сыр", "q": "200 г тёртого (гауда или эдам, не чеддер)", "n": 200},
@@ -1693,7 +1699,7 @@
     ]
   },
   {
-    "id": "club", "name": "Клаб-сэндвич с картошкой фри", "type": "dinner", "cuisine": "world", "origin": "США", "time": "35 мин, из них 15 активно", "cost_eur_for_two": 6.5, "has_egg_as_main": false,
+    "id": "club", "name": "Клаб-сэндвич с картошкой фри", "type": "dinner", "cuisine": "world", "origin": "США", "time": "35 мин, из них 15 активно", "cost_eur_for_two": 6.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хлеб для тостов", "q": "1 уп. (pan de molde)", "n": 0.5},
       {"p": "куриное филе", "q": "300 г", "n": 300, "alt": ["индейка"]},
@@ -1713,7 +1719,7 @@
     ]
   },
   {
-    "id": "hek_syr", "name": "Хек под сыром и сметаной", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "30 мин, из них 10 активно", "cost_eur_for_two": 6.5, "has_egg_as_main": false,
+    "id": "hek_syr", "name": "Хек под сыром и сметаной", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "30 мин, из них 10 активно", "cost_eur_for_two": 6.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хек", "q": "400 г филе (свежее или замороженное)", "n": 400, "alt": ["треска"]},
       {"p": "лук", "q": "1", "n": 1, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -1732,7 +1738,7 @@
     ]
   },
   {
-    "id": "draniki", "name": "Драники со сметаной", "type": "dinner", "cuisine": "ru", "origin": "Беларусь", "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "draniki", "name": "Драники со сметаной", "type": "dinner", "cuisine": "ru", "origin": "Беларусь", "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "картошка", "q": "7 средних (1 кг)", "n": 7},
       {"p": "лук", "q": "1", "n": 1, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -1751,7 +1757,7 @@
     "tip": "Нет сметаны — с чесночным майонезом или просто с солью."
   },
   {
-    "id": "teriyaki", "name": "Курица терияки с рисом и овощами", "type": "dinner", "cuisine": "world", "origin": "Япония", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "teriyaki", "name": "Курица терияки с рисом и овощами", "type": "dinner", "cuisine": "world", "origin": "Япония", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриные бёдра", "q": "500 г без кости", "n": 500, "alt": ["куриное филе"]},
       {"p": "соевый соус", "q": "3 ст.л."},
@@ -1770,7 +1776,7 @@
     ]
   },
   {
-    "id": "shaurma", "name": "Шаурма домашняя", "type": "dinner", "cuisine": "world", "origin": "Ближний Восток", "time": "30 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "shaurma", "name": "Шаурма домашняя", "type": "dinner", "cuisine": "world", "origin": "Ближний Восток", "time": "30 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лаваш", "q": "1 уп.", "n": 1, "alt": ["тортильи"]},
       {"p": "куриные бёдра", "q": "500 г без кости", "n": 500, "alt": ["куриное филе"]},
@@ -1789,7 +1795,7 @@
     ]
   },
   {
-    "id": "salmon_cream", "name": "Паста с лососем в сливках", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "salmon_cream", "name": "Паста с лососем в сливках", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лосось", "q": "~250 г", "n": 250},
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
@@ -1806,7 +1812,7 @@
     ]
   },
   {
-    "id": "pasta_pesto", "name": "Паста с песто и курицей", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "pasta_pesto", "name": "Паста с песто и курицей", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "макароны", "q": "250 г", "n": 250, "alt": ["спагетти"]},
       {"p": "песто", "q": "1/2 банки", "n": 0.5},
@@ -1823,7 +1829,7 @@
     ]
   },
   {
-    "id": "caesar", "name": "Салат Цезарь с курицей", "type": "dinner", "cuisine": "world", "origin": "Мексика и США", "time": "25 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "caesar", "name": "Салат Цезарь с курицей", "type": "dinner", "cuisine": "world", "origin": "Мексика и США", "time": "25 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "350 г", "n": 350, "alt": ["индейка", "креветки"]},
       {"p": "салат", "q": "1 кочан (романо)", "n": 1},
@@ -1843,7 +1849,7 @@
     ]
   },
   {
-    "id": "kurica_smetana", "name": "Курица в сметанно-чесночном соусе с рисом", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "kurica_smetana", "name": "Курица в сметанно-чесночном соусе с рисом", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "500 г", "n": 500, "alt": ["куриные бёдра"]},
       {"p": "сметана", "q": "1/2 банки", "n": 0.5, "alt": ["сливки"]},
@@ -1862,7 +1868,7 @@
     ]
   },
   {
-    "id": "kurica_griby_pasta", "name": "Паста с курицей и грибами в сливках", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "25 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "kurica_griby_pasta", "name": "Паста с курицей и грибами в сливках", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "25 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "400 г", "n": 400, "alt": ["куриные бёдра", "индейка"]},
       {"p": "шампиньоны", "q": "250 г", "n": 250},
@@ -1881,7 +1887,7 @@
     ]
   },
   {
-    "id": "sheetpan_kolbaski", "name": "Колбаски с овощами на противне", "type": "dinner", "cuisine": "world", "origin": null, "time": "40 мин, из них 10 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "sheetpan_kolbaski", "name": "Колбаски с овощами на противне", "type": "dinner", "cuisine": "world", "origin": null, "time": "40 мин, из них 10 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "колбаски", "q": "6 шт", "n": 6, "alt": ["сосиски", "куриные бёдра"]},
       {"p": "картошка", "q": "5 средних", "n": 5, "alt": ["батат"]},
@@ -1899,7 +1905,7 @@
     ]
   },
   {
-    "id": "fried_rice", "name": "Жареный рис с курицей и овощами", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "fried_rice", "name": "Жареный рис с курицей и овощами", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "рис", "q": "250 г (лучше вчерашний)", "n": 250},
       {"p": "куриное филе", "q": "300 г", "n": 300, "alt": ["ветчина", "креветки", "куриные бёдра"]},
@@ -1918,7 +1924,7 @@
     ]
   },
   {
-    "id": "merluza_horno", "name": "Хек с картошкой в духовке", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "40 мин, из них 10 активно", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "merluza_horno", "name": "Хек с картошкой в духовке", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "40 мин, из них 10 активно", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хек", "q": "400 г", "n": 400, "alt": ["треска", "лосось"]},
       {"p": "картошка", "q": "5 средних", "n": 5},
@@ -1936,7 +1942,7 @@
     ]
   },
   {
-    "id": "gambas_pasta", "name": "Паста с креветками и чесноком", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "20 мин", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "gambas_pasta", "name": "Паста с креветками и чесноком", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "20 мин", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "креветки", "q": "250 г очищенных", "n": 250},
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
@@ -1954,7 +1960,7 @@
     ]
   },
   {
-    "id": "kotlety_kurinye", "name": "Куриные котлеты с гречкой", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "35 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "kotlety_kurinye", "name": "Куриные котлеты с гречкой", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "35 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "фарш куриный", "q": "500 г", "n": 500, "alt": ["куриное филе"]},
       {"p": "лук", "q": "1", "n": 1, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -1972,7 +1978,7 @@
     ]
   },
   {
-    "id": "rebryshki", "name": "Свиные рёбрышки в медово-соевом соусе с картошкой", "type": "dinner", "cuisine": "world", "origin": null, "time": "1 ч 20 мин, из них 15 активно", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "rebryshki", "name": "Свиные рёбрышки в медово-соевом соусе с картошкой", "type": "dinner", "cuisine": "world", "origin": null, "time": "1 ч 20 мин, из них 15 активно", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "свиные рёбрышки", "q": "1 кг", "n": 1000},
       {"p": "картошка", "q": "6 средних", "n": 6},
@@ -1990,7 +1996,7 @@
     ]
   },
   {
-    "id": "hotdogs", "name": "Хот-доги", "type": "dinner", "cuisine": "world", "origin": "США", "time": "15 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "hotdogs", "name": "Хот-доги", "type": "dinner", "cuisine": "world", "origin": "США", "time": "15 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "сосиски", "q": "4-6", "n": 4, "alt": ["колбаски"]},
       {"p": "булочки для бургеров", "q": "4", "n": 4, "alt": ["багет"]},
@@ -2007,7 +2013,7 @@
     ]
   },
   {
-    "id": "sosiski_pure", "name": "Сосиски с пюре и горошком", "type": "dinner", "cuisine": "ru", "origin": "СССР", "time": "25 мин", "cost_eur_for_two": 3.5, "has_egg_as_main": false,
+    "id": "sosiski_pure", "name": "Сосиски с пюре и горошком", "type": "dinner", "cuisine": "ru", "origin": "СССР", "time": "25 мин", "cost_eur_for_two": 3.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "сосиски", "q": "6", "n": 6, "alt": ["колбаски"]},
       {"p": "картошка", "q": "7 средних", "n": 7},
@@ -2024,7 +2030,7 @@
     ]
   },
   {
-    "id": "pollo_ajillo", "name": "Курица с чесноком по-испански (pollo al ajillo)", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "pollo_ajillo", "name": "Курица с чесноком по-испански (pollo al ajillo)", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "курица", "q": "1 кг кусками", "n": 1000, "alt": ["куриные бёдра", "куриные голени"]},
       {"p": "чеснок", "q": "1 головка"},
@@ -2043,7 +2049,7 @@
     ]
   },
   {
-    "id": "kabachki_farsh", "name": "Кабачки или перцы, фаршированные фаршем", "type": "dinner", "cuisine": "world", "origin": "Средиземноморье", "time": "45 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "kabachki_farsh", "name": "Кабачки или перцы, фаршированные фаршем", "type": "dinner", "cuisine": "world", "origin": "Средиземноморье", "time": "45 мин, из них 15 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "кабачок", "q": "2", "n": 2, "alt": ["перец болгарский", "баклажан"]},
       {"p": "фарш", "q": "400 г", "n": 400, "alt": ["фарш куриный", "фарш говяжий"]},
@@ -2062,7 +2068,7 @@
     ]
   },
   {
-    "id": "salat_nut_tunec", "name": "Салат с нутом и тунцом", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "10 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "salat_nut_tunec", "name": "Салат с нутом и тунцом", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "10 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "нут", "q": "1 банка", "n": 1, "alt": ["фасоль"]},
       {"p": "тунец", "q": "1-2 банки", "n": 2},
@@ -2070,7 +2076,8 @@
       {"p": "огурцы", "q": "1", "n": 1, "opt": true},
       {"p": "лук красный", "q": "1/2", "n": 0.5, "alt": ["лук"], "opt": true},
       {"p": "оливки", "q": "горсть", "n": 0.3, "opt": true},
-      {"p": "масло оливковое", "q": "2 ст.л."}
+      {"p": "масло оливковое", "q": "2 ст.л."},
+      {"p": "лимон", "q": "1/2 или ложка уксуса", "n": 0.5, "alt": ["уксус"], "opt": true}
     ],
     "steps": [
       "Нут откинь на сито и промой.",
@@ -2082,7 +2089,7 @@
     ]
   },
   {
-    "id": "greek_chicken", "name": "Греческий салат с курицей", "type": "dinner", "cuisine": "world", "origin": "Греция", "time": "20 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "greek_chicken", "name": "Греческий салат с курицей", "type": "dinner", "cuisine": "world", "origin": "Греция", "time": "20 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "помидоры", "q": "3", "n": 3},
       {"p": "огурцы", "q": "2", "n": 2},
@@ -2103,7 +2110,7 @@
     ]
   },
   {
-    "id": "lapsha_farsh", "name": "Азиатская лапша с фаршем", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "lapsha_farsh", "name": "Азиатская лапша с фаршем", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лапша для вока", "q": "250 г", "n": 1, "alt": ["спагетти"]},
       {"p": "фарш куриный", "q": "300 г", "n": 300, "alt": ["фарш"]},
@@ -2123,7 +2130,7 @@
     ]
   },
   {
-    "id": "losos_brokkoli", "name": "Лосось с брокколи и рисом", "type": "dinner", "cuisine": "world", "origin": null, "time": "25 мин", "cost_eur_for_two": 8, "has_egg_as_main": false,
+    "id": "losos_brokkoli", "name": "Лосось с брокколи и рисом", "type": "dinner", "cuisine": "world", "origin": null, "time": "25 мин", "cost_eur_for_two": 8, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лосось", "q": "2 куска, ~300 г", "n": 300},
       {"p": "брокколи", "q": "1 кочан", "n": 1, "alt": ["овощи замороженные", "фасоль стручковая"]},
@@ -2140,7 +2147,7 @@
     ]
   },
   {
-    "id": "bedra_med_gorch", "name": "Куриные бёдра в медово-горчичном соусе", "type": "dinner", "cuisine": "world", "origin": null, "time": "45 мин, из них 10 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "bedra_med_gorch", "name": "Куриные бёдра в медово-горчичном соусе", "type": "dinner", "cuisine": "world", "origin": null, "time": "45 мин, из них 10 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриные бёдра", "q": "700 г", "n": 700, "alt": ["куриные голени", "курица"]},
       {"p": "горчица", "q": "2 ст.л.", "n": 0.2},
@@ -2157,7 +2164,7 @@
     ]
   },
   {
-    "id": "kislo_sladkaya", "name": "Свинина в кисло-сладком соусе с рисом", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "30 мин", "cost_eur_for_two": 5.5, "has_egg_as_main": false,
+    "id": "kislo_sladkaya", "name": "Свинина в кисло-сладком соусе с рисом", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "30 мин", "cost_eur_for_two": 5.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "свинина", "q": "500 г", "n": 500, "alt": ["куриное филе"]},
       {"p": "перец болгарский", "q": "1", "n": 1},
@@ -2178,7 +2185,7 @@
     ]
   },
   {
-    "id": "kabachkovye_oladi", "name": "Кабачковые оладьи со сметаной", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "kabachkovye_oladi", "name": "Кабачковые оладьи со сметаной", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "кабачок", "q": "2", "n": 2},
       {"p": "яйца", "q": "1", "n": 1},
@@ -2196,7 +2203,7 @@
     ]
   },
   {
-    "id": "grechka_griby", "name": "Гречка с грибами и луком", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "grechka_griby", "name": "Гречка с грибами и луком", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "25 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "гречка", "q": "250 г", "n": 250},
       {"p": "шампиньоны", "q": "300 г", "n": 300},
@@ -2213,7 +2220,7 @@
     ]
   },
   {
-    "id": "spagetti_frikadelki", "name": "Спагетти с фрикадельками в томатном соусе", "type": "dinner", "cuisine": "world", "origin": "Италия и США", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "spagetti_frikadelki", "name": "Спагетти с фрикадельками в томатном соусе", "type": "dinner", "cuisine": "world", "origin": "Италия и США", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "фарш", "q": "400 г", "n": 400, "alt": ["фарш говяжий", "фарш куриный"]},
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
@@ -2232,7 +2239,7 @@
     ]
   },
   {
-    "id": "pasta_philadelphia", "name": "Паста со сливочным сыром и лимоном", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "15 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "pasta_philadelphia", "name": "Паста со сливочным сыром и лимоном", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "15 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
       {"p": "сливочный сыр", "q": "3-4 ст.л.", "n": 0.3, "alt": ["сливки", "плавленый сыр"]},
@@ -2250,7 +2257,7 @@
     ]
   },
   {
-    "id": "pasta_kurica_tomat", "name": "Паста с курицей в томатном соусе", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "25 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "pasta_kurica_tomat", "name": "Паста с курицей в томатном соусе", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "25 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "макароны", "q": "250 г", "n": 250, "alt": ["спагетти"]},
       {"p": "куриное филе", "q": "300 г", "n": 300, "alt": ["куриные бёдра", "курица"]},
@@ -2270,7 +2277,7 @@
     ]
   },
   {
-    "id": "pasta_griby", "name": "Паста с грибами в сливках", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "pasta_griby", "name": "Паста с грибами в сливках", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "макароны", "q": "250 г", "n": 250, "alt": ["спагетти"]},
       {"p": "шампиньоны", "q": "300 г", "n": 300},
@@ -2289,7 +2296,7 @@
     ]
   },
   {
-    "id": "pasta_bekon_goroshek", "name": "Паста с беконом и горошком", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "pasta_bekon_goroshek", "name": "Паста с беконом и горошком", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "макароны", "q": "250 г", "n": 250, "alt": ["спагетти"]},
       {"p": "бекон", "q": "150 г", "n": 150, "alt": ["ветчина", "чоризо"]},
@@ -2307,7 +2314,7 @@
     ]
   },
   {
-    "id": "pasta_tunec_limon", "name": "Паста с тунцом и лимоном", "type": "dinner", "cuisine": "es", "origin": null, "time": "15 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "pasta_tunec_limon", "name": "Паста с тунцом и лимоном", "type": "dinner", "cuisine": "es", "origin": null, "time": "15 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
       {"p": "тунец", "q": "1-2 банки", "n": 1},
@@ -2327,7 +2334,7 @@
     ]
   },
   {
-    "id": "pasta_kabachok", "name": "Паста с кабачком и сыром", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "pasta_kabachok", "name": "Паста с кабачком и сыром", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "макароны", "q": "250 г", "n": 250, "alt": ["спагетти"]},
       {"p": "кабачок", "q": "1-2", "n": 1},
@@ -2345,7 +2352,7 @@
     ]
   },
   {
-    "id": "puttanesca", "name": "Паста путтанеска", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "puttanesca", "name": "Паста путтанеска", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "20 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
       {"p": "томаты в банке", "q": "1 банка", "n": 1, "alt": ["томато фрито"]},
@@ -2363,7 +2370,7 @@
     ]
   },
   {
-    "id": "lapsha_soevaya", "name": "Лапша с курицей в медово-соевом соусе", "type": "dinner", "cuisine": "world", "origin": "Азия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "lapsha_soevaya", "name": "Лапша с курицей в медово-соевом соусе", "type": "dinner", "cuisine": "world", "origin": "Азия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "спагетти", "q": "200 г", "n": 200, "alt": ["лапша для вока", "вермишель"]},
       {"p": "куриные бёдра", "q": "300 г", "n": 300, "alt": ["куриное филе", "курица", "свинина"]},
@@ -2383,7 +2390,7 @@
     ]
   },
   {
-    "id": "sushi_bowl", "name": "Суши-боул (ленивые роллы)", "type": "dinner", "cuisine": "world", "origin": "Япония", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "sushi_bowl", "name": "Суши-боул (ленивые роллы)", "type": "dinner", "cuisine": "world", "origin": "Япония", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "рис", "q": "200 г", "n": 200},
       {"p": "нори", "q": "2 листа", "n": 2},
@@ -2392,7 +2399,8 @@
       {"p": "лосось", "q": "150 г", "n": 150, "alt": ["крабовые палочки", "тунец", "креветки"], "opt": true},
       {"p": "авокадо", "q": "1", "n": 1, "opt": true},
       {"p": "соевый соус", "q": "к подаче"},
-      {"p": "уксус", "q": "1 ст.л. + сахар", "opt": true}
+      {"p": "уксус", "q": "1 ст.л. + сахар", "opt": true},
+      {"p": "сахар", "q": "1 ч.л. в рис"}
     ],
     "steps": [
       "Рис промой до прозрачной воды, залей 1.5 объёма воды, вари под крышкой 12 мин на слабом огне и дай постоять 10 мин.",
@@ -2404,7 +2412,7 @@
     ]
   },
   {
-    "id": "onigiri", "name": "Онигири с тунцом", "type": "dinner", "cuisine": "world", "origin": "Япония", "time": "25 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "onigiri", "name": "Онигири с тунцом", "type": "dinner", "cuisine": "world", "origin": "Япония", "time": "25 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "рис", "q": "250 г", "n": 250},
       {"p": "нори", "q": "3 листа", "n": 3},
@@ -2423,7 +2431,7 @@
     ]
   },
   {
-    "id": "kurica_limon", "name": "Куриные бёдра с лимоном и чесноком", "type": "dinner", "cuisine": "world", "origin": "Средиземноморье", "time": "30 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "kurica_limon", "name": "Куриные бёдра с лимоном и чесноком", "type": "dinner", "cuisine": "world", "origin": "Средиземноморье", "time": "30 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриные бёдра", "q": "500 г", "n": 500, "alt": ["курица", "куриные голени", "куриное филе"]},
       {"p": "лимон", "q": "1", "n": 1},
@@ -2441,7 +2449,7 @@
     ]
   },
   {
-    "id": "kurica_brokkoli", "name": "Курица в сливочно-сырном соусе с брокколи", "type": "dinner", "cuisine": "world", "origin": null, "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "kurica_brokkoli", "name": "Курица в сливочно-сырном соусе с брокколи", "type": "dinner", "cuisine": "world", "origin": null, "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "400 г", "n": 400, "alt": ["куриные бёдра", "курица"]},
       {"p": "брокколи", "q": "1", "n": 1, "alt": ["овощи замороженные", "шпинат"], "opt": true},
@@ -2459,7 +2467,7 @@
     ]
   },
   {
-    "id": "kurica_arahis", "name": "Курица в арахисовом соусе с рисом", "type": "dinner", "cuisine": "world", "origin": "Таиланд", "time": "25 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false,
+    "id": "kurica_arahis", "name": "Курица в арахисовом соусе с рисом", "type": "dinner", "cuisine": "world", "origin": "Таиланд", "time": "25 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "400 г", "n": 400, "alt": ["куриные бёдра"]},
       {"p": "арахисовая паста", "q": "2 ст.л.", "n": 0.2},
@@ -2480,7 +2488,7 @@
     ]
   },
   {
-    "id": "kurica_kokos", "name": "Курица в кокосовом молоке с карри", "type": "dinner", "cuisine": "world", "origin": "Таиланд", "time": "30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "kurica_kokos", "name": "Курица в кокосовом молоке с карри", "type": "dinner", "cuisine": "world", "origin": "Таиланд", "time": "30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриные бёдра", "q": "500 г", "n": 500, "alt": ["куриное филе", "курица"]},
       {"p": "кокосовое молоко", "q": "1 банка", "n": 1, "alt": ["сливки"]},
@@ -2500,7 +2508,7 @@
     ]
   },
   {
-    "id": "paprikash", "name": "Куриный паприкаш со сметаной", "type": "dinner", "cuisine": "world", "origin": "Венгрия", "time": "35 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false,
+    "id": "paprikash", "name": "Куриный паприкаш со сметаной", "type": "dinner", "cuisine": "world", "origin": "Венгрия", "time": "35 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриные бёдра", "q": "500 г", "n": 500, "alt": ["курица", "куриное филе"]},
       {"p": "сметана", "q": "1/2 банки", "n": 0.5, "alt": ["сливки", "сливочный сыр"]},
@@ -2520,7 +2528,7 @@
     ]
   },
   {
-    "id": "kurica_ris_duhovka", "name": "Курица с рисом в духовке одной формой", "type": "dinner", "cuisine": "es", "origin": null, "time": "55 мин, из них 10 активно", "cost_eur_for_two": 4.5, "has_egg_as_main": false,
+    "id": "kurica_ris_duhovka", "name": "Курица с рисом в духовке одной формой", "type": "dinner", "cuisine": "es", "origin": null, "time": "55 мин, из них 10 активно", "cost_eur_for_two": 4.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриные бёдра", "q": "600 г", "n": 600, "alt": ["курица", "куриные голени"]},
       {"p": "рис", "q": "250 г", "n": 250},
@@ -2539,7 +2547,7 @@
     ]
   },
   {
-    "id": "shashlychki_kurica", "name": "Куриные шашлычки на сковороде с огуречным соусом", "type": "dinner", "cuisine": "world", "origin": "Греция", "time": "30 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false,
+    "id": "shashlychki_kurica", "name": "Куриные шашлычки на сковороде с огуречным соусом", "type": "dinner", "cuisine": "world", "origin": "Греция", "time": "30 мин", "cost_eur_for_two": 4.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "400 г", "n": 400, "alt": ["куриные бёдра"]},
       {"p": "сметана", "q": "3 ст.л.", "n": 0.3, "alt": ["сливочный сыр"]},
@@ -2559,7 +2567,7 @@
     ]
   },
   {
-    "id": "salat_rukola_kurica", "name": "Салат с руколой, курицей и черри", "type": "dinner", "cuisine": "world", "origin": null, "time": "20 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "salat_rukola_kurica", "name": "Салат с руколой, курицей и черри", "type": "dinner", "cuisine": "world", "origin": null, "time": "20 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "рукола", "q": "1 пачка", "n": 1, "alt": ["салат", "шпинат"]},
       {"p": "куриное филе", "q": "250 г", "n": 250, "alt": ["куриные бёдра", "креветки", "лосось"]},
@@ -2579,7 +2587,7 @@
     ]
   },
   {
-    "id": "kapreze", "name": "Капрезе с багетом", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "10 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "kapreze", "name": "Капрезе с багетом", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "10 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "моцарелла", "q": "250 г (шарики)", "n": 250},
       {"p": "помидоры", "q": "3", "n": 3, "alt": ["помидоры черри"]},
@@ -2596,7 +2604,7 @@
     ]
   },
   {
-    "id": "krabovy_salat", "name": "Крабовый салат", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "krabovy_salat", "name": "Крабовый салат", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "крабовые палочки", "q": "1 упаковка", "n": 1},
       {"p": "кукуруза", "q": "1 банка", "n": 1},
@@ -2615,7 +2623,7 @@
     ]
   },
   {
-    "id": "olivie", "name": "Оливье", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "40 мин, из них 20 активно", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "olivie", "name": "Оливье", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "40 мин, из них 20 активно", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "картошка", "q": "3", "n": 3},
       {"p": "морковь", "q": "1", "n": 1},
@@ -2636,7 +2644,7 @@
     ]
   },
   {
-    "id": "vinegret", "name": "Винегрет", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "40 мин, из них 15 активно", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "vinegret", "name": "Винегрет", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "40 мин, из них 15 активно", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "свёкла", "q": "2", "n": 2, "alt": ["свёкла варёная"]},
       {"p": "картошка", "q": "2", "n": 2},
@@ -2656,7 +2664,7 @@
     ]
   },
   {
-    "id": "svinina_wok", "name": "Свинина с овощами на сковороде", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "svinina_wok", "name": "Свинина с овощами на сковороде", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "свинина", "q": "400 г", "n": 400, "alt": ["куриное филе", "говядина", "куриные бёдра"]},
       {"p": "перец болгарский", "q": "1", "n": 1, "alt": ["овощи замороженные", "брокколи"]},
@@ -2677,7 +2685,7 @@
     ]
   },
   {
-    "id": "frikadelki_slivki", "name": "Фрикадельки в сливочном соусе с пюре", "type": "dinner", "cuisine": "world", "origin": "Швеция", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "frikadelki_slivki", "name": "Фрикадельки в сливочном соусе с пюре", "type": "dinner", "cuisine": "world", "origin": "Швеция", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "фарш", "q": "500 г", "n": 500, "alt": ["фарш куриный", "фарш говяжий"]},
       {"p": "сливки", "q": "200 мл", "n": 1, "alt": ["сметана"]},
@@ -2695,7 +2703,7 @@
     ]
   },
   {
-    "id": "burrito", "name": "Буррито с фаршем, рисом и фасолью", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "burrito", "name": "Буррито с фаршем, рисом и фасолью", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "тортильи", "q": "1 уп.", "n": 1, "alt": ["лаваш"]},
       {"p": "фарш говяжий", "q": "400 г", "n": 400, "alt": ["фарш", "фарш куриный"]},
@@ -2717,7 +2725,7 @@
     ]
   },
   {
-    "id": "hek_tomat", "name": "Хек в томатном соусе", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "hek_tomat", "name": "Хек в томатном соусе", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хек", "q": "400 г", "n": 400, "alt": ["треска", "лосось"]},
       {"p": "томаты в банке", "q": "1 банка", "n": 1, "alt": ["томато фрито"]},
@@ -2735,7 +2743,7 @@
     ]
   },
   {
-    "id": "losos_glaz", "name": "Лосось в медово-горчичной глазури с рисом", "type": "dinner", "cuisine": "world", "origin": null, "time": "25 мин", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "losos_glaz", "name": "Лосось в медово-горчичной глазури с рисом", "type": "dinner", "cuisine": "world", "origin": null, "time": "25 мин", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лосось", "q": "300 г", "n": 300, "alt": ["треска", "хек"]},
       {"p": "мёд", "q": "1 ст.л."},
@@ -2753,7 +2761,7 @@
     ]
   },
   {
-    "id": "rybnye_kotlety", "name": "Рыбные котлеты с пюре", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "rybnye_kotlety", "name": "Рыбные котлеты с пюре", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "40 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хек", "q": "500 г", "n": 500, "alt": ["треска"]},
       {"p": "лук", "q": "1", "n": 1, "alt": ["лук красный", "лук-порей"], "opt": true},
@@ -2771,7 +2779,7 @@
     ]
   },
   {
-    "id": "kartoshka_zapech", "name": "Печёная картошка со сметаной и зеленью", "type": "dinner", "cuisine": "ru", "origin": null, "time": "50 мин, из них 5 активно", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "kartoshka_zapech", "name": "Печёная картошка со сметаной и зеленью", "type": "dinner", "cuisine": "ru", "origin": null, "time": "50 мин, из них 5 активно", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "картошка", "q": "6 крупных", "n": 6, "alt": ["батат"]},
       {"p": "сметана", "q": "1/2 банки", "n": 0.5, "alt": ["сливочный сыр"]},
@@ -2789,7 +2797,7 @@
     ]
   },
   {
-    "id": "tortilla_pizza", "name": "Быстрая пицца на тортилье", "type": "dinner", "cuisine": "world", "origin": null, "time": "15 мин", "cost_eur_for_two": 3.5, "has_egg_as_main": false,
+    "id": "tortilla_pizza", "name": "Быстрая пицца на тортилье", "type": "dinner", "cuisine": "world", "origin": null, "time": "15 мин", "cost_eur_for_two": 3.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "тортильи", "q": "2-4", "n": 1, "alt": ["лаваш"]},
       {"p": "томато фрито", "q": "3 ст.л.", "n": 0.3, "alt": ["томаты в банке"]},
@@ -2807,7 +2815,7 @@
     ]
   },
   {
-    "id": "baklazhan_syr", "name": "Баклажаны, запечённые с томатом и сыром", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "40 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "baklazhan_syr", "name": "Баклажаны, запечённые с томатом и сыром", "type": "dinner", "cuisine": "world", "origin": "Италия", "time": "40 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "баклажан", "q": "2", "n": 2, "alt": ["кабачок"]},
       {"p": "томато фрито", "q": "1/2 банки", "n": 0.5, "alt": ["томаты в банке"]},
@@ -2826,7 +2834,7 @@
     ]
   },
   {
-    "id": "ris_farsh", "name": "Рис с фаршем и овощами на сковороде", "type": "dinner", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "ris_farsh", "name": "Рис с фаршем и овощами на сковороде", "type": "dinner", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "фарш", "q": "400 г", "n": 400, "alt": ["фарш куриный", "фарш говяжий"]},
       {"p": "рис", "q": "250 г", "n": 250},
@@ -2846,7 +2854,7 @@
     ]
   },
   {
-    "id": "goryachie_buter", "name": "Горячие бутерброды в духовке", "type": "dinner", "cuisine": null, "origin": null, "time": "15 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "goryachie_buter", "name": "Горячие бутерброды в духовке", "type": "dinner", "cuisine": null, "origin": null, "time": "15 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "багет", "q": "1", "n": 1, "alt": ["хлеб", "хлеб для тостов"]},
       {"p": "сыр", "q": "150 г", "n": 150, "alt": ["моцарелла"]},
@@ -2863,7 +2871,7 @@
     ]
   },
   {
-    "id": "curry_ovoshi", "name": "Овощное карри с кокосовым молоком", "type": "dinner", "cuisine": "world", "origin": "Индия", "time": "25 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "curry_ovoshi", "name": "Овощное карри с кокосовым молоком", "type": "dinner", "cuisine": "world", "origin": "Индия", "time": "25 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "кокосовое молоко", "q": "1 банка", "n": 1, "alt": ["сливки"]},
       {"p": "овощи замороженные", "q": "1 пакет", "n": 1, "alt": ["брокколи", "цветная капуста", "кабачок"]},
@@ -2881,7 +2889,7 @@
     ]
   },
   {
-    "id": "fahitas", "name": "Фахитас с курицей и перцем", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "fahitas", "name": "Фахитас с курицей и перцем", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "400 г", "n": 400, "alt": ["куриные бёдра"]},
       {"p": "перец болгарский", "q": "2", "n": 2},
@@ -2901,7 +2909,7 @@
     ]
   },
   {
-    "id": "sendvich_kurica", "name": "Сэндвич с курицей и авокадо", "type": "dinner", "cuisine": "world", "origin": null, "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "sendvich_kurica", "name": "Сэндвич с курицей и авокадо", "type": "dinner", "cuisine": "world", "origin": null, "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хлеб для тостов", "q": "4 ломтика", "alt": ["багет", "хлеб"]},
       {"p": "куриное филе", "q": "250 г", "n": 250, "alt": ["куриные бёдра", "ветчина"]},
@@ -2919,7 +2927,7 @@
     ]
   },
   {
-    "id": "udon_krevetki", "name": "Лапша с креветками и овощами", "type": "dinner", "cuisine": "world", "origin": "Азия", "time": "20 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "udon_krevetki", "name": "Лапша с креветками и овощами", "type": "dinner", "cuisine": "world", "origin": "Азия", "time": "20 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лапша для вока", "q": "250 г", "n": 1, "alt": ["спагетти"]},
       {"p": "креветки", "q": "250 г", "n": 250, "alt": ["куриное филе"]},
@@ -2937,7 +2945,7 @@
     ]
   },
   {
-    "id": "sosiski_testo", "name": "Сосиски в слоёном тесте", "type": "dinner", "cuisine": null, "origin": null, "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "sosiski_testo", "name": "Сосиски в слоёном тесте", "type": "dinner", "cuisine": null, "origin": null, "time": "30 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "слоёное тесто", "q": "1 упаковка", "n": 1},
       {"p": "сосиски", "q": "6", "n": 6, "alt": ["колбаски"]},
@@ -2953,7 +2961,7 @@
     ]
   },
   {
-    "id": "kurica_med_skovoroda", "name": "Курица с мёдом, соевым соусом и чесноком", "type": "dinner", "cuisine": "world", "origin": "Азия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "kurica_med_skovoroda", "name": "Курица с мёдом, соевым соусом и чесноком", "type": "dinner", "cuisine": "world", "origin": "Азия", "time": "20 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриные бёдра", "q": "300-500 г", "n": 400, "alt": ["куриное филе", "курица", "куриные крылышки"]},
       {"p": "соевый соус", "q": "3 ст.л."},
@@ -2972,7 +2980,7 @@
     ]
   },
   {
-    "id": "pisto", "name": "Писто по-манчегски", "type": "dinner", "cuisine": "es", "origin": "Ла-Манча", "time": "40 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "pisto", "name": "Писто по-манчегски", "type": "dinner", "cuisine": "es", "origin": "Ла-Манча", "time": "40 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "кабачок", "q": "2", "n": 2},
       {"p": "перец болгарский", "q": "2", "n": 2},
@@ -2990,7 +2998,7 @@
     ]
   },
   {
-    "id": "patatas_pobre", "name": "Патата а ло побре (картошка «по-бедняцки»)", "type": "dinner", "cuisine": "es", "origin": "Андалусия", "time": "35 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false,
+    "id": "patatas_pobre", "name": "Патата а ло побре (картошка «по-бедняцки»)", "type": "dinner", "cuisine": "es", "origin": "Андалусия", "time": "35 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "картошка", "q": "5", "n": 5},
       {"p": "перец болгарский", "q": "1", "n": 1},
@@ -3008,7 +3016,7 @@
     ]
   },
   {
-    "id": "salmorejo", "name": "Сальморехо", "type": "dinner", "cuisine": "es", "origin": "Кордова", "time": "15 мин + охладить", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "salmorejo", "name": "Сальморехо", "type": "dinner", "cuisine": "es", "origin": "Кордова", "time": "15 мин + охладить", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "помидоры", "q": "6 спелых", "n": 6},
       {"p": "хлеб", "q": "2 ломтика", "alt": ["багет"]},
@@ -3027,7 +3035,7 @@
     ]
   },
   {
-    "id": "fideua", "name": "Фидеуа с креветками", "type": "dinner", "cuisine": "es", "origin": "Валенсия", "time": "35 мин", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "fideua", "name": "Фидеуа с креветками", "type": "dinner", "cuisine": "es", "origin": "Валенсия", "time": "35 мин", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "вермишель", "q": "250 г", "n": 250},
       {"p": "креветки", "q": "250 г", "n": 250},
@@ -3047,7 +3055,7 @@
     ]
   },
   {
-    "id": "bacalao_garbanzos", "name": "Треска с нутом и шпинатом", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "25 мин", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "bacalao_garbanzos", "name": "Треска с нутом и шпинатом", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "25 мин", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "треска", "q": "300 г", "n": 300, "alt": ["хек"]},
       {"p": "нут", "q": "1 банка", "n": 1},
@@ -3066,7 +3074,7 @@
     ]
   },
   {
-    "id": "otbivnye_kurica", "name": "Куриные отбивные в панировке с салатом", "type": "dinner", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "otbivnye_kurica", "name": "Куриные отбивные в панировке с салатом", "type": "dinner", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "куриное филе", "q": "500 г", "n": 500, "alt": ["индейка"]},
       {"p": "яйца", "q": "1", "n": 1},
@@ -3085,7 +3093,7 @@
     ]
   },
   {
-    "id": "svinina_yabloki", "name": "Свиные отбивные с яблоками и мёдом", "type": "dinner", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "svinina_yabloki", "name": "Свиные отбивные с яблоками и мёдом", "type": "dinner", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "свинина", "q": "500 г", "n": 500},
       {"p": "яблоко", "q": "2", "n": 2},
@@ -3103,7 +3111,7 @@
     ]
   },
   {
-    "id": "kuskus_kurica", "name": "Кускус с курицей и овощами", "type": "dinner", "cuisine": "world", "origin": "Марокко", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "kuskus_kurica", "name": "Кускус с курицей и овощами", "type": "dinner", "cuisine": "world", "origin": "Марокко", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "кускус", "q": "200 г", "n": 200},
       {"p": "куриное филе", "q": "300 г", "n": 300, "alt": ["куриные бёдра"]},
@@ -3121,7 +3129,7 @@
     ]
   },
   {
-    "id": "ryba_tako", "name": "Рыбные тако", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "25 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "ryba_tako", "name": "Рыбные тако", "type": "dinner", "cuisine": "world", "origin": "Мексика", "time": "25 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "хек", "q": "400 г", "n": 400, "alt": ["треска"]},
       {"p": "тортильи", "q": "1 уп.", "n": 1, "alt": ["лаваш"]},
@@ -3140,7 +3148,7 @@
     ]
   },
   {
-    "id": "cvetnaya_zapech", "name": "Запечённая цветная капуста с сыром", "type": "dinner", "cuisine": "world", "origin": null, "time": "35 мин", "cost_eur_for_two": 4, "has_egg_as_main": false,
+    "id": "cvetnaya_zapech", "name": "Запечённая цветная капуста с сыром", "type": "dinner", "cuisine": "world", "origin": null, "time": "35 мин", "cost_eur_for_two": 4, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "цветная капуста", "q": "1 кочан", "n": 1, "alt": ["брокколи"]},
       {"p": "сыр", "q": "100 г", "n": 100, "alt": ["моцарелла"]},
@@ -3156,7 +3164,7 @@
     ]
   },
   {
-    "id": "zrazy", "name": "Картофельные зразы с грибами", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "45 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "zrazy", "name": "Картофельные зразы с грибами", "type": "dinner", "cuisine": "ru", "origin": "Россия", "time": "45 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "картошка", "q": "7", "n": 7},
       {"p": "шампиньоны", "q": "200 г", "n": 200},
@@ -3175,7 +3183,7 @@
     ]
   },
   {
-    "id": "lapsha_yaico", "name": "Жареная лапша с яйцом и овощами", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "20 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "lapsha_yaico", "name": "Жареная лапша с яйцом и овощами", "type": "dinner", "cuisine": "world", "origin": "Китай", "time": "20 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лапша для вока", "q": "250 г", "n": 1, "alt": ["спагетти"]},
       {"p": "яйца", "q": "2", "n": 2},
@@ -3193,7 +3201,7 @@
     ]
   },
   {
-    "id": "lomo_pimientos", "name": "Свинина с перцем по-испански", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "lomo_pimientos", "name": "Свинина с перцем по-испански", "type": "dinner", "cuisine": "es", "origin": "Испания", "time": "25 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "свинина", "q": "500 г", "n": 500},
       {"p": "перец болгарский", "q": "2", "n": 2},
@@ -3210,7 +3218,7 @@
     ]
   },
   {
-    "id": "mujaddara", "name": "Чечевица с рисом и жареным луком (муджаддара)", "type": "dinner", "cuisine": "world", "origin": "Ливан", "time": "45 мин", "cost_eur_for_two": 2, "has_egg_as_main": false,
+    "id": "mujaddara", "name": "Чечевица с рисом и жареным луком (муджаддара)", "type": "dinner", "cuisine": "world", "origin": "Ливан", "time": "45 мин", "cost_eur_for_two": 2, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "чечевица", "q": "200 г", "n": 200},
       {"p": "рис", "q": "150 г", "n": 150},
@@ -3228,14 +3236,15 @@
     ]
   },
   {
-    "id": "salat_tykva_feta", "name": "Тёплый салат с печёной тыквой и фетой", "type": "dinner", "cuisine": "world", "origin": null, "time": "35 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "salat_tykva_feta", "name": "Тёплый салат с печёной тыквой и фетой", "type": "dinner", "cuisine": "world", "origin": null, "time": "35 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "тыква", "q": "500 г", "n": 500, "alt": ["батат"]},
       {"p": "рукола", "q": "1 пачка", "n": 1, "alt": ["шпинат", "салат"]},
       {"p": "фета", "q": "100 г", "n": 100},
       {"p": "орехи", "q": "горсть", "n": 30, "opt": true},
       {"p": "мёд", "q": "1 ч.л."},
-      {"p": "масло оливковое", "q": "3 ст.л."}
+      {"p": "масло оливковое", "q": "3 ст.л."},
+      {"p": "лимон", "q": "1 ст.л. сока", "n": 0.25, "alt": ["уксус"], "opt": true}
     ],
     "steps": [
       "Разогрей духовку до 200°C.",
@@ -3246,7 +3255,7 @@
     ]
   },
   {
-    "id": "tefteli_kuskus", "name": "Тефтели из индейки с кускусом и огурцом", "type": "dinner", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "tefteli_kuskus", "name": "Тефтели из индейки с кускусом и огурцом", "type": "dinner", "cuisine": "world", "origin": null, "time": "30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "фарш куриный", "q": "400 г", "n": 400, "alt": ["фарш"]},
       {"p": "кускус", "q": "200 г", "n": 200},
@@ -3264,7 +3273,7 @@
     ]
   },
   {
-    "id": "paella", "name": "Паэлья валенсиана", "type": "weekend", "cuisine": "es", "origin": "Валенсия", "time": "1 ч 10 мин", "cost_eur_for_two": 8, "has_egg_as_main": false,
+    "id": "paella", "name": "Паэлья валенсиана", "type": "weekend", "cuisine": "es", "origin": "Валенсия", "time": "1 ч 10 мин", "cost_eur_for_two": 8, "has_egg_as_main": false, "servings": 3,
     "ingredients": [
       {"p": "курица", "q": "~700 г (pollo troceado)", "n": 700, "alt": ["куриные бёдра"]},
       {"p": "фасоль стручковая", "q": "400 г (judía verde plana, ferraura)", "n": 400},
@@ -3284,7 +3293,7 @@
     ]
   },
   {
-    "id": "lasagna", "name": "Лазанья", "type": "weekend", "cuisine": "world", "origin": "Италия", "time": "1 ч 20 мин", "cost_eur_for_two": 8, "has_egg_as_main": false,
+    "id": "lasagna", "name": "Лазанья", "type": "weekend", "cuisine": "world", "origin": "Италия", "time": "1 ч 20 мин", "cost_eur_for_two": 8, "has_egg_as_main": false, "servings": 6,
     "ingredients": [
       {"p": "листы лазаньи", "q": "1 уп.", "n": 1},
       {"p": "фарш", "q": "500 г", "n": 500, "alt": ["фарш говяжий"]},
@@ -3305,7 +3314,7 @@
     ]
   },
   {
-    "id": "bliny", "name": "Блины с начинками", "type": "weekend", "cuisine": "ru", "origin": "Россия", "time": "50 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "bliny", "name": "Блины с начинками", "type": "weekend", "cuisine": "ru", "origin": "Россия", "time": "50 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "молоко", "q": "500 мл", "n": 0.5},
       {"p": "яйца", "q": "2", "n": 2},
@@ -3325,7 +3334,7 @@
     ]
   },
   {
-    "id": "pelmeni", "name": "Пельмени, лепим вместе", "type": "weekend", "cuisine": "ru", "origin": "Россия", "time": "1 ч 30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false,
+    "id": "pelmeni", "name": "Пельмени, лепим вместе", "type": "weekend", "cuisine": "ru", "origin": "Россия", "time": "1 ч 30 мин", "cost_eur_for_two": 5, "has_egg_as_main": false, "servings": 6,
     "ingredients": [
       {"p": "фарш", "q": "500 г (свинина и говядина)", "n": 500, "alt": ["фарш говяжий"]},
       {"p": "лук", "q": "1", "n": 1, "opt": true, "alt": ["лук красный", "лук-порей"]},
@@ -3343,7 +3352,7 @@
     ]
   },
   {
-    "id": "arroz_horno", "name": "Арроз аль орно — рис в духовке по-валенсийски", "type": "weekend", "cuisine": "es", "origin": "Валенсия", "time": "1 ч, из них 20 активно", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "arroz_horno", "name": "Арроз аль орно — рис в духовке по-валенсийски", "type": "weekend", "cuisine": "es", "origin": "Валенсия", "time": "1 ч, из них 20 активно", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "свиные рёбрышки", "q": "400 г", "n": 400, "alt": ["свинина"]},
       {"p": "колбаски", "q": "2-3 (или morcilla)", "n": 3, "alt": ["чоризо"]},
@@ -3365,7 +3374,7 @@
     ]
   },
   {
-    "id": "golubtsy", "name": "Голубцы", "type": "weekend", "cuisine": "ru", "origin": "Россия", "time": "1 ч 30 мин, из них 40 активно", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "golubtsy", "name": "Голубцы", "type": "weekend", "cuisine": "ru", "origin": "Россия", "time": "1 ч 30 мин, из них 40 активно", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 6,
     "ingredients": [
       {"p": "капуста", "q": "1 кочан", "n": 1, "alt": ["капуста пекинская"]},
       {"p": "фарш", "q": "500 г", "n": 500, "alt": ["фарш куриный", "фарш говяжий"]},
@@ -3385,7 +3394,7 @@
     ]
   },
   {
-    "id": "shashlyk", "name": "Шашлык из свинины в духовке с лавашом", "type": "weekend", "cuisine": "ru", "origin": "Кавказ", "time": "3 ч маринования + 40 мин", "cost_eur_for_two": 8, "has_egg_as_main": false,
+    "id": "shashlyk", "name": "Шашлык из свинины в духовке с лавашом", "type": "weekend", "cuisine": "ru", "origin": "Кавказ", "time": "3 ч маринования + 40 мин", "cost_eur_for_two": 8, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "свинина", "q": "800 г (шея, cuello)", "n": 800, "alt": ["куриные бёдра"]},
       {"p": "лук", "q": "3", "n": 3},
@@ -3405,7 +3414,7 @@
     ]
   },
   {
-    "id": "pirog_kurica", "name": "Пирог с курицей и грибами из слоёного теста", "type": "weekend", "cuisine": "ru", "origin": null, "time": "50 мин, из них 20 активно", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "pirog_kurica", "name": "Пирог с курицей и грибами из слоёного теста", "type": "weekend", "cuisine": "ru", "origin": null, "time": "50 мин, из них 20 активно", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "слоёное тесто", "q": "1 упаковка", "n": 1},
       {"p": "куриное филе", "q": "300 г", "n": 300, "alt": ["куриные бёдра", "ветчина"]},
@@ -3425,7 +3434,7 @@
     ]
   },
   {
-    "id": "kurica_tselaya", "name": "Запечённая курица с лимоном и картошкой", "type": "weekend", "cuisine": "world", "origin": null, "time": "1 ч 30 мин, из них 15 активно", "cost_eur_for_two": 8, "has_egg_as_main": false,
+    "id": "kurica_tselaya", "name": "Запечённая курица с лимоном и картошкой", "type": "weekend", "cuisine": "world", "origin": null, "time": "1 ч 30 мин, из них 15 активно", "cost_eur_for_two": 8, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "курица", "q": "целая, ~1.5 кг", "n": 1500},
       {"p": "лимон", "q": "1", "n": 1},
@@ -3443,7 +3452,7 @@
     ]
   },
   {
-    "id": "hachapuri", "name": "Хачапури по-аджарски", "type": "weekend", "cuisine": "world", "origin": "Грузия", "time": "40 мин", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "hachapuri", "name": "Хачапури по-аджарски", "type": "weekend", "cuisine": "world", "origin": "Грузия", "time": "40 мин", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "тесто для пиццы", "q": "1", "n": 1, "alt": ["слоёное тесто"]},
       {"p": "моцарелла", "q": "200 г", "n": 200, "alt": ["сыр"]},
@@ -3461,7 +3470,7 @@
     ]
   },
   {
-    "id": "kotlety_kiev", "name": "Котлеты по-киевски с пюре", "type": "weekend", "cuisine": "ru", "origin": "СССР", "time": "1 ч", "cost_eur_for_two": 7, "has_egg_as_main": false,
+    "id": "kotlety_kiev", "name": "Котлеты по-киевски с пюре", "type": "weekend", "cuisine": "ru", "origin": "СССР", "time": "1 ч", "cost_eur_for_two": 7, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "куриное филе", "q": "2 грудки", "n": 500},
       {"p": "масло сливочное", "q": "60 г", "n": 60},
@@ -3481,7 +3490,7 @@
     ]
   },
   {
-    "id": "paella_mariscos", "name": "Паэлья с креветками", "type": "weekend", "cuisine": "es", "origin": "Валенсия", "time": "50 мин", "cost_eur_for_two": 10, "has_egg_as_main": false,
+    "id": "paella_mariscos", "name": "Паэлья с креветками", "type": "weekend", "cuisine": "es", "origin": "Валенсия", "time": "50 мин", "cost_eur_for_two": 10, "has_egg_as_main": false, "servings": 3,
     "ingredients": [
       {"p": "рис", "q": "250 г", "n": 250},
       {"p": "креветки", "q": "300 г", "n": 300},
@@ -3502,7 +3511,7 @@
     ]
   },
   {
-    "id": "korejka_zapech", "name": "Запечённая свиная корейка с горчицей и картошкой", "type": "weekend", "cuisine": "world", "origin": null, "time": "1 ч 20 мин, из них 15 активно", "cost_eur_for_two": 9, "has_egg_as_main": false,
+    "id": "korejka_zapech", "name": "Запечённая свиная корейка с горчицей и картошкой", "type": "weekend", "cuisine": "world", "origin": null, "time": "1 ч 20 мин, из них 15 активно", "cost_eur_for_two": 9, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "свинина", "q": "1 кг куском", "n": 1000},
       {"p": "горчица", "q": "2 ст.л.", "n": 0.2},
@@ -3520,7 +3529,7 @@
     ]
   },
   {
-    "id": "lasagna_kurica", "name": "Лазанья с курицей и грибами", "type": "weekend", "cuisine": "world", "origin": "Италия", "time": "1 ч 15 мин", "cost_eur_for_two": 9, "has_egg_as_main": false,
+    "id": "lasagna_kurica", "name": "Лазанья с курицей и грибами", "type": "weekend", "cuisine": "world", "origin": "Италия", "time": "1 ч 15 мин", "cost_eur_for_two": 9, "has_egg_as_main": false, "servings": 6,
     "ingredients": [
       {"p": "листы лазаньи", "q": "1 уп.", "n": 1},
       {"p": "куриное филе", "q": "400 г", "n": 400, "alt": ["куриные бёдра"]},
@@ -3540,7 +3549,7 @@
     ]
   },
   {
-    "id": "bliny_myaso", "name": "Блинчики с мясом", "type": "weekend", "cuisine": "ru", "origin": "Россия", "time": "1 ч", "cost_eur_for_two": 6, "has_egg_as_main": false,
+    "id": "bliny_myaso", "name": "Блинчики с мясом", "type": "weekend", "cuisine": "ru", "origin": "Россия", "time": "1 ч", "cost_eur_for_two": 6, "has_egg_as_main": false, "servings": 4,
     "ingredients": [
       {"p": "молоко", "q": "500 мл", "n": 0.5},
       {"p": "яйца", "q": "2", "n": 2},
@@ -3558,7 +3567,7 @@
     ]
   },
   {
-    "id": "espaguetis", "name": "Паста с тунцом (из кладовой)", "type": "backup", "cuisine": null, "origin": null, "time": "15 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false,
+    "id": "espaguetis", "name": "Паста с тунцом (из кладовой)", "type": "backup", "cuisine": null, "origin": null, "time": "15 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
       {"p": "тунец", "q": "1 банка", "n": 1},
@@ -3573,7 +3582,7 @@
     ]
   },
   {
-    "id": "pasta_tomat", "name": "Паста с томатным соусом и сыром", "type": "backup", "cuisine": null, "origin": null, "time": "15 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false,
+    "id": "pasta_tomat", "name": "Паста с томатным соусом и сыром", "type": "backup", "cuisine": null, "origin": null, "time": "15 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
       {"p": "томаты в банке", "q": "1 банка", "n": 1, "alt": ["томато фрито"]},
@@ -3588,7 +3597,7 @@
     ]
   },
   {
-    "id": "pelmeni_shop", "name": "Пельмени из морозилки", "type": "backup", "cuisine": "ru", "origin": null, "time": "10 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "pelmeni_shop", "name": "Пельмени из морозилки", "type": "backup", "cuisine": "ru", "origin": null, "time": "10 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "пельмени", "q": "1 пакет", "n": 1},
       {"p": "сметана", "q": "к подаче", "n": 0.3, "alt": ["масло сливочное"], "opt": true}
@@ -3602,7 +3611,7 @@
     ]
   },
   {
-    "id": "makarony_sosiski", "name": "Макароны с сосисками", "type": "backup", "cuisine": "ru", "origin": null, "time": "15 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false,
+    "id": "makarony_sosiski", "name": "Макароны с сосисками", "type": "backup", "cuisine": "ru", "origin": null, "time": "15 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "макароны", "q": "300 г", "n": 300, "alt": ["спагетти"]},
       {"p": "сосиски", "q": "4", "n": 4, "alt": ["колбаски"]},
@@ -3617,7 +3626,7 @@
     ]
   },
   {
-    "id": "aglio_olio", "name": "Спагетти с чесноком и маслом (альо э ольо)", "type": "backup", "cuisine": "world", "origin": "Италия", "time": "15 мин", "cost_eur_for_two": 1, "has_egg_as_main": false,
+    "id": "aglio_olio", "name": "Спагетти с чесноком и маслом (альо э ольо)", "type": "backup", "cuisine": "world", "origin": "Италия", "time": "15 мин", "cost_eur_for_two": 1, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["макароны"]},
       {"p": "чеснок", "q": "4 зубчика"},
@@ -3635,7 +3644,7 @@
     ]
   },
   {
-    "id": "ris_yaico", "name": "Жареный рис с яйцом", "type": "backup", "cuisine": "world", "origin": "Китай", "time": "15 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false,
+    "id": "ris_yaico", "name": "Жареный рис с яйцом", "type": "backup", "cuisine": "world", "origin": "Китай", "time": "15 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "рис", "q": "200 г (лучше вчерашний)", "n": 200},
       {"p": "яйца", "q": "2", "n": 2},
@@ -3653,7 +3662,7 @@
     ]
   },
   {
-    "id": "pasta_maslo_syr", "name": "Паста с маслом и сыром", "type": "backup", "cuisine": "world", "origin": null, "time": "12 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false,
+    "id": "pasta_maslo_syr", "name": "Паста с маслом и сыром", "type": "backup", "cuisine": "world", "origin": null, "time": "12 мин", "cost_eur_for_two": 1.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "макароны", "q": "250 г", "n": 250, "alt": ["спагетти"]},
       {"p": "масло сливочное", "q": "30 г", "n": 30},
@@ -3667,7 +3676,7 @@
     ]
   },
   {
-    "id": "sup_vermishel", "name": "Суп с вермишелью на бульоне", "type": "backup", "cuisine": "ru", "origin": null, "time": "20 мин", "cost_eur_for_two": 1, "has_egg_as_main": false,
+    "id": "sup_vermishel", "name": "Суп с вермишелью на бульоне", "type": "backup", "cuisine": "ru", "origin": null, "time": "20 мин", "cost_eur_for_two": 1, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "вермишель", "q": "80 г", "n": 80},
       {"p": "бульонный кубик", "q": "1-2", "n": 1},
@@ -3685,7 +3694,7 @@
     ]
   },
   {
-    "id": "lavash_syr", "name": "Ленивые хачапури из лаваша", "type": "backup", "cuisine": "world", "origin": "Грузия", "time": "15 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false,
+    "id": "lavash_syr", "name": "Ленивые хачапури из лаваша", "type": "backup", "cuisine": "world", "origin": "Грузия", "time": "15 мин", "cost_eur_for_two": 2.5, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "лаваш", "q": "1 уп.", "n": 1, "alt": ["тортильи"]},
       {"p": "сыр", "q": "150 г", "n": 150, "alt": ["моцарелла", "фета"]},
@@ -3701,7 +3710,7 @@
     ]
   },
   {
-    "id": "ris_tunec", "name": "Рис с тунцом и кукурузой", "type": "backup", "cuisine": "world", "origin": null, "time": "20 мин", "cost_eur_for_two": 3, "has_egg_as_main": false,
+    "id": "ris_tunec", "name": "Рис с тунцом и кукурузой", "type": "backup", "cuisine": "world", "origin": null, "time": "20 мин", "cost_eur_for_two": 3, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "рис", "q": "200 г", "n": 200},
       {"p": "тунец", "q": "1 банка", "n": 1},
@@ -3718,7 +3727,7 @@
     ]
   },
   {
-    "id": "lapsha_arahis", "name": "Паста в арахисовом соусе", "type": "backup", "cuisine": "world", "origin": "Азия", "time": "15 мин", "cost_eur_for_two": 2, "has_egg_as_main": false,
+    "id": "lapsha_arahis", "name": "Паста в арахисовом соусе", "type": "backup", "cuisine": "world", "origin": "Азия", "time": "15 мин", "cost_eur_for_two": 2, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "спагетти", "q": "250 г", "n": 250, "alt": ["лапша для вока"]},
       {"p": "арахисовая паста", "q": "2 ст.л.", "n": 0.2},
@@ -3736,7 +3745,7 @@
     ]
   },
   {
-    "id": "boniato", "name": "Печёный батат с мёдом", "type": "extra", "cuisine": "es", "origin": "Валенсия (осень)", "time": "60 мин в духовке", "cost_eur_for_two": 2, "has_egg_as_main": false,
+    "id": "boniato", "name": "Печёный батат с мёдом", "type": "extra", "cuisine": "es", "origin": "Валенсия (осень)", "time": "60 мин в духовке", "cost_eur_for_two": 2, "has_egg_as_main": false, "servings": 2,
     "ingredients": [
       {"p": "батат", "q": "2", "n": 2},
       {"p": "мёд", "q": "к подаче"}

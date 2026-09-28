@@ -253,10 +253,21 @@ export function suggest(slot: Slot, ctx: SuggestContext): Suggestions {
   return { ready: ready.sort(byScore), almost: almost.sort(byScore) };
 }
 
-/** Слот по времени суток: до 11 — завтрак, до 16 — обед, дальше ужин. */
+/** Слот по времени суток: с 5 до 11 — завтрак, до 16 — обед, вечером и ночью — ужин. */
 export function slotForTime(d: Date): Slot {
   const h = d.getHours();
-  if (h < 11) return 'breakfast';
-  if (h < 16) return 'lunch';
+  if (h >= 5 && h < 11) return 'breakfast';
+  if (h >= 11 && h < 16) return 'lunch';
   return 'dinner';
+}
+
+/** Приём пищи для записи «Съели» по времени. */
+export function mealForTime(d: Date): 'завтрак' | 'обед' | 'ужин' {
+  return ({ breakfast: 'завтрак', lunch: 'обед', dinner: 'ужин' } as const)[slotForTime(d)];
+}
+
+/** После 21 и ночью готовить долго не хочется — сначала быстрое. */
+export function isLate(d: Date): boolean {
+  const h = d.getHours();
+  return h >= 21 || h < 5;
 }
