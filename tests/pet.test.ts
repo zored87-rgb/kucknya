@@ -100,3 +100,15 @@ describe('личная сытость и метаболизм', () => {
     expect(satietyOf(eatenBy(eaten, 'Кристина'), { b: at(28, 13) }, at(28, 13), m)).toBe(100);
   });
 });
+
+import { metabolismOf } from '../src/logic/pet';
+
+describe('темп голода по росту и весу', () => {
+  it('Крис голодает через ≈4,5 ч, Кристина — ≈5 ч', () => {
+    expect(metabolismOf('Крис').fullHours * 0.65).toBeCloseTo(4.55, 1);
+    expect(metabolismOf('Кристина').fullHours * 0.65).toBeCloseTo(5.2, 1);
+  });
+  it('выученный по отметкам темп важнее расчёта', () => {
+    expect(metabolismOf('Крис', { fullHours: 9, n: 2, override: null }).fullHours).toBe(9);
+  });
+});

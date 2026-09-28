@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { mutate } from '../../api/store';
 import type { Kitchen } from '../../hooks/useKitchen';
-import { calibrate, DEFAULT_METABOLISM } from '../../logic/pet';
+import { calibrate, metabolismOf } from '../../logic/pet';
 import type { EatenRow } from '../../types';
 import { Sheet } from '../kit';
 import { toast } from '../toast';
@@ -21,7 +21,7 @@ const LEVELS: [number, 0 | 1 | 2 | 3 | 4, string][] = [
 export function SatietySheet({ k, myEaten, sat, onClose }: { k: Kitchen; myEaten: EatenRow[]; sat: number; onClose: () => void }) {
   const pet = usePet();
   const [value, setValue] = useState(sat);
-  const m = pet.metab ?? DEFAULT_METABOLISM;
+  const m = metabolismOf(k.me, pet.metab);
 
   const save = (v: number) => {
     const next = calibrate(myEaten, pet.fed, Date.now(), v, m);
@@ -61,8 +61,8 @@ export function SatietySheet({ k, myEaten, sat, onClose }: { k: Kitchen; myEaten
       />
       <p className="muted small">
         {m.n > 0
-          ? `Гера учится: ты проголодаешься примерно через ${Math.round(m.fullHours)} ч после еды · отметок: ${m.n}.`
-          : 'Отмечай, как ты себя чувствуешь, — Гера научится угадывать твой голод по времени после еды.'}
+          ? `Гера учится: ты проголодаешься примерно через ${String(Math.round(m.fullHours * 0.65 * 10) / 10).replace('.', ',')} ч после еды · отметок: ${m.n}.`
+          : `По росту и весу ты проголодаешься примерно через ${String(Math.round(m.fullHours * 0.65 * 10) / 10).replace('.', ',')} ч после еды. Отмечай, как себя чувствуешь, — Гера подстроится точнее.`}
       </p>
     </Sheet>
   );

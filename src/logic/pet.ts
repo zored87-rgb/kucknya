@@ -84,6 +84,22 @@ export interface Metabolism {
 
 export const DEFAULT_METABOLISM: Metabolism = { fullHours: FULL_HOURS, n: 0, override: null };
 
+/**
+ * Личный темп голода по росту, весу и полу: обмен веществ в покое по формуле Mifflin–St Jeor,
+ * пересчитанный на килограмм веса, плюс время опорожнения желудка (голод возвращается через 3–5 ч,
+ * у женщин в среднем чуть позже). Здесь только итог — сколько часов от «сыт» до «пусто»;
+ * «голоден» (35%) наступает через 65% этого времени: у Криса ≈ 4,5 ч, у Кристины ≈ 5 ч.
+ * Возраст взят 30 лет — он почти не влияет. Ручные отметки дальше подстраивают темп.
+ */
+const PERSONAL_HOURS: Record<string, number> = { Крис: 7.0, Кристина: 8.0 };
+
+/** Темп голода человека: выученный по отметкам или рассчитанный по росту и весу. */
+export function metabolismOf(person: string, learned?: Metabolism | null): Metabolism {
+  const base = PERSONAL_HOURS[person] ?? FULL_HOURS;
+  if (learned && learned.n > 0) return learned;
+  return { fullHours: base, n: 0, override: learned?.override ?? null };
+}
+
 /** Что ел этот человек: свои записи и общие «оба». */
 export function eatenBy(eaten: EatenRow[], person: string): EatenRow[] {
   return eaten.filter((r) => !r.who || r.who === 'оба' || r.who === person);

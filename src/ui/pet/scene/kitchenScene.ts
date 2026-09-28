@@ -778,8 +778,15 @@ export class KitchenScene {
     window.setTimeout(done, 420);
   }
 
+  /** Кухню снова показали: вернуть камеру и пересчитать, где рисовать облачко Геры. */
+  refresh() {
+    this.resize();
+  }
+
   /** Экранные координаты якорей (px от левого верхнего угла контейнера). */
   project(): Record<string, { x: number; y: number }> {
+    // Камеру могли только что вернуть после подлёта — обновить её матрицы до расчёта
+    this.camera.updateMatrixWorld();
     const out: Record<string, { x: number; y: number }> = {};
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;

@@ -2254,6 +2254,12 @@ button.obj-label.pin:active {
   pointer-events: none;
 }
 
+/* Облачко при подлёте исчезает сразу, а не «улетает» вместе с камерой */
+.room.zooming .bubble.pin3d {
+  transition: none;
+  visibility: hidden;
+}
+
 /* ================= Деньги — кассовый аппарат ================= */
 
 .register {

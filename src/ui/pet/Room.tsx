@@ -5,7 +5,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { Kitchen } from '../../hooks/useKitchen';
 import { parseDate, daysBetween } from '../../logic/dates';
 import { useWeather } from '../../logic/weather';
-import { DEFAULT_METABOLISM, eatenBy, isNight, levelOf, moodOf, phrase, pickTalk, satietyOf, spoilPhrase, xpOf, type Mood } from '../../logic/pet';
+import { eatenBy, metabolismOf, isNight, levelOf, moodOf, phrase, pickTalk, satietyOf, spoilPhrase, xpOf, type Mood } from '../../logic/pet';
 import { SatietySheet } from './SatietySheet';
 import { productLabel } from '../labels';
 import { Cat, faceOf, type Reaction } from './Cat';
@@ -104,8 +104,8 @@ export function Room({
   // Моя сытость (с личным темпом голода) и партнёра — по общему дневнику
   const partner = k.me === 'Крис' ? 'Кристина' : 'Крис';
   const myEaten = useMemo(() => eatenBy(eaten, k.me), [eaten, k.me]);
-  const sat = satietyOf(myEaten, pet.fed, now, pet.metab ?? DEFAULT_METABOLISM);
-  const partnerSat = satietyOf(eatenBy(eaten, partner), {}, now, k.view.settings.pets?.[partner] ?? DEFAULT_METABOLISM);
+  const sat = satietyOf(myEaten, pet.fed, now, metabolismOf(k.me, pet.metab));
+  const partnerSat = satietyOf(eatenBy(eaten, partner), {}, now, metabolismOf(partner, k.view.settings.pets?.[partner]));
   const [satOpen, setSatOpen] = useState(false);
   const spoiling = useMemo(
     () => [...k.stock.items.values()].filter((i) => i.daysLeft != null && i.daysLeft <= 1).sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0)),
@@ -115,7 +115,9 @@ export function Room({
   const xp = useMemo(() => xpOf(eaten), [eaten]);
   const lvl = levelOf(xp);
 
-  // Покормили на другой вкладке — кот доедает, когда вернулись на кухню.
+  // Покормили — кот ест (если записали в другом разделе — когда вернулись на кухню).
+  // Таймер окончания — в ref: раньше он сбрасывался при обновлении состояния, и Гера ел бесконечно.
+  const eatTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (!pet.pendingFeed || !active) return;
     const fresh = Date.now() - pet.pendingFeed < 15 * 60_000;
@@ -124,12 +126,20 @@ export function Room({
     setEating(true);
     setSay(pickTalk('eat'));
     eatSound(5);
-    const t = window.setTimeout(() => {
+    window.clearTimeout(eatTimer.current);
+    eatTimer.current = window.setTimeout(() => {
       setEating(false);
       setSay(pickTalk('full'));
     }, 5200);
-    return () => window.clearTimeout(t);
   }, [pet.pendingFeed, active]);
+  useEffect(() => () => window.clearTimeout(eatTimer.current), []);
+  // Ушли с кухни посреди еды — доест сразу
+  useEffect(() => {
+    if (!active && eating) {
+      window.clearTimeout(eatTimer.current);
+      setEating(false);
+    }
+  }, [active, eating]);
 
   // «+30 опыта» — сколько прибавилось с прошлого раза.
   useEffect(() => {
@@ -278,6 +288,7 @@ export function Room({
             state={sceneState}
             heartsKey={heartsKey}
             zoomReq={zoomReq}
+            active={active}
             onZoomStart={() => setZooming(true)}
             onTarget={(t) => (t === 'feed' ? onFeed() : go(TARGET_TAB[t]))}
             onCatTap={catTap}

@@ -15,7 +15,10 @@ export default function Scene3D({
   mode = 'room',
   zoomReq,
   onZoomStart,
+  active = true,
 }: {
+  /** Кухню снова показали — вернуть камеру на место. */
+  active?: boolean;
   /** Камера начала подлёт — прячем подписи. */
   onZoomStart?: () => void;
   mode?: 'room' | 'chef';
@@ -82,6 +85,13 @@ export default function Scene3D({
   useEffect(() => {
     if (heartsKey) scene.current?.hearts3();
   }, [heartsKey]);
+
+  useEffect(() => {
+    if (!active) return;
+    // Дать браузеру показать блок, потом пересчитать размер, камеру и облачко
+    const id = requestAnimationFrame(() => scene.current?.refresh());
+    return () => cancelAnimationFrame(id);
+  }, [active]);
 
   useEffect(() => {
     const s = scene.current;
