@@ -7,7 +7,6 @@ import * as THREE from 'three';
 import type { Face } from '../Cat';
 import { chirp, yawnSound } from '../sound';
 import { CatFace, type FaceTargets, type Surface } from './catFace';
-import { addFur } from './fur';
 import { creamTexture, FUR_DARK, furTexture, glyphTexture, PINK, plainFurTexture, ringFurTexture } from './textures';
 
 /** Профиль тела снизу вверх: [радиус, высота]. Вращаем вокруг оси — получается «картофелина». */
@@ -404,7 +403,6 @@ export class Cat3D {
       if (a) {
         take(a, g, true);
         this.hitMeshes.push(a);
-        addFur(a, 0.028);
       }
     }
     for (const n of ['EarL', 'EarR']) {
@@ -417,13 +415,8 @@ export class Cat3D {
     const tail = node('Tail');
     if (tail) {
       take(tail, this.tail, true);
-      addFur(tail, 0.03);
     }
-    // Пушистый ворс; у мордочки короче, чтобы не закрывал глаза и нос
-    addFur(body, 0.035, (p) => {
-      const face = p.z > 0.45 && p.y > 0.98 && p.y < 1.62 && Math.abs(p.x) < 0.5;
-      return face ? 0.25 : 1;
-    });
+    // Слои ворса (fur.ts) давали мелкую «зернистость» — плюш без них чище
 
     // Лицо — по лучам на новую поверхность
     this.root.updateWorldMatrix(true, true);

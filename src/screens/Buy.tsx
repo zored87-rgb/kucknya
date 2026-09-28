@@ -7,7 +7,7 @@ import { matchProduct, normalize } from '../data/ingredients';
 import type { Kitchen } from '../hooks/useKitchen';
 import { basket, keyBuys, longNotEaten, mealRecipes } from '../logic/keyBuys';
 import { closedReason } from '../logic/mercadona';
-import { cheapestAdvice, money, OCU_2026, planByStore, pricesFor, spending } from '../logic/money';
+import { money, OCU_2026, planByStore, spending } from '../logic/money';
 import { PANTRY_REASON } from '../ui/Pantry';
 import { addDays, formatDate, parseDate, toIso } from '../logic/dates';
 import type { Product, ReceiptRow, ShoppingRow } from '../types';
@@ -80,27 +80,30 @@ export function Buy({ k }: { k: Kitchen }) {
   const plan = useMemo(() => planByStore(names, prices), [names.join('|'), prices]);
   const byName = new Map(pending.map((p) => [p.name, p]));
 
-  const renderItem = (name: string) => {
+  // Строка чека: ☐ название ........ цена
+  const receiptRow = (name: string, cost: number | null) => {
     const s = byName.get(name);
     if (!s) return null;
     return (
-      <li key={s.id} className="item">
-        <label className="check big">
-          <input type="checkbox" checked={false} onChange={() => toggle(s)} />
-          <span className="item-emoji small" aria-hidden>
-            {s.reason === PANTRY_REASON ? '🧂' : productEmoji(matchProduct(s.name)?.product.key)}
+      <div key={s.id} className="rc-row">
+        <label className="rc-check">
+          <input type="checkbox" checked={false} onChange={() => toggle(s)} aria-label={`Купил: ${s.name}`} />
+          <span className="rc-box" aria-hidden />
+          <span className="rc-name">
+            {s.reason === PANTRY_REASON ? '🧂 ' : ''}
+            {s.name}
           </span>
-          <span className="item-main static">
-            <span className="item-name">{s.name}</span>
-            <PriceHint name={s.name} prices={prices} />
-          </span>
+          <span className="rc-dots" aria-hidden />
+          <span className="rc-price">{cost != null ? money(cost) : '—'}</span>
         </label>
-        <button className="icon-btn" aria-label="Удалить" onClick={() => mutate({ op: 'shopping.delete', id: s.id })}>
+        <button className="rc-del" aria-label="Удалить" onClick={() => mutate({ op: 'shopping.delete', id: s.id })}>
           ✕
         </button>
-      </li>
+      </div>
     );
   };
+  const total = plan.groups.reduce((a, g) => a + g.subtotal, 0);
+  const now = new Date();
 
   const wk = k.history.week;
 
@@ -131,59 +134,73 @@ export function Buy({ k }: { k: Kitchen }) {
               </button>
             </div>
           ) : (
-            <>
-              {plan.savings >= 0.3 && plan.groups.length > 1 && (
-                <div className="chip-row">
-                  <span className="chip static green">💰 В двух магазинах выйдет дешевле на ≈ {money(plan.savings)}</span>
-                </div>
-              )}
+            <div className="receipt">
+              <div className="rc-head">
+                <b>🐾 КУХНЯ ГЕРЫ 🐾</b>
+                <span>СПИСОК ПОКУПОК</span>
+                <span>
+                  {formatDate(now)} · {String(now.getHours()).padStart(2, '0')}:{String(now.getMinutes()).padStart(2, '0')}
+                </span>
+              </div>
+              <div className="rc-sep" />
               {plan.groups.map((g) => (
-                <div key={g.store} className="store-group">
-                  <div className="store-head">
-                    <span className={`store-dot ${storeClass(g.store)}`} />
-                    <b>{g.store}</b>
-                    <span className="muted">≈ {money(g.subtotal)}</span>
+                <div key={g.store} className="rc-group">
+                  <div className="rc-store">
+                    <span className={`store-dot ${storeClass(g.store)}`} /> {g.store.toUpperCase()}
                   </div>
-                  <ul className="list">{g.items.map((i) => renderItem(i.name))}</ul>
+                  {g.items.map((i) => receiptRow(i.name, i.cost))}
+                  <div className="rc-sub">
+                    <span>ПОДИТОГ</span>
+                    <span>≈ {money(g.subtotal)}</span>
+                  </div>
+                  <div className="rc-sep" />
                 </div>
               ))}
               {plan.other.length > 0 && (
-                <div className="store-group">
-                  {plan.groups.length > 0 && (
-                    <div className="store-head">
-                      <span className="store-dot" />
-                      <b>Где удобно</b>
-                    </div>
-                  )}
-                  <ul className="list">{plan.other.map((n) => renderItem(n))}</ul>
+                <div className="rc-group">
+                  {plan.groups.length > 0 && <div className="rc-store">ГДЕ УДОБНО</div>}
+                  {plan.other.map((n) => receiptRow(n, null))}
+                  <div className="rc-sep" />
                 </div>
               )}
-            </>
-          )}
-
-          {bought.length > 0 && (
-            <div className="row-between">
-              <button className="link" onClick={() => setShowBought((x) => !x)}>
-                Куплено · {bought.length} {showBought ? '▴' : '▾'}
-              </button>
-              <button className="link muted" onClick={() => mutate(bought.map((s) => ({ op: 'shopping.delete', id: s.id }) as OpBody))}>
-                Очистить
-              </button>
+              {total > 0 && (
+                <div className="rc-total">
+                  <span>ИТОГО</span>
+                  <span>≈ {money(total)}</span>
+                </div>
+              )}
+              {plan.savings >= 0.3 && plan.groups.length > 1 && (
+                <div className="rc-sub">
+                  <span>ЭКОНОМИЯ</span>
+                  <span>{money(plan.savings)}</span>
+                </div>
+              )}
+              {bought.length > 0 && (
+                <>
+                  <div className="rc-sep" />
+                  <button className="rc-toggle" onClick={() => setShowBought((x) => !x)}>
+                    КУПЛЕНО · {bought.length} {showBought ? '▴' : '▾'}
+                  </button>
+                  {showBought &&
+                    bought.map((b) => (
+                      <div key={b.id} className="rc-row done">
+                        <label className="rc-check">
+                          <input type="checkbox" checked onChange={() => toggle(b)} aria-label={`Вернуть: ${b.name}`} />
+                          <span className="rc-box" aria-hidden />
+                          <span className="rc-name">{b.name}</span>
+                        </label>
+                      </div>
+                    ))}
+                  {showBought && (
+                    <button className="rc-toggle muted" onClick={() => mutate(bought.map((x) => ({ op: 'shopping.delete', id: x.id }) as OpBody))}>
+                      ОЧИСТИТЬ КУПЛЕННОЕ
+                    </button>
+                  )}
+                </>
+              )}
+              <div className="rc-barcode" aria-hidden />
+              <div className="rc-thanks">СПАСИБО! МУР 🐾</div>
             </div>
-          )}
-          {showBought && bought.length > 0 && (
-            <ul className="list">
-              {bought.map((s) => (
-                <li key={s.id} className="item off">
-                  <label className="check big">
-                    <input type="checkbox" checked onChange={() => toggle(s)} />
-                    <span>
-                      <s>{s.name}</s>
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
           )}
         </>
       )}
@@ -318,7 +335,9 @@ export function Buy({ k }: { k: Kitchen }) {
           )}
           {receipts.length > 0 && (
             <Section title="Чеки">
-              <RecentReceipts receipts={receipts} />
+              <div className="receipt small">
+                <RecentReceipts receipts={receipts} />
+              </div>
             </Section>
           )}
           <div className="ocu">
@@ -357,27 +376,6 @@ function closedNote(now: Date, holidays: Kitchen['holidays']): string | null {
   const tomorrow = closedReason(addDays(now, 1), holidays);
   if (tomorrow) return `Завтра Mercadona закрыт · ${tomorrow}`;
   return null;
-}
-
-/** «Carrefour −12%» или «≈ 3,20 €» — одной строкой. */
-function PriceHint({ name, prices }: { name: string; prices: Parameters<typeof pricesFor>[1] }) {
-  const advice = cheapestAdvice(name, prices);
-  if (advice) {
-    const c = advice.cheapest;
-    return (
-      <span className="advice">
-        {c.store} · {money(c.price)} · −{advice.savePct}%
-      </span>
-    );
-  }
-  const one = pricesFor(name, prices)[0];
-  if (!one) return null;
-  return (
-    <span className="advice muted">
-      ≈ {money(one.price)}
-      {one.per ? ` · ${one.per.replace(/\s*\(.*\)/, '')}` : ''}
-    </span>
-  );
 }
 
 function storeClass(store: string): string {

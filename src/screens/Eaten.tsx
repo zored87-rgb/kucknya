@@ -59,9 +59,9 @@ export function Eaten({ k }: { k: Kitchen }) {
   });
 
   return (
-    <>
+    <div className="notebook">
       <button className="btn primary wide" onClick={() => setAdding(true)}>
-        Записать, что ели
+        ✏️ Записать, что ели
       </button>
       {rows.length > 0 && (
         <Section title="За неделю">
@@ -143,7 +143,7 @@ export function Eaten({ k }: { k: Kitchen }) {
         </button>
       )}
       {adding && <AddEaten k={k} onClose={() => setAdding(false)} />}
-    </>
+    </div>
   );
 }
 

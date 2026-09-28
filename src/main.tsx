@@ -4,6 +4,9 @@ import { registerSW } from 'virtual:pwa-register';
 import { init } from './api/store';
 import { App } from './App';
 import '@fontsource-variable/nunito';
+import '@fontsource-variable/lora';
+import '@fontsource-variable/caveat';
+import '@fontsource-variable/jetbrains-mono';
 import './styles.css';
 import './game.css';
 

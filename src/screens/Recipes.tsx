@@ -61,6 +61,9 @@ export function Recipes({ k }: { k: Kitchen }) {
       .sort((a, b) => Number(b.ready) - Number(a.ready) || a.missing.length - b.missing.length || a.recipe.name.localeCompare(b.recipe.name, 'ru'));
   }, [k.recipes, k.stock, k.view.ratings, q, type, cuisine, onlyReady, quick, liked]);
 
+  // Номер страницы в книге — по порядку всех рецептов
+  const pageOf = useMemo(() => new Map(k.recipes.map((r, i) => [r.id, i + 1])), [k.recipes]);
+
   // Новый фильтр — снова первые 20.
   const filterKey = [q, type, cuisine, onlyReady, quick, liked].join('|');
   const [lastKey, setLastKey] = useState(filterKey);
@@ -70,7 +73,12 @@ export function Recipes({ k }: { k: Kitchen }) {
   }
 
   return (
-    <>
+    <div className="cookbook">
+      <div className="book-title">
+        <span className="book-orn">❦</span>
+        <b>Поваренная книга Геры</b>
+        <span className="book-orn">❦</span>
+      </div>
       <div className="search-row">
         <div className="picker-input">
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Блюдо или продукт" />
@@ -119,7 +127,7 @@ export function Recipes({ k }: { k: Kitchen }) {
       {list.length === 0 && <Empty>Ничего не нашлось.</Empty>}
       <div className="cards">
         {list.slice(0, shown).map((c) => (
-          <RecipeCard key={c.recipe.id} check={c} k={k} showAvailability />
+          <RecipeCard key={c.recipe.id} check={c} k={k} showAvailability page={pageOf.get(c.recipe.id)} />
         ))}
       </div>
       {list.length > shown && (
@@ -128,7 +136,7 @@ export function Recipes({ k }: { k: Kitchen }) {
         </button>
       )}
       {adding && <AddRecipe onClose={() => setAdding(false)} />}
-    </>
+    </div>
   );
 }
 

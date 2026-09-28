@@ -1583,3 +1583,536 @@ button.obj-label.pin:active {
   border-radius: 14px;
   padding: 2px 6px;
 }
+
+/* ================= Магазин: список покупок — кассовый чек ================= */
+
+.receipt {
+  --paper: #fffdf7;
+  --ink: #2b2b2b;
+  position: relative;
+  margin: 10px 4px 14px;
+  padding: 22px 16px 26px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'JetBrains Mono Variable', ui-monospace, Menlo, monospace;
+  font-size: 13.5px;
+  line-height: 1.35;
+  box-shadow: 0 6px 16px rgb(60 40 20 / 18%);
+  /* зубчатые края сверху и снизу */
+  -webkit-mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 14px 8px repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 14px 8px repeat-x,
+    linear-gradient(#000 0 0) center / 100% calc(100% - 15px) no-repeat;
+  mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 14px 8px repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 14px 8px repeat-x,
+    linear-gradient(#000 0 0) center / 100% calc(100% - 15px) no-repeat;
+  transform: rotate(-0.4deg);
+}
+
+.receipt.small {
+  margin: 0;
+  padding: 16px 12px 18px;
+  font-size: 12.5px;
+  transform: rotate(0.3deg);
+}
+
+.receipt .list,
+.receipt .item {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.receipt .item {
+  border-bottom: 1px dashed #c9c2b4;
+  border-radius: 0;
+}
+
+.rc-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+.rc-head b {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.rc-head span {
+  font-size: 12px;
+  color: #6b6b6b;
+}
+
+.rc-sep {
+  margin: 10px 0;
+  border-top: 2px dashed #bdb6a8;
+}
+
+.rc-store {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.rc-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rc-check {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.rc-check input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.rc-box {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+}
+
+.rc-check input:checked + .rc-box::after {
+  content: '✓';
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.rc-check input:focus-visible + .rc-box {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.rc-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rc-dots {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 2px dotted #b8b1a3;
+  transform: translateY(4px);
+}
+
+.rc-price {
+  flex: none;
+  font-weight: 700;
+}
+
+.rc-del {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: none;
+  color: #a39c8e;
+  font-size: 13px;
+}
+
+.rc-row.done .rc-name {
+  text-decoration: line-through;
+  color: #9a9486;
+}
+
+.rc-sub,
+.rc-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.rc-total {
+  margin-top: 8px;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.rc-toggle {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 800;
+  color: var(--ink);
+  text-align: left;
+  letter-spacing: 0.05em;
+}
+
+.rc-toggle.muted {
+  color: #8f887a;
+  font-weight: 600;
+}
+
+.rc-barcode {
+  height: 44px;
+  margin: 16px 12px 6px;
+  background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 12px);
+}
+
+.rc-thanks {
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  font-size: 12px;
+}
+
+/* ================= Рецепты — поваренная книга ================= */
+
+.cookbook,
+.notebook,
+.menu-card {
+  /* Бумага всегда светлая — и в тёмной теме */
+  --surface: #fffaf0;
+  --surface-2: #f3e9d6;
+  --text: #3b2a1e;
+  --muted: #8a7560;
+  --border: #e6d8bf;
+  --edge: #e2d2b6;
+  --edge-strong: #d3bf9d;
+  --accent-soft: #fbe3d2;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cookbook {
+  position: relative;
+  padding: 18px 16px 22px 26px;
+  border-radius: 6px 18px 18px 6px;
+  background:
+    radial-gradient(circle at 20% 10%, rgb(255 255 255 / 70%), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgb(210 180 130 / 18%), transparent 45%),
+    #fbf3e1;
+  box-shadow:
+    /* корешок */
+    inset 18px 0 22px -14px rgb(90 60 30 / 45%),
+    /* стопка страниц справа */
+    3px 0 0 #efe3cb,
+    6px 1px 0 #e6d7bb,
+    9px 2px 0 #dccaa9,
+    0 10px 24px rgb(60 40 20 / 22%);
+  font-family: 'Lora Variable', Georgia, serif;
+}
+
+/* ленточка-закладка */
+.cookbook::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 10px;
+  width: 14px;
+  height: 56px;
+  background: #d8453a;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 15%);
+}
+
+.book-title {
+  padding-right: 18px;
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #d9c6a4;
+  font-size: 20px;
+  font-style: italic;
+  text-align: center;
+}
+
+.book-title b {
+  font-weight: 700;
+}
+
+.book-orn {
+  color: #b5413a;
+  font-size: 18px;
+}
+
+.cookbook .picker-input input {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid #cdb893;
+  border-radius: 0;
+  font-family: inherit;
+  font-style: italic;
+}
+
+.cookbook .square-btn.text {
+  background: #fffaf0;
+  border-color: #d9c6a4;
+  font-family: 'Nunito Variable', sans-serif;
+}
+
+/* Разделы — закладки-язычки */
+.cookbook .segmented {
+  background: none;
+  border: 0;
+  padding: 0;
+  gap: 4px;
+  border-bottom: 2px solid #cdb893;
+}
+
+.cookbook .segmented button {
+  border-radius: 10px 10px 0 0;
+  background: #efe2c8;
+  color: #7a6048;
+  font-family: 'Nunito Variable', sans-serif;
+  box-shadow: none;
+}
+
+.cookbook .segmented button:nth-child(2) {
+  background: #fde7b0;
+}
+
+.cookbook .segmented button:nth-child(3) {
+  background: #fcd3c0;
+}
+
+.cookbook .segmented button:nth-child(4) {
+  background: #d9ecd2;
+}
+
+.cookbook .segmented button:nth-child(5) {
+  background: #dcdff5;
+}
+
+.cookbook .segmented button.on,
+.cookbook .segmented button[aria-pressed='true'] {
+  color: #3b2a1e;
+  transform: translateY(2px);
+  box-shadow: 0 -3px 0 #b5413a inset;
+}
+
+.cookbook .chip {
+  background: transparent;
+  border-color: #d9c6a4;
+  box-shadow: none;
+  font-family: 'Nunito Variable', sans-serif;
+}
+
+.cookbook .chip.on {
+  background: #b5413a;
+  border-color: #8f2f28;
+  color: #fff;
+}
+
+/* Рецепты — как оглавление книги */
+.cookbook .cards {
+  gap: 0;
+}
+
+.cookbook .card.recipe {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed #d9c6a4;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.cookbook .recipe-head {
+  padding: 10px 2px;
+}
+
+.cookbook .recipe-title h4 {
+  font-family: 'Lora Variable', Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.cookbook .dish-tile {
+  width: 42px;
+  height: 42px;
+  font-size: 22px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 60%);
+}
+
+.cookbook .badge {
+  display: none;
+}
+
+/* Можно приготовить — зелёный ободок у значка блюда */
+.cookbook .recipe-head:has(.badge.ok) .dish-tile {
+  box-shadow: 0 0 0 3px #45b85a;
+}
+
+.page-no {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 34px;
+  justify-content: flex-end;
+  font-family: 'Lora Variable', Georgia, serif;
+  font-style: italic;
+  color: #8a7560;
+  font-size: 14px;
+}
+
+.cookbook .recipe-body {
+  margin: 0 -4px 12px;
+  padding: 14px 14px 16px;
+  background: #fffdf6;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgb(90 60 30 / 12%);
+}
+
+.cookbook .steps li::marker {
+  font-family: 'Lora Variable', Georgia, serif;
+  font-weight: 700;
+  color: #b5413a;
+}
+
+.cookbook .btn.wide {
+  font-family: 'Nunito Variable', sans-serif;
+}
+
+/* ================= Дневник — тетрадь в линейку ================= */
+
+.notebook {
+  position: relative;
+  padding: 30px 14px 20px 44px;
+  border-radius: 14px;
+  background:
+    linear-gradient(90deg, transparent 32px, #f19b9b 32px 34px, transparent 34px),
+    repeating-linear-gradient(180deg, #fffef8 0 29px, #c9dcf0 29px 30px);
+  box-shadow: 0 8px 20px rgb(60 40 20 / 18%);
+}
+
+/* пружина сверху */
+.notebook::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 18px;
+  right: 18px;
+  height: 18px;
+  background: radial-gradient(circle at 9px 9px, #b9b2a6 0 5px, transparent 6px) 0 0 / 22px 18px repeat-x;
+}
+
+.notebook .section-head h3,
+.notebook h3 {
+  font-family: 'Caveat Variable', cursive;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2f4f86;
+}
+
+.notebook .list,
+.notebook .item,
+.notebook .stat {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.notebook .item {
+  border-bottom: 0;
+}
+
+.notebook .item-name {
+  font-family: 'Caveat Variable', cursive;
+  font-size: 23px;
+  font-weight: 600;
+  color: #2b3a5c;
+}
+
+.notebook .stat {
+  border: 2px dashed #c9dcf0;
+  border-radius: 12px;
+}
+
+.notebook .stat b {
+  font-family: 'Caveat Variable', cursive;
+  font-size: 34px;
+  color: #b5413a;
+}
+
+.notebook .mini-dish {
+  background: #fffef8;
+  transform: rotate(-1.5deg);
+  box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
+}
+
+.notebook .mini-dish:nth-child(even) {
+  transform: rotate(1.5deg);
+}
+
+/* ================= «Чем покормить» — меню кафе ================= */
+
+.menu-card {
+  padding: 18px 14px 20px;
+  border-radius: 12px;
+  background: #fffaf0;
+  border: 3px double #b5413a;
+  outline: 6px solid #fffaf0;
+  box-shadow: 0 0 0 7px #e6d3b3, 0 10px 24px rgb(60 40 20 / 20%);
+  margin: 8px 6px;
+}
+
+.menu-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Lora Variable', Georgia, serif;
+  color: #b5413a;
+}
+
+.menu-title b {
+  font-size: 34px;
+  font-style: italic;
+  line-height: 1.1;
+}
+
+.menu-title span {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: #8a7560;
+}
+
+.menu-card .section-head h3 {
+  font-family: 'Lora Variable', Georgia, serif;
+  font-style: italic;
+  text-align: center;
+  width: 100%;
+}
+
+.menu-card .card.recipe {
+  background: #fffdf8;
+}
+
+.menu-card .recipe-title h4 {
+  font-family: 'Lora Variable', Georgia, serif;
+}

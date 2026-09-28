@@ -455,6 +455,12 @@ export class KitchenScene {
       if (!m.isMesh) return;
       const src = m.material as THREE.MeshStandardMaterial;
       if (m.name === 'WindowGlass' || o.parent?.name === 'WindowGlass') {
+        // В модели развёртка стекла перевёрнута — иначе облака и луна вверх ногами
+        const uv = m.geometry.getAttribute('uv');
+        if (uv) {
+          for (let i = 0; i < uv.count; i++) uv.setY(i, 1 - uv.getY(i));
+          uv.needsUpdate = true;
+        }
         m.material = this.skyMat;
         return;
       }

@@ -91,6 +91,7 @@ export function RecipeCard({
   featured,
   defaultOpen,
   bare,
+  page,
 }: {
   check: RecipeCheck;
   reasons?: string[];
@@ -102,6 +103,8 @@ export function RecipeCard({
   defaultOpen?: boolean;
   /** Без рамки карточки — внутри шторки. */
   bare?: boolean;
+  /** Номер страницы в поваренной книге. */
+  page?: number;
 }) {
   const [open, setOpen] = useState(!!defaultOpen);
   const [cooking, setCooking] = useState(false);
@@ -143,6 +146,12 @@ export function RecipeCard({
           )}
         </div>
         {showAvailability && <span className={`badge ${check.ready ? 'ok' : ''}`}>{check.ready ? 'можно' : `нет ${check.missing.length}`}</span>}
+        {page != null && (
+          <span className="page-no" aria-label={`страница ${page}`}>
+            <span className="page-dots" aria-hidden />
+            {page}
+          </span>
+        )}
         <span className="chev" aria-hidden>
           ›
         </span>

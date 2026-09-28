@@ -33,7 +33,12 @@ export function Feed({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
   const ready = more ? all : all.slice(0, SHOW);
 
   return (
-    <>
+    <div className="menu-card">
+      <div className="menu-title">
+        <span>— ✦ —</span>
+        <b>Меню</b>
+        <span>кафе «У Геры»</span>
+      </div>
       {slot !== 'breakfast' && <Leftovers k={k} />}
 
       <Segmented<Slot>
@@ -109,6 +114,6 @@ export function Feed({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
           <RecipeCard check={peek.check} reasons={peek.reasons} k={k} defaultMeal={SLOT_MEAL[slot]} defaultOpen bare />
         </Sheet>
       )}
-    </>
+    </div>
   );
 }
