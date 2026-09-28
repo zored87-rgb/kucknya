@@ -172,15 +172,28 @@ export function Room({
     return () => window.clearInterval(id);
   }, [full, active, mood, eating, say]);
 
-  // Фраза гаснет через 3 секунды после реакции.
+  // Фраза гаснет через 4 секунды.
   useEffect(() => {
     if (!say) return;
-    const t = window.setTimeout(() => setSay(null), 3000);
+    const t = window.setTimeout(() => setSay(null), 4000);
     return () => window.clearTimeout(t);
   }, [say]);
 
   const moodText = mood === 'sad' && spoiling[0] ? spoilPhrase(productLabel(spoiling[0].key), seed) : phrase(mood, seed, sat);
-  const bubble = say ?? moodText;
+  // Гера говорит не всё время: сам — изредка (голодный — чаще), остальное — на касания и еду
+  const moodRef = useRef(moodText);
+  moodRef.current = moodText;
+  useEffect(() => {
+    if (!active) return;
+    const often = mood === 'hungry' || mood === 'angry';
+    const next = () => (often ? 14_000 : 30_000) + Math.random() * (often ? 10_000 : 25_000);
+    let t = window.setTimeout(function tick() {
+      setSay((cur) => cur ?? moodRef.current);
+      t = window.setTimeout(tick, next());
+    }, 2500);
+    return () => window.clearTimeout(t);
+  }, [active, mood]);
+  const bubble = say;
 
   // Реакции 3D-кота на касания (у плоского кота они внутри Cat)
   const react = (r: Exclude<Reaction, null>, ms: number) => {
@@ -366,7 +379,7 @@ export function Room({
       ) : (
         <>
           {/* Подписей нет: предметы нажимаются сами, говорит только Гера */}
-          {anchors.catHead && (
+          {anchors.catHead && bubble && (
             <div className={`bubble pin3d${mood === 'angry' && !say ? ' b-angry' : ''}`} key={bubble} style={{ left: anchors.catHead.x, top: anchors.catHead.y }}>
               {bubble}
             </div>

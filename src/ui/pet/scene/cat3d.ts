@@ -521,8 +521,8 @@ export class Cat3D {
     if (act === 'bounce') pose.lift = Math.abs(Math.sin(p * Math.PI * 2)) * 0.18;
     if (act === 'tailflick') pose.tail = Math.abs(Math.sin(p * Math.PI * 6)) * 0.35;
     if (act === 'rub') {
-      pose.armL = 0.45 + Math.sin(t * 6) * 0.15;
-      pose.armR = -0.45 - Math.sin(t * 6) * 0.15;
+      pose.armL = 0.2 + Math.sin(t * 6) * 0.08;
+      pose.armR = -0.2 - Math.sin(t * 6) * 0.08;
       pose.lean = 0.05 * b;
     }
     if (act === 'lookBowl') {
@@ -553,8 +553,8 @@ export class Cat3D {
       pose.tail = Math.sin(t * 12) * 0.2;
       pose.turn = act === 'turnAway' ? pose.turn : 0;
     } else if ((this.mood === 'hungry' || this.mood === 'sad') && !act) {
-      pose.armL = 0.3 + Math.sin(t * 2) * 0.05;
-      pose.armR = -0.3 - Math.sin(t * 2) * 0.05;
+      pose.armL = 0.12 + Math.sin(t * 2) * 0.04;
+      pose.armR = -0.12 - Math.sin(t * 2) * 0.04;
       pose.lean = 0.04;
     } else if (sleeping) {
       pose.tilt = 0.1;
@@ -577,13 +577,11 @@ export class Cat3D {
     }
     if (r === 'wake' && since < 0.6) pose.lift = Math.sin((since / 0.6) * Math.PI) * 0.1;
     if (this.eating) {
-      // Подаётся к миске (она слева впереди), наклоняется и жуёт
-      pose.shiftX = -0.3;
-      pose.shiftZ = 0.2;
-      pose.turn = -0.5;
-      pose.lean = 0.3 + Math.sin(t * 11) * 0.05;
-      pose.armL = 0.5;
-      pose.armR = -0.2;
+      // Держит миску лапками перед собой и жуёт, кивая
+      pose.turn = 0;
+      pose.lean = 0.1 + Math.sin(t * 11) * 0.04;
+      pose.armL = 0.3;
+      pose.armR = -0.3;
       pose.tail = 0.25 + Math.sin(t * 3) * 0.12;
     }
 

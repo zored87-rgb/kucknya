@@ -43,7 +43,7 @@ export const ANCHORS: Record<string, THREE.Vector3> = {
   eaten: new THREE.Vector3(1.5, 1.33, -2.85),
   buy: new THREE.Vector3(1.25, 0.2, 1.2),
   buyTop: new THREE.Vector3(1.5, 0.85, 0.9),
-  feed: new THREE.Vector3(-0.8, 0.45, 1.4),
+  feed: new THREE.Vector3(-1.05, 0.45, 1.55),
   catHead: new THREE.Vector3(0, 1.95, 0.85),
   settings: new THREE.Vector3(1.3, 4.42, -2.9),
   window: new THREE.Vector3(-0.45, 4.3, -2.8),
@@ -110,6 +110,10 @@ export class KitchenScene {
   private drag: { x: number; y: number; dist: number; stroked: boolean; onCat: boolean } | null = null;
   private resizeObs: ResizeObserver;
   private clock3d: THREE.Group | null = null;
+  /** Миска: Гера берёт её в лапки и ест, потом ставит на место. */
+  private bowlNode: THREE.Object3D | null = null;
+  private bowlRest = new THREE.Vector3();
+  private bowlLift = 0;
   private zoom: { from: THREE.Vector3; look: THREE.Vector3; to: THREE.Vector3; start: number } | null = null;
   /** Кипящая кастрюля в режиме готовки. */
   private pot: { bubbles: THREE.Mesh[]; steam: THREE.Mesh[]; lid: THREE.Object3D } | null = null;
@@ -543,12 +547,17 @@ export class KitchenScene {
       door.add(inner);
     });
 
-    // Корм в миске
+    // Корм в миске — внутри миски, чтобы двигался вместе с ней
     const bowl = node('Bowl');
     if (bowl) {
       this.food.removeFromParent();
+      // Геометрия миски стоит в (-0.8, 0, 1.4); сам узел сдвинут — корм кладём в координатах узла
       this.food.position.set(-0.8, 0.02, 1.4);
-      this.scene.add(this.food);
+      bowl.add(this.food);
+      this.bowlNode = bowl;
+      this.bowlRest.copy(bowl.position);
+      // Тень миски — живая (в запечённом полу её нет), едет вместе с миской
+      bowl.traverse((o) => (o.castShadow = true));
     }
     // Число в календаре
     const today = new Date();
@@ -738,8 +747,11 @@ export class KitchenScene {
   hearts3(n = 3) {
     const now = this.clock.getElapsedTime();
     for (let i = 0; i < n; i++) {
-      const m = new THREE.Mesh(heartGeometry(), new THREE.MeshPhysicalMaterial({ color: '#ff6f9a', roughness: 0.25, clearcoat: 1, sheen: 0.6, sheenColor: new THREE.Color('#ffc0d4'), transparent: true }));
-      m.userData = { born: now + i * 0.18, x: (Math.random() - 0.5) * 1.1, spin: (Math.random() - 0.5) * 2 };
+      // Яркие, всегда поверх кота — чтобы не прятались в голове и были видны на маленьком экране
+      const mat = new THREE.MeshStandardMaterial({ color: '#ff6f9a', emissive: '#ff4f86', emissiveIntensity: 0.45, roughness: 0.3, transparent: true, depthTest: false });
+      const m = new THREE.Mesh(heartGeometry(), mat);
+      m.renderOrder = 10;
+      m.userData = { born: now + i * 0.18, x: (Math.random() - 0.5) * 1.3, spin: (Math.random() - 0.5) * 2 };
       m.scale.setScalar(0.001);
       this.hearts.add(m);
     }
@@ -758,7 +770,7 @@ export class KitchenScene {
       recipes: [1.35, 2.0, -2.8],
       eaten: [1.85, 3.1, -2.9],
       buy: [1.2, 0.45, 0.9],
-      feed: [-0.8, 0.15, 1.4],
+      feed: [-1.05, 0.15, 1.55],
       settings: [1.3, 4.85, -2.9],
     };
     const [x, y, z] = focus[target];
@@ -801,10 +813,14 @@ export class KitchenScene {
     else this.stop();
   };
 
+  private lastTick = 0;
+
   private tick() {
     // Кухня спрятана (открыт другой раздел) — не рисуем, бережём батарею
     if (!this.container.clientWidth) return;
     const t = this.clock.getElapsedTime();
+    const dt = Math.min(0.05, t - this.lastTick || 0.016);
+    this.lastTick = t;
     this.cat.update(t);
 
     // Дверцы холодильника
@@ -824,6 +840,16 @@ export class KitchenScene {
         p.scale.setScalar(0.5 + ph);
         ((p as THREE.Mesh).material as THREE.MeshStandardMaterial).opacity = 0.6 * (1 - ph);
       });
+    }
+
+    // Гера поднимает миску к мордочке, пока ест
+    if (this.bowlNode) {
+      const want = this.state.eating ? 1 : 0;
+      this.bowlLift += (want - this.bowlLift) * Math.min(1, dt * 5);
+      const e = this.bowlLift * this.bowlLift * (3 - 2 * this.bowlLift);
+      // Геометрия миски — в (-0.8, 0, 1.4): держим её перед мордочкой, чуть ниже рта
+      const hold = new THREE.Vector3(0.8, 0.5 + Math.sin(t * 11) * 0.02 * e, 0.62);
+      this.bowlNode.position.lerpVectors(this.bowlRest, hold, e);
     }
 
     // Корм в миске исчезает, пока кот ест
@@ -847,10 +873,10 @@ export class KitchenScene {
       }
       // Сердечко выпрыгивает, покачивается и тает
       const pop = Math.min(1, age / 0.25);
-      s.position.set(s.userData.x + Math.sin(age * 5) * 0.06, 1.7 + age * 1.0, 1.1);
+      s.position.set(s.userData.x + Math.sin(age * 5) * 0.06, 1.35 + age * 1.1, 1.9);
       s.rotation.set(0, Math.sin(age * 3) * 0.6 + s.userData.spin * age, Math.sin(age * 4) * 0.2);
-      s.scale.setScalar(0.12 * (pop < 1 ? 1.3 * pop : 1));
-      ((s as THREE.Mesh).material as THREE.MeshPhysicalMaterial).opacity = age > 1.1 ? 1 - (age - 1.1) / 0.5 : 1;
+      s.scale.setScalar(0.17 * (pop < 1 ? 1.3 * pop : 1));
+      ((s as THREE.Mesh).material as THREE.MeshStandardMaterial).opacity = age > 1.1 ? 1 - (age - 1.1) / 0.5 : 1;
     }
 
     // Кипящая кастрюля: пузыри, пар, крышка подпрыгивает
