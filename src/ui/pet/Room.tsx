@@ -5,21 +5,21 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { Kitchen } from '../../hooks/useKitchen';
 import { parseDate, daysBetween } from '../../logic/dates';
 import { useWeather } from '../../logic/weather';
-import { DEFAULT_METABOLISM, eatenBy, hungerText, isNight, lastMealAt, levelOf, moodOf, phrase, satietyOf, xpOf, type Mood } from '../../logic/pet';
+import { DEFAULT_METABOLISM, eatenBy, isNight, levelOf, moodOf, phrase, pickTalk, satietyOf, spoilPhrase, xpOf, type Mood } from '../../logic/pet';
 import { SatietySheet } from './SatietySheet';
 import { productLabel } from '../labels';
 import { Cat, faceOf, type Reaction } from './Cat';
 import type { SceneState, Target } from './scene/kitchenScene';
-import { angryMeow, audioReady, giggle, hiss, meow, purr } from './sound';
+import { angryMeow, audioReady, eatSound, giggle, hiss, meow, purr } from './sound';
 import { LevelUp, Wardrobe } from './Wardrobe';
 import { setPet, usePet } from './petStore';
 
-const REACTION_TEXT: Record<Exclude<Reaction, null>, string> = {
-  meow: 'Мяу!',
-  purr: 'Мррррр 💛',
-  giggle: 'Хи-хи, щекотно!',
-  hiss: 'Ш-ш-ш! Сначала покорми!',
-  wake: 'Мрр? Я сплю…',
+const REACTION_KIND: Record<Exclude<Reaction, null>, 'meow' | 'purr' | 'giggle' | 'hiss' | 'wake'> = {
+  meow: 'meow',
+  purr: 'purr',
+  giggle: 'giggle',
+  hiss: 'hiss',
+  wake: 'wake',
 };
 
 const Scene3D = lazy(() => import('./scene/Scene3D'));
@@ -81,8 +81,7 @@ export function Room({
   const [anchors, setAnchors] = useState<Record<string, { x: number; y: number }>>({});
   const [reaction, setReaction] = useState<Reaction>(null);
   const [heartsKey, setHeartsKey] = useState(0);
-  const [zoomReq, setZoomReq] = useState<{ t: Target; n: number } | null>(null);
-  const fly = (t: Target) => setZoomReq({ t, n: Date.now() });
+  const zoomReq = null;
   // Пока камера подлетает к предмету, подписи прячутся; вернулись на кухню — снова видны
   const [zooming, setZooming] = useState(false);
   useEffect(() => {
@@ -107,7 +106,6 @@ export function Room({
   const myEaten = useMemo(() => eatenBy(eaten, k.me), [eaten, k.me]);
   const sat = satietyOf(myEaten, pet.fed, now, pet.metab ?? DEFAULT_METABOLISM);
   const partnerSat = satietyOf(eatenBy(eaten, partner), {}, now, k.view.settings.pets?.[partner] ?? DEFAULT_METABOLISM);
-  const last = lastMealAt(myEaten, pet.fed, now);
   const [satOpen, setSatOpen] = useState(false);
   const spoiling = useMemo(
     () => [...k.stock.items.values()].filter((i) => i.daysLeft != null && i.daysLeft <= 1).sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0)),
@@ -124,11 +122,12 @@ export function Room({
     setPet({ pendingFeed: 0 });
     if (!fresh) return;
     setEating(true);
-    setSay('Ням-ням! 😋');
+    setSay(pickTalk('eat'));
+    eatSound(5);
     const t = window.setTimeout(() => {
       setEating(false);
-      setSay('Спасибо! Вкусно!');
-    }, 3200);
+      setSay(pickTalk('full'));
+    }, 5200);
     return () => window.clearTimeout(t);
   }, [pet.pendingFeed, active]);
 
@@ -164,10 +163,10 @@ export function Room({
       if (Math.random() > chance[mood]) return;
       if (mood === 'angry') {
         angryMeow();
-        setSay(pick(['МЯУ!!', 'Р-р-мяу!', 'Мррау!!']));
+        setSay(pick(['МЯУ!!', 'Р-р-мяу!', 'Мррау!!', 'Я всё ещё голодный!']));
       } else {
         meow(mood === 'hungry' ? 0.95 : 1, mood === 'hungry' ? 1.3 : 0.6);
-        setSay(mood === 'hungry' ? pick(['Мя-я-яу…', 'Мяу! Есть хочу', 'Мррр-мяу?']) : pick(['Мяу!', 'Мрр?', 'Мяу 💛']));
+        setSay(mood === 'hungry' ? pick(['Мя-я-яу…', 'Мяу! Есть хочу', 'Мррр-мяу?']) : pickTalk('meow'));
       }
     }, 9000);
     return () => window.clearInterval(id);
@@ -180,20 +179,13 @@ export function Room({
     return () => window.clearTimeout(t);
   }, [say]);
 
-  const moodText = (() => {
-    if (mood === 'sad') return `${productLabel(spoiling[0].key)} пропадает! 😿`;
-    if (mood === 'hungry' || mood === 'angry') {
-      const base = phrase(mood, seed);
-      return `${base} ${last ? `Я ${hungerText(last, now)}!` : ''}`.trim();
-    }
-    return phrase(mood, seed);
-  })();
+  const moodText = mood === 'sad' && spoiling[0] ? spoilPhrase(productLabel(spoiling[0].key), seed) : phrase(mood, seed, sat);
   const bubble = say ?? moodText;
 
   // Реакции 3D-кота на касания (у плоского кота они внутри Cat)
   const react = (r: Exclude<Reaction, null>, ms: number) => {
     setReaction(r);
-    setSay(REACTION_TEXT[r]);
+    setSay(pickTalk(REACTION_KIND[r]));
     window.clearTimeout(reactTimer.current);
     reactTimer.current = window.setTimeout(() => setReaction(null), ms);
   };
@@ -262,13 +254,6 @@ export function Room({
     [mood, reaction, eating, say, pet.outfit, pet.wall, h, now, spoiling.length, weekMeals, weather?.kind, weather?.clouds],
   );
   const flat = !try3d;
-  // Подпись не вылезает за край экрана
-  const at = (key: string, dy = 0): React.CSSProperties | undefined => {
-    const a = anchors[key];
-    if (!a) return undefined;
-    const w = roomRef.current?.clientWidth ?? 400;
-    return { left: Math.min(w - 62, Math.max(62, a.x)), top: a.y + dy };
-  };
 
   const satTone = toneOf(sat);
 
@@ -301,9 +286,7 @@ export function Room({
 
       <div className="hud">
         <button className="hud-pill hud-food" onClick={() => setSatOpen(true)} aria-label={`Моя сытость ${sat} из 100, ${partner} — ${partnerSat}. Изменить`}>
-          <span className="hud-icon" aria-hidden>
-            🍗
-          </span>
+          <FishIcon />
           <div className="hud-col">
             <b className="hud-name">{k.me}</b>
             <div className="hud-bar">
@@ -366,7 +349,7 @@ export function Room({
             <div className={`bubble${mood === 'angry' && !say ? ' b-angry' : ''}`} key={bubble}>
               {bubble}
             </div>
-            <Cat mood={mood} outfit={pet.outfit} eating={eating} talking={!!say || mood === 'hungry' || mood === 'angry'} onReact={(r) => setSay(REACTION_TEXT[r])} />
+            <Cat mood={mood} outfit={pet.outfit} eating={eating} talking={!!say || mood === 'hungry' || mood === 'angry'} onReact={(r) => setSay(pickTalk(REACTION_KIND[r]))} />
           </div>
 
           <button className={`obj obj-bowl${eating ? ' full' : ''}`} onClick={onFeed} aria-label="Миска: чем покормить">
@@ -382,35 +365,7 @@ export function Room({
         </>
       ) : (
         <>
-          {/* Подписи и значки над 3D-предметами — тоже кнопки */}
-          <button className="obj-label pin" style={at('fridge', -34)} onClick={() => fly('fridge')}>
-            Холодильник
-          </button>
-          {spoiling.length > 0 && (
-            <span className="obj-badge warn pin" style={at('fridgeTop')}>
-              {spoiling.length}
-            </span>
-          )}
-          <button className="obj-label pin" style={at('recipes', 6)} onClick={() => fly('recipes')}>
-            Рецепты
-          </button>
-          <button className="obj-label pin" style={at('eaten', 4)} onClick={() => fly('eaten')}>
-            Дневник
-          </button>
-          <button className="obj-label pin" style={at('buy', -34)} onClick={() => fly('buy')}>
-            Магазин
-          </button>
-          {toBuy > 0 && (
-            <span className="obj-badge pin" style={at('buyTop')}>
-              {toBuy}
-            </span>
-          )}
-          <button className="obj-label pin small" style={at('settings', 4)} onClick={() => fly('settings')}>
-            ⚙️ Настройки
-          </button>
-          <button className="obj-label pin feed" style={at('feed', -50)} onClick={() => fly('feed')}>
-            🍽 Покормить
-          </button>
+          {/* Подписей нет: предметы нажимаются сами, говорит только Гера */}
           {anchors.catHead && (
             <div className={`bubble pin3d${mood === 'angry' && !say ? ' b-angry' : ''}`} key={bubble} style={{ left: anchors.catHead.x, top: anchors.catHead.y }}>
               {bubble}
@@ -488,10 +443,22 @@ function Basket() {
   return (
     <svg viewBox="0 0 90 70" aria-hidden>
       <path d="M22 26 q 23 -30 46 0" stroke="#a0673a" strokeWidth="5" fill="none" />
-      <text x="26" y="30" fontSize="20">🥖</text>
-      <text x="46" y="30" fontSize="18">🥕</text>
+      <rect x="22" y="10" width="12" height="26" rx="6" fill="#e0a55e" transform="rotate(-20 28 23)" />
+      <path d="M50 8 L58 8 L54 34 Z" fill="#ff8a2a" />
       <path d="M8 28 h74 l-8 36 q -1 4 -5 4 h-48 q -4 0 -5 -4 z" fill="#d49a5c" stroke="#a0673a" strokeWidth="2.5" />
       <path d="M14 40 h62 M17 52 h56" stroke="#a0673a" strokeWidth="2" opacity="0.6" />
+    </svg>
+  );
+}
+
+/** Рыбка — значок сытости (вместо эмодзи). */
+function FishIcon() {
+  return (
+    <svg className="hud-fish" viewBox="0 0 32 24" aria-hidden>
+      <path d="M4 12 C 9 3, 22 3, 27 12 C 22 21, 9 21, 4 12 Z" fill="#ff9a5c" />
+      <path d="M26 12 L 31 6 L 31 18 Z" fill="#ff7a3d" />
+      <circle cx="10" cy="10.5" r="1.8" fill="#2a211a" />
+      <path d="M15 8 Q 17 12 15 16" stroke="#ffd0b0" strokeWidth="1.6" fill="none" strokeLinecap="round" />
     </svg>
   );
 }

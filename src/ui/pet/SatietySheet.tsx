@@ -7,14 +7,15 @@ import { calibrate, DEFAULT_METABOLISM } from '../../logic/pet';
 import type { EatenRow } from '../../types';
 import { Sheet } from '../kit';
 import { toast } from '../toast';
+import { MoodFace } from './icons';
 import { setPet, usePet } from './petStore';
 
-const LEVELS: [number, string, string][] = [
-  [5, '😫', 'Очень голоден'],
-  [28, '🙁', 'Голоден'],
-  [52, '😐', 'Так себе'],
-  [80, '🙂', 'Сыт'],
-  [100, '😋', 'Объелся'],
+const LEVELS: [number, 0 | 1 | 2 | 3 | 4, string][] = [
+  [5, 0, 'Очень голоден'],
+  [28, 1, 'Голоден'],
+  [52, 2, 'Так себе'],
+  [80, 3, 'Сыт'],
+  [100, 4, 'Объелся'],
 ];
 
 export function SatietySheet({ k, myEaten, sat, onClose }: { k: Kitchen; myEaten: EatenRow[]; sat: number; onClose: () => void }) {
@@ -42,9 +43,9 @@ export function SatietySheet({ k, myEaten, sat, onClose }: { k: Kitchen; myEaten
       }
     >
       <div className="sat-levels">
-        {LEVELS.map(([v, emoji, label]) => (
+        {LEVELS.map(([v, face, label]) => (
           <button key={v} className={`sat-level${Math.abs(value - v) < 12 ? ' on' : ''}`} onClick={() => setValue(v)}>
-            <span className="sat-emoji">{emoji}</span>
+            <MoodFace level={face} />
             <span>{label}</span>
           </button>
         ))}

@@ -159,7 +159,7 @@ export class Cat3D {
   private squash = 0;
   private squashV = 0;
   /** Текущая поза — к ней плавно тянемся. */
-  private pose = { turn: 0, tilt: 0, lean: 0, lift: 0, armL: 0, armR: 0, tail: 0, stretch: 0 };
+  private pose = { turn: 0, tilt: 0, lean: 0, lift: 0, armL: 0, armR: 0, tail: 0, stretch: 0, shiftX: 0, shiftZ: 0 };
   /** Меши, по которым ловим касания. */
   readonly hitMeshes: THREE.Object3D[] = [];
   private lidColor = '#8f949a';
@@ -498,7 +498,7 @@ export class Cat3D {
     const b = act ? bell(p) : 0;
 
     // Цели позы
-    const pose = { turn: Math.sin(t * 0.35) * 0.06, tilt: 0, lean: 0, lift: 0, armL: Math.sin(t * 1.4) * 0.05, armR: -Math.sin(t * 1.4) * 0.05, tail: Math.sin(t * 1.6) * 0.08, stretch: 0 };
+    const pose = { turn: Math.sin(t * 0.35) * 0.06, tilt: 0, lean: 0, lift: 0, armL: Math.sin(t * 1.4) * 0.05, armR: -Math.sin(t * 1.4) * 0.05, tail: Math.sin(t * 1.6) * 0.08, stretch: 0, shiftX: 0, shiftZ: 0 };
     const face: FaceTargets = { ...FACES[this.faceKind] };
 
     if (act === 'look') pose.turn = Math.sin(p * Math.PI * 2) * 0.45;
@@ -577,10 +577,14 @@ export class Cat3D {
     }
     if (r === 'wake' && since < 0.6) pose.lift = Math.sin((since / 0.6) * Math.PI) * 0.1;
     if (this.eating) {
-      pose.lean = 0.16 + Math.sin(t * 13) * 0.04;
-      pose.turn = -0.25;
-      pose.armL = 0.3;
-      pose.armR = -0.3;
+      // Подаётся к миске (она слева впереди), наклоняется и жуёт
+      pose.shiftX = -0.3;
+      pose.shiftZ = 0.2;
+      pose.turn = -0.5;
+      pose.lean = 0.3 + Math.sin(t * 11) * 0.05;
+      pose.armL = 0.5;
+      pose.armR = -0.2;
+      pose.tail = 0.25 + Math.sin(t * 3) * 0.12;
     }
 
     // Плавное следование позе
@@ -599,7 +603,7 @@ export class Cat3D {
     this.body.scale.set(sx, sy, sx);
     this.body.rotation.set(P.lean, P.turn, P.tilt);
     const shake = angry ? Math.sin(t * 38) * 0.015 : 0;
-    this.body.position.set(shake, P.lift, 0);
+    this.body.position.set(shake + P.shiftX, P.lift, P.shiftZ);
     this.armL.rotation.z = P.armL;
     this.armR.rotation.z = P.armR;
     this.tail.rotation.y = P.tail;

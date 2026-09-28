@@ -31,12 +31,19 @@ interface Clip {
 }
 type Kind = 'meow' | 'angry';
 const clips: Record<Kind, { clip: Clip; buf: AudioBuffer }[]> = { meow: [], angry: [] };
+/** Настоящее чавканье из записи. */
+let eatBuf: AudioBuffer | null = null;
 let lastClip = '';
 
 async function loadClips(c: AudioContext) {
   try {
     const base = `${import.meta.env.BASE_URL}sounds/`;
     const man = (await (await fetch(base + 'sounds.json')).json()) as Record<Kind, Clip[]>;
+    void fetch(base + 'eat.mp3')
+      .then((r) => r.arrayBuffer())
+      .then((d) => c.decodeAudioData(d))
+      .then((b) => (eatBuf = b))
+      .catch(() => undefined);
     for (const kind of ['meow', 'angry'] as Kind[]) {
       await Promise.all(
         (man[kind] ?? []).map(async (clip) => {
@@ -276,6 +283,22 @@ export function hiss() {
   g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
   src.connect(hp).connect(g).connect(c.destination);
   src.start(t);
+}
+
+/** Гера ест из миски: запись чавканья (или синтез, если записи нет). */
+export function eatSound(seconds = 5) {
+  const c = ac();
+  if (!c) return;
+  if (eatBuf) {
+    const src = c.createBufferSource();
+    src.buffer = eatBuf;
+    const g = c.createGain();
+    g.gain.value = 0.9;
+    src.connect(g).connect(c.destination);
+    src.start(0, 0, Math.min(seconds, eatBuf.duration));
+    return;
+  }
+  chomp(Math.round(seconds * 3));
 }
 
 /** «Ням-ням»: три коротких хруста. */

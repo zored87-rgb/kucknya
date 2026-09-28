@@ -90,7 +90,7 @@ export function Buy({ k }: { k: Kitchen }) {
           <input type="checkbox" checked={false} onChange={() => toggle(s)} aria-label={`Купил: ${s.name}`} />
           <span className="rc-box" aria-hidden />
           <span className="rc-name">
-            {s.reason === PANTRY_REASON ? '🧂 ' : ''}
+            {s.reason === PANTRY_REASON ? '* ' : ''}
             {s.name}
           </span>
           <span className="rc-dots" aria-hidden />
@@ -136,7 +136,7 @@ export function Buy({ k }: { k: Kitchen }) {
           ) : (
             <div className="receipt">
               <div className="rc-head">
-                <b>🐾 КУХНЯ ГЕРЫ 🐾</b>
+                <b>* КУХНЯ ГЕРЫ *</b>
                 <span>СПИСОК ПОКУПОК</span>
                 <span>
                   {formatDate(now)} · {String(now.getHours()).padStart(2, '0')}:{String(now.getMinutes()).padStart(2, '0')}
@@ -199,7 +199,7 @@ export function Buy({ k }: { k: Kitchen }) {
                 </>
               )}
               <div className="rc-barcode" aria-hidden />
-              <div className="rc-thanks">СПАСИБО! МУР 🐾</div>
+              <div className="rc-thanks">СПАСИБО! МУР-МУР</div>
             </div>
           )}
         </>
@@ -317,7 +317,7 @@ export function Buy({ k }: { k: Kitchen }) {
             </div>
           </div>
           <button className="reg-key big" onClick={() => setReceipt(true)}>
-            🧾 ЗАПИСАТЬ ЧЕК
+            ЗАПИСАТЬ ЧЕК
           </button>
           {spent.byStore.length > 0 && (
             <div className="receipt small">

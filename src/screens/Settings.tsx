@@ -174,15 +174,15 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
 function PetSettings() {
   const pet = usePet();
   return (
-    <Section title="🐱 Кот">
+    <Section title="Гера">
       <Field label="Как зовут">
         <input value={pet.name} onChange={(e) => setPet({ name: e.target.value })} placeholder="Гера" maxLength={20} />
       </Field>
       <Segmented<'on' | 'off'>
         value={pet.sound ? 'on' : 'off'}
         options={[
-          { value: 'on', label: '🔊 Звуки' },
-          { value: 'off', label: '🔇 Без звука' },
+          { value: 'on', label: 'Со звуком' },
+          { value: 'off', label: 'Без звука' },
         ]}
         onChange={(v) => {
           setPet({ sound: v === 'on' });

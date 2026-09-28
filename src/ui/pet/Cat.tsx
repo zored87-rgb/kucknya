@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { Mood } from '../../logic/pet';
+import { HeartIcon } from './icons';
 import { chomp, giggle, hiss, meow, purr } from './sound';
 
 export type Reaction = 'meow' | 'purr' | 'giggle' | 'hiss' | 'wake' | null;
@@ -239,7 +240,7 @@ export function Cat({
       </svg>
       {hearts.map((h) => (
         <span key={h.id} className="cat-heart" style={{ left: `${h.x}%` }} aria-hidden>
-          💛
+          <HeartIcon />
         </span>
       ))}
     </div>

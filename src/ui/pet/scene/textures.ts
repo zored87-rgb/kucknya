@@ -457,17 +457,11 @@ export function fridgeInsideTexture(): THREE.CanvasTexture {
       g.fillStyle = 'rgba(255,255,255,0.8)';
       g.fillRect(8, y, w - 16, 2);
     }
-    // продукты
-    g.font = '44px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-    g.textAlign = 'center';
-    g.textBaseline = 'bottom';
-    const rows: [number, string[]][] = [
-      [176, ['🧊', '🍦', '🥟']],
-      [296, ['🥛', '🧀', '🥚']],
-      [400, ['🍅', '🥒', '🥕']],
-      [504, ['🍗', '🥩', '🍋']],
-    ];
-    for (const [y, items] of rows) items.forEach((e, i) => g.fillText(e, 48 + i * 80, y));
+    // продукты — нарисованные
+    drawFood(g, 176, ['ice', 'icecream', 'dumpling']);
+    drawFood(g, 296, ['milk', 'cheese', 'eggs']);
+    drawFood(g, 400, ['tomato', 'cucumber', 'carrot']);
+    drawFood(g, 504, ['chicken', 'steak', 'lemon']);
   });
 }
 
@@ -480,15 +474,12 @@ export function doorInsideTexture(shelves: boolean): THREE.CanvasTexture {
     g.lineWidth = 6;
     g.strokeRect(6, 6, w - 12, h - 12);
     if (!shelves) return;
-    g.font = '30px "Apple Color Emoji", sans-serif';
-    g.textAlign = 'center';
-    g.textBaseline = 'bottom';
     for (const [y, items] of [
-      [80, ['🧃', '🍾']],
-      [160, ['🧈', '🥫']],
-      [240, ['🍯', '🧴']],
+      [80, ['juice', 'bottle']],
+      [160, ['butter', 'can']],
+      [240, ['honey', 'bottle']],
     ] as [number, string[]][]) {
-      items.forEach((e, i) => g.fillText(e, 36 + i * 56, y - 6));
+      drawFood(g, y - 6, items, 36, 56, 0.7);
       g.fillStyle = '#b9dcd2';
       g.fillRect(10, y - 6, w - 20, 6);
     }
@@ -522,4 +513,182 @@ export function cloudLayerTexture(sky: string, weather = 'clear', clouds = 20): 
   t.wrapS = THREE.RepeatWrapping;
   t.repeat.x = 0.5;
   return t;
+}
+
+/** Простые рисованные продукты для полок холодильника (вместо эмодзи). */
+function drawFood(g: CanvasRenderingContext2D, baseY: number, items: string[], x0 = 48, step = 80, k = 1) {
+  items.forEach((it, i) => {
+    const x = x0 + i * step;
+    const y = baseY;
+    const R = (c: string, rx: number, ry: number, cx = x, cy = y - ry) => {
+      g.fillStyle = c;
+      g.beginPath();
+      g.ellipse(cx, cy, rx * k, ry * k, 0, 0, Math.PI * 2);
+      g.fill();
+    };
+    const box = (c: string, bw: number, bh: number, r = 6) => {
+      g.fillStyle = c;
+      g.beginPath();
+      g.roundRect(x - (bw * k) / 2, y - bh * k, bw * k, bh * k, r * k);
+      g.fill();
+    };
+    switch (it) {
+      case 'milk':
+        box('#ffffff', 30, 50);
+        box('#5aa7e8', 30, 16, 3);
+        break;
+      case 'cheese':
+        g.fillStyle = '#ffc83d';
+        g.beginPath();
+        g.moveTo(x - 24 * k, y);
+        g.lineTo(x + 24 * k, y);
+        g.lineTo(x + 24 * k, y - 26 * k);
+        g.closePath();
+        g.fill();
+        R('#f0b020', 4, 4, x + 12 * k, y - 8 * k);
+        break;
+      case 'eggs':
+        R('#fff6e6', 10, 14, x - 12 * k);
+        R('#fff6e6', 10, 14, x + 12 * k);
+        break;
+      case 'tomato':
+        R('#e2483d', 18, 16);
+        R('#52b36b', 6, 3, x, y - 30 * k);
+        break;
+      case 'cucumber':
+        g.save();
+        g.translate(x, y - 10 * k);
+        g.rotate(-0.4);
+        g.fillStyle = '#4fae66';
+        g.beginPath();
+        g.ellipse(0, 0, 26 * k, 8 * k, 0, 0, Math.PI * 2);
+        g.fill();
+        g.restore();
+        break;
+      case 'carrot':
+        g.fillStyle = '#ff8a2a';
+        g.beginPath();
+        g.moveTo(x - 8 * k, y - 34 * k);
+        g.lineTo(x + 8 * k, y - 34 * k);
+        g.lineTo(x, y);
+        g.closePath();
+        g.fill();
+        R('#52b36b', 6, 5, x, y - 38 * k);
+        break;
+      case 'chicken':
+        R('#e7a45c', 20, 14);
+        R('#fff3e0', 5, 5, x + 20 * k, y - 22 * k);
+        break;
+      case 'steak':
+        R('#c8474f', 22, 12);
+        R('#f5c6c9', 6, 4, x - 6 * k, y - 12 * k);
+        break;
+      case 'lemon':
+        R('#ffe14d', 16, 13);
+        break;
+      case 'ice':
+        box('#dff4ff', 34, 28, 4);
+        box('#bfe6fa', 16, 12, 3);
+        break;
+      case 'icecream':
+        box('#fbe3c8', 26, 36, 8);
+        R('#ff9ab8', 14, 10, x, y - 36 * k);
+        break;
+      case 'dumpling':
+        R('#fff4dc', 20, 12);
+        break;
+      case 'juice':
+        box('#ff9a3d', 22, 40, 4);
+        break;
+      case 'bottle':
+        box('#7cc4a0', 16, 44, 6);
+        box('#4f8f70', 8, 10, 2);
+        break;
+      case 'butter':
+        box('#fff0a8', 34, 18, 3);
+        break;
+      case 'can':
+        box('#e2483d', 22, 30, 4);
+        box('#ffffff', 22, 10, 1);
+        break;
+      case 'honey':
+        box('#f2a93b', 26, 30, 8);
+        box('#8a5a2b', 28, 8, 3);
+        break;
+    }
+  });
+}
+
+/** Картина на стене: рыбка на голубом фоне — чтобы было понятно, что это рыба. */
+export function fishPictureTexture(): THREE.CanvasTexture {
+  return canvasTexture(320, 230, (g, w, h) => {
+    const grad = g.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#bfe8ff');
+    grad.addColorStop(1, '#7cc4ef');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, w, h);
+    // водоросли
+    g.strokeStyle = '#4fae66';
+    g.lineWidth = 7;
+    g.lineCap = 'round';
+    for (const x of [40, 60, 270]) {
+      g.beginPath();
+      g.moveTo(x, h);
+      g.quadraticCurveTo(x - 18, h - 50, x + 4, h - 90);
+      g.stroke();
+    }
+    // пузырьки
+    g.strokeStyle = '#ffffff';
+    g.lineWidth = 3;
+    for (const [x, y, r] of [
+      [218, 62, 7],
+      [232, 40, 5],
+      [242, 22, 4],
+    ]) {
+      g.beginPath();
+      g.arc(x, y, r, 0, Math.PI * 2);
+      g.stroke();
+    }
+    // рыбка: тело, хвост, плавник, глаз, улыбка, полоски
+    const cx = 150;
+    const cy = 120;
+    g.fillStyle = '#ff8a3d';
+    g.beginPath();
+    g.moveTo(cx + 70, cy);
+    g.bezierCurveTo(cx + 40, cy - 55, cx - 50, cy - 55, cx - 60, cy);
+    g.bezierCurveTo(cx - 50, cy + 55, cx + 40, cy + 55, cx + 70, cy);
+    g.fill();
+    g.beginPath();
+    g.moveTo(cx - 55, cy);
+    g.lineTo(cx - 105, cy - 38);
+    g.quadraticCurveTo(cx - 90, cy, cx - 105, cy + 38);
+    g.closePath();
+    g.fill();
+    g.fillStyle = '#ffb27a';
+    g.beginPath();
+    g.moveTo(cx - 5, cy - 38);
+    g.quadraticCurveTo(cx + 10, cy - 68, cx + 30, cy - 36);
+    g.fill();
+    g.strokeStyle = '#ffffff';
+    g.lineWidth = 6;
+    for (const dx of [-18, 8]) {
+      g.beginPath();
+      g.moveTo(cx + dx, cy - 36);
+      g.quadraticCurveTo(cx + dx + 10, cy, cx + dx, cy + 36);
+      g.stroke();
+    }
+    g.fillStyle = '#ffffff';
+    g.beginPath();
+    g.arc(cx + 40, cy - 12, 11, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = '#2a211a';
+    g.beginPath();
+    g.arc(cx + 43, cy - 12, 6, 0, Math.PI * 2);
+    g.fill();
+    g.strokeStyle = '#c2461f';
+    g.lineWidth = 3;
+    g.beginPath();
+    g.arc(cx + 55, cy + 10, 8, 0.2, Math.PI - 0.6);
+    g.stroke();
+  });
 }

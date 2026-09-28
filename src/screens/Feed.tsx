@@ -42,16 +42,16 @@ export function Feed({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
         <span>кафе «У Геры»</span>
       </div>
       <button className="btn ghost wide own-meal" onClick={() => setOwn(true)}>
-        ✏️ Своё блюдо или перекус
+        Своё блюдо или перекус
       </button>
       {slot !== 'breakfast' && <Leftovers k={k} />}
 
       <Segmented<Slot>
         value={slot}
         options={[
-          { value: 'breakfast', label: '☀️ Завтрак' },
-          { value: 'lunch', label: '🍲 Обед' },
-          { value: 'dinner', label: '🌙 Ужин' },
+          { value: 'breakfast', label: 'Завтрак' },
+          { value: 'lunch', label: 'Обед' },
+          { value: 'dinner', label: 'Ужин' },
         ]}
         onChange={(v) => {
           setSlot(v);

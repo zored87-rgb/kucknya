@@ -155,7 +155,7 @@ export function CookMode({
       <section className="cm-stage">
         <div className="cm-bubble" key={page}>
           {page === 0 ? (
-            <p className="cm-step">Сначала проверим продукты — всё на месте? Тогда жми «Начать» 👨‍🍳</p>
+            <p className="cm-step">Сначала проверим продукты — всё на месте? Тогда жми «Начать»!</p>
           ) : (
             <>
               <span className="cm-num">

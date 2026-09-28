@@ -2556,3 +2556,25 @@ button.obj-label.pin:active {
 .hud-partner .hud-bar {
   flex: 1;
 }
+
+.reward-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.mood-face {
+  width: 36px;
+  height: 36px;
+}
+
+.heart-icon {
+  width: 26px;
+  height: 24px;
+  filter: drop-shadow(0 2px 2px rgb(200 60 100 / 30%));
+}
+
+.hud-fish {
+  width: 28px;
+  height: 22px;
+  flex: none;
+}

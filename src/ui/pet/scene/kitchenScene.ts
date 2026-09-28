@@ -5,7 +5,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Face } from '../Cat';
 import { Cat3D } from './cat3d';
-import { basketTexture, calendarTexture, floorTexture, glyphTexture, cloudLayerTexture, dateTexture, doorInsideTexture, fridgeInsideTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
+import { basketTexture, calendarTexture, cloudLayerTexture, dateTexture, doorInsideTexture, fishPictureTexture, floorTexture, fridgeInsideTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
 
 export type Target = 'fridge' | 'recipes' | 'eaten' | 'buy' | 'feed' | 'settings';
 
@@ -48,6 +48,21 @@ export const ANCHORS: Record<string, THREE.Vector3> = {
   settings: new THREE.Vector3(1.3, 4.42, -2.9),
   window: new THREE.Vector3(-0.45, 4.3, -2.8),
 };
+
+let heartGeo: THREE.ExtrudeGeometry | null = null;
+/** Пухлое сердечко (объёмное, со скруглёнными краями). */
+function heartGeometry(): THREE.ExtrudeGeometry {
+  if (heartGeo) return heartGeo;
+  const h = new THREE.Shape();
+  h.moveTo(0, -0.9);
+  h.bezierCurveTo(-0.2, -0.65, -1, -0.3, -1, 0.25);
+  h.bezierCurveTo(-1, 0.75, -0.45, 1, 0, 0.55);
+  h.bezierCurveTo(0.45, 1, 1, 0.75, 1, 0.25);
+  h.bezierCurveTo(1, -0.3, 0.2, -0.65, 0, -0.9);
+  heartGeo = new THREE.ExtrudeGeometry(h, { depth: 0.35, bevelEnabled: true, bevelThickness: 0.25, bevelSize: 0.2, bevelSegments: 6, curveSegments: 24 });
+  heartGeo.center();
+  return heartGeo;
+}
 
 function mat(color: string, extra: THREE.MeshStandardMaterialParameters = {}) {
   return new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...extra });
@@ -517,9 +532,7 @@ export class KitchenScene {
       tag(o, t);
       this.targets.push(o);
     }
-    // Корзину чуть ближе к центру — иначе её обрезает край узкого экрана
-    const basketNode = node('Basket');
-    if (basketNode) basketNode.position.x -= 0.05;
+    // Полка, календарь и корзина стоят на своих местах прямо в модели (свет запечён под них)
     this.fridgeDoors = [node('FridgeDoorTop'), node('FridgeDoorMain')].filter((x): x is THREE.Object3D => !!x);
     // Внутренняя сторона дверец — светлая, с полочками (при запекании там была тень)
     this.fridgeDoors.forEach((door, i) => {
@@ -540,7 +553,7 @@ export class KitchenScene {
     // Число в календаре
     const today = new Date();
     const num = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.62), new THREE.MeshBasicMaterial({ map: dateTexture(this.state.day ?? today.getDate(), this.state.month ?? today.getMonth()), transparent: true }));
-    num.position.set(1.5, 1.75, -2.925);
+    num.position.set(1.85, 3.1, -2.925);
     this.calendarNum = num;
     model.add(num);
     // Стрелки часов
@@ -560,6 +573,12 @@ export class KitchenScene {
     hands.position.set(1.3, 4.85, -2.86);
     this.clock3d = hands;
     model.add(hands);
+    // Картина: понятная рыбка поверх запечённой
+    const fish = new THREE.Mesh(new THREE.PlaneGeometry(0.64, 0.46), new THREE.MeshBasicMaterial({ map: fishPictureTexture() }));
+    fish.position.set(-1.35, 5.0, -2.885);
+    model.add(fish);
+    this.baked.push(fish.material as THREE.MeshBasicMaterial);
+
     // Нутро холодильника за дверцами — светлое, с полками (при запекании там была темнота)
     const inside = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 2.05), new THREE.MeshBasicMaterial({ map: fridgeInsideTexture() }));
     inside.position.set(-1.35, 1.12, -1.245);
@@ -715,15 +734,14 @@ export class KitchenScene {
     if (s.eating && !prev.eating) this.food.visible = true;
   }
 
-  /** Сердечки над котом, когда гладят. */
+  /** Объёмные розовые сердечки над котом, когда гладят. */
   hearts3(n = 3) {
-    const tex = glyphTexture('❤', '#ff5a8a');
     const now = this.clock.getElapsedTime();
     for (let i = 0; i < n; i++) {
-      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-      s.userData = { born: now + i * 0.15, x: (Math.random() - 0.5) * 1.2 };
-      s.scale.setScalar(0.01);
-      this.hearts.add(s);
+      const m = new THREE.Mesh(heartGeometry(), new THREE.MeshPhysicalMaterial({ color: '#ff6f9a', roughness: 0.25, clearcoat: 1, sheen: 0.6, sheenColor: new THREE.Color('#ffc0d4'), transparent: true }));
+      m.userData = { born: now + i * 0.18, x: (Math.random() - 0.5) * 1.1, spin: (Math.random() - 0.5) * 2 };
+      m.scale.setScalar(0.001);
+      this.hearts.add(m);
     }
   }
 
@@ -737,8 +755,8 @@ export class KitchenScene {
   zoomTo(target: Target, done: () => void) {
     const focus: Record<Target, [number, number, number]> = {
       fridge: [-1.35, 1.3, -1.6],
-      recipes: [1.35, 2.85, -2.8],
-      eaten: [1.5, 1.75, -2.9],
+      recipes: [1.35, 2.0, -2.8],
+      eaten: [1.85, 3.1, -2.9],
       buy: [1.2, 0.45, 0.9],
       feed: [-0.8, 0.15, 1.4],
       settings: [1.3, 4.85, -2.9],
@@ -824,12 +842,15 @@ export class KitchenScene {
       if (age < 0) continue;
       if (age > 1.6) {
         this.hearts.remove(s);
-        (s as THREE.Sprite).material.dispose();
+        ((s as THREE.Mesh).material as THREE.Material).dispose();
         continue;
       }
-      s.position.set(s.userData.x, 1.6 + age * 1.1, 0.8);
-      s.scale.setScalar(0.25 + age * 0.15);
-      (s as THREE.Sprite).material.opacity = 1 - age / 1.6;
+      // Сердечко выпрыгивает, покачивается и тает
+      const pop = Math.min(1, age / 0.25);
+      s.position.set(s.userData.x + Math.sin(age * 5) * 0.06, 1.7 + age * 1.0, 1.1);
+      s.rotation.set(0, Math.sin(age * 3) * 0.6 + s.userData.spin * age, Math.sin(age * 4) * 0.2);
+      s.scale.setScalar(0.12 * (pop < 1 ? 1.3 * pop : 1));
+      ((s as THREE.Mesh).material as THREE.MeshPhysicalMaterial).opacity = age > 1.1 ? 1 - (age - 1.1) / 0.5 : 1;
     }
 
     // Кипящая кастрюля: пузыри, пар, крышка подпрыгивает

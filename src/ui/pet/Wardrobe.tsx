@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { REWARDS, XP_MEAL, XP_NEW_DISH, type Reward } from '../../logic/pet';
 import { Sheet } from '../kit';
+import { RewardIcon } from './icons';
 import { setPet, usePet } from './petStore';
 import { fanfare } from './sound';
 
@@ -33,7 +34,7 @@ export function Wardrobe({ level, xp, onClose }: { level: number; xp: { into: nu
           const on = (r.kind === 'outfit' ? pet.outfit : pet.wall) === r.id;
           return (
             <button key={r.id} className={`reward${locked ? ' locked' : ''}${on ? ' on' : ''}`} onClick={() => choose(r)} disabled={locked}>
-              <span className="reward-emoji">{locked ? '🔒' : r.emoji}</span>
+              <RewardIcon id={r.id} locked={locked} />
               <span className="reward-name">{r.name}</span>
               <small>{locked ? `уровень ${r.level}` : on ? 'надето' : r.kind === 'wall' ? 'обои' : 'надеть'}</small>
             </button>
@@ -68,12 +69,12 @@ export function LevelUp({ level, onClose }: { level: number; onClose: () => void
             <p>Награда:</p>
             {got.map((r) => (
               <button key={r.id} className="btn primary wide" onClick={() => wear(r)}>
-                {r.emoji} {r.kind === 'outfit' ? 'Надеть' : 'Поклеить'}: {r.name}
+                {r.kind === 'outfit' ? 'Надеть' : 'Поклеить'}: {r.name}
               </button>
             ))}
           </>
         ) : (
-          <p>Кот гордится вами. Готовьте дальше — впереди новые наряды.</p>
+          <p>Гера гордится вами. Готовьте дальше — впереди новые наряды.</p>
         )}
         <button className="btn ghost wide" onClick={onClose}>
           Ура!

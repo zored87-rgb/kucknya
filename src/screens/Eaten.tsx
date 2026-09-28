@@ -61,7 +61,7 @@ export function Eaten({ k }: { k: Kitchen }) {
   return (
     <div className="notebook">
       <button className="btn primary wide" onClick={() => setAdding(true)}>
-        ✏️ Записать, что ели
+        Записать, что ели
       </button>
       {rows.length > 0 && (
         <Section title="За неделю">
@@ -82,7 +82,7 @@ export function Eaten({ k }: { k: Kitchen }) {
           </div>
         </Section>
       )}
-      <Section title="❤️ Любимое">
+      <Section title="Любимое">
         {favorites.length === 0 ? (
           <p className="muted small">Здесь будут блюда, которым вы оба поставили 👍.</p>
         ) : (
