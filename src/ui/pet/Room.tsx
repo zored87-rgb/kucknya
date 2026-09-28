@@ -5,12 +5,14 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { Kitchen } from '../../hooks/useKitchen';
 import { parseDate, daysBetween } from '../../logic/dates';
 import { useWeather } from '../../logic/weather';
-import { eatenBy, metabolismOf, isNight, levelOf, moodOf, phrase, pickTalk, satietyOf, spoilPhrase, xpOf, type Mood } from '../../logic/pet';
+import { eatenBy, greeting, metabolismOf, isNight, levelOf, moodOf, phrase, pickTalk, satietyOf, spoilPhrase, streakOf, streakTalk, weatherTalk, xpOf, type Mood } from '../../logic/pet';
+import { gainOf, kcalOf } from '../../logic/kcal';
+import type { EatenRow } from '../../types';
 import { SatietySheet } from './SatietySheet';
 import { productLabel } from '../labels';
 import { Cat, faceOf, type Reaction } from './Cat';
 import type { SceneState, Target } from './scene/kitchenScene';
-import { angryMeow, audioReady, eatSound, giggle, hiss, meow, purr } from './sound';
+import { angryMeow, audioReady, chirp, eatSound, giggle, hiss, meow, purr } from './sound';
 import { LevelUp, Wardrobe } from './Wardrobe';
 import { setPet, usePet } from './petStore';
 
@@ -35,7 +37,7 @@ function can3d(): boolean {
   }
 }
 
-const TARGET_TAB: Record<Target, string> = { fridge: 'fridge', recipes: 'recipes', eaten: 'eaten', buy: 'buy', feed: '', settings: 'settings' };
+const TARGET_TAB: Record<Target, string> = { fridge: 'fridge', recipes: 'recipes', eaten: 'eaten', buy: 'buy', feed: '', settings: 'settings', window: '' };
 
 function toneOf(v: number): string {
   return v >= 65 ? 'good' : v >= 35 ? 'ok' : v >= 10 ? 'low' : 'empty';
@@ -81,6 +83,8 @@ export function Room({
   const [anchors, setAnchors] = useState<Record<string, { x: number; y: number }>>({});
   const [reaction, setReaction] = useState<Reaction>(null);
   const [heartsKey, setHeartsKey] = useState(0);
+  /** Меняется — 3D-сцена пересоздаётся (после того как iPhone отобрал графику). */
+  const [sceneKey, setSceneKey] = useState(0);
   const zoomReq = null;
   // Пока камера подлетает к предмету, подписи прячутся; вернулись на кухню — снова видны
   const [zooming, setZooming] = useState(false);
@@ -104,13 +108,16 @@ export function Room({
   // Моя сытость (с личным темпом голода) и партнёра — по общему дневнику
   const partner = k.me === 'Крис' ? 'Кристина' : 'Крис';
   const myEaten = useMemo(() => eatenBy(eaten, k.me), [eaten, k.me]);
-  const sat = satietyOf(myEaten, pet.fed, now, metabolismOf(k.me, pet.metab));
-  const partnerSat = satietyOf(eatenBy(eaten, partner), {}, now, metabolismOf(partner, k.view.settings.pets?.[partner]));
+  // Еда прибавляет сытость по калориям: банан — немного, обед — до полной
+  const gainFor = (person: string) => (row: EatenRow) => gainOf(kcalOf(row, k.recipes, pet.kcal), person);
+  const sat = satietyOf(myEaten, pet.fed, now, metabolismOf(k.me, pet.metab), gainFor(k.me));
+  const partnerSat = satietyOf(eatenBy(eaten, partner), {}, now, metabolismOf(partner, k.view.settings.pets?.[partner]), gainFor(partner));
   const [satOpen, setSatOpen] = useState(false);
   const spoiling = useMemo(
     () => [...k.stock.items.values()].filter((i) => i.daysLeft != null && i.daysLeft <= 1).sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0)),
     [k.stock],
   );
+  const expired = spoiling.some((i) => (i.daysLeft ?? 0) < 0);
   const mood: Mood = moodOf(sat, spoiling.length, new Date(now));
   const xp = useMemo(() => xpOf(eaten), [eaten]);
   const lvl = levelOf(xp);
@@ -162,6 +169,10 @@ export function Room({
     if (!pet.seenLevel) setPet({ seenLevel: lvl.level });
   }, [pet.seenLevel, lvl.level]);
   const levelUp = active && pet.seenLevel > 0 && lvl.level > pet.seenLevel;
+  // Новый уровень — Гера радуется
+  useEffect(() => {
+    if (levelUp) setHeartsKey((x) => x + 1);
+  }, [levelUp]);
 
   // Сам по себе мяукает: сытый — изредка, голодный — часто, злой — сердито.
   useEffect(() => {
@@ -189,7 +200,40 @@ export function Room({
     return () => window.clearTimeout(t);
   }, [say]);
 
-  const moodText = mood === 'sad' && spoiling[0] ? spoilPhrase(productLabel(spoiling[0].key), seed) : phrase(mood, seed, sat);
+  const streak = useMemo(() => streakOf(eaten, k.today), [eaten, k.today]);
+  const streakLine = streakTalk(streak);
+  const moodText =
+    mood === 'sad' && spoiling[0]
+      ? spoilPhrase(productLabel(spoiling[0].key), seed)
+      : streakLine && (mood === 'happy' || mood === 'peckish') && seed % 4 === 0
+        ? streakLine
+        : phrase(mood, seed, sat);
+
+  // Здоровается, когда вернулись на кухню (или открыли приложение) после паузы
+  const leftAt = useRef<number>(0);
+  useEffect(() => {
+    if (!active) {
+      leftAt.current = Date.now();
+      return;
+    }
+    const away = Date.now() - leftAt.current;
+    if (leftAt.current === 0 || away > 60_000) {
+      const t = window.setTimeout(() => {
+        setSay((cur) => cur ?? greeting(new Date().getHours(), mood, Date.now() >> 12));
+        if (audioReady()) chirp();
+      }, 900);
+      return () => window.clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === 'hidden') leftAt.current = Date.now();
+      else if (active && Date.now() - leftAt.current > 60_000) setSay((cur) => cur ?? greeting(new Date().getHours(), mood, Date.now() >> 12));
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [active, mood]);
   // Гера говорит не всё время: сам — изредка (голодный — чаще), остальное — на касания и еду
   const moodRef = useRef(moodText);
   moodRef.current = moodText;
@@ -259,7 +303,8 @@ export function Room({
     () => ({
       face: faceOf(mood, reaction, eating),
       mood,
-      talking: !!say || mood === 'hungry' || mood === 'angry',
+      // Рот двигается, только когда Гера что-то говорит
+      talking: !!say,
       eating,
       reaction,
       outfit: pet.outfit,
@@ -267,14 +312,14 @@ export function Room({
       sky: skyOf(h),
       night: isNight(new Date(now)),
       // Мухи над холодильником — только если что-то уже просрочено и пора выбрасывать
-      spoiling: spoiling.some((i) => (i.daysLeft ?? 0) < 0),
+      spoiling: expired,
       weekMeals,
       day: new Date(now).getDate(),
       month: new Date(now).getMonth(),
       weather: weather?.kind ?? 'clear',
       clouds: weather?.clouds ?? 20,
     }),
-    [mood, reaction, eating, say, pet.outfit, pet.wall, h, now, spoiling.length, weekMeals, weather?.kind, weather?.clouds],
+    [mood, reaction, eating, say, pet.outfit, pet.wall, h, now, expired, weekMeals, weather?.kind, weather?.clouds],
   );
   const flat = !try3d;
 
@@ -285,12 +330,21 @@ export function Room({
       {try3d && (
         <Suspense fallback={null}>
           <Scene3D
+            key={sceneKey}
+            onLost={() => {
+              setReady3d(false);
+              window.setTimeout(() => setSceneKey((x) => x + 1), 300);
+            }}
             state={sceneState}
             heartsKey={heartsKey}
             zoomReq={zoomReq}
             active={active}
             onZoomStart={() => setZooming(true)}
-            onTarget={(t) => (t === 'feed' ? onFeed() : go(TARGET_TAB[t]))}
+            onTarget={(t) => {
+              if (t === 'window') setSay(weatherTalk(weather?.kind ?? 'clear', isNight(new Date()), Date.now() >> 10));
+              else if (t === 'feed') onFeed();
+              else go(TARGET_TAB[t]);
+            }}
             onCatTap={catTap}
             onCatStroke={catStroke}
             onAnchors={setAnchors}
@@ -373,7 +427,7 @@ export function Room({
             <div className={`bubble${mood === 'angry' && !say ? ' b-angry' : ''}`} key={bubble}>
               {bubble}
             </div>
-            <Cat mood={mood} outfit={pet.outfit} eating={eating} talking={!!say || mood === 'hungry' || mood === 'angry'} onReact={(r) => setSay(pickTalk(REACTION_KIND[r]))} />
+            <Cat mood={mood} outfit={pet.outfit} eating={eating} talking={!!say} onReact={(r) => setSay(pickTalk(REACTION_KIND[r]))} />
           </div>
 
           <button className={`obj obj-bowl${eating ? ' full' : ''}`} onClick={onFeed} aria-label="Миска: чем покормить">
@@ -398,7 +452,7 @@ export function Room({
         </>
       )}
 
-      {satOpen && <SatietySheet k={k} myEaten={myEaten} sat={sat} onClose={() => setSatOpen(false)} />}
+      {satOpen && <SatietySheet k={k} myEaten={myEaten} sat={sat} streak={streak} onClose={() => setSatOpen(false)} />}
       {wardrobe && <Wardrobe level={lvl.level} xp={lvl} onClose={() => setWardrobe(false)} />}
       {levelUp && <LevelUp level={lvl.level} onClose={() => setPet({ seenLevel: lvl.level })} />}
     </div>

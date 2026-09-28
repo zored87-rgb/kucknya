@@ -109,27 +109,70 @@ function clamp100(x: number): number {
   return Math.max(0, Math.min(100, Math.round(x)));
 }
 
-/** Сытость с учётом личного темпа и ручной отметки (если она позже последней еды). */
-export function satietyOf(eaten: EatenRow[], exact: Record<string, number>, now: number, m: Metabolism = DEFAULT_METABOLISM): number {
-  const last = lastMealAt(eaten, exact, now);
-  const ov = m.override && m.override.at <= now ? m.override : null;
-  if (ov && (last == null || ov.at >= last)) return clamp100(ov.value - (awakeHours(ov.at, now) * 100) / m.fullHours);
-  if (last == null) return 25;
-  return clamp100(100 - (awakeHours(last, now) * 100) / m.fullHours);
+/**
+ * Сытость за последние двое суток: от события к событию убывает с личным темпом,
+ * еда прибавляет по калориям (gain: банан ≈ 15, обед ≈ 100, можно «объесться» до 110),
+ * ручная отметка ставит значение как есть.
+ */
+export function satietyOf(
+  eaten: EatenRow[],
+  exact: Record<string, number>,
+  now: number,
+  m: Metabolism = DEFAULT_METABOLISM,
+  gain: (row: EatenRow) => number = () => 100,
+): number {
+  const WINDOW = 48 * HOUR;
+  const events: { t: number; set?: number; add?: number }[] = [];
+  for (const row of eaten) {
+    let t = mealTime(row, exact);
+    if (t == null) continue;
+    if (t > now) {
+      if (t - now > 12 * HOUR) continue;
+      t = now;
+    }
+    if (now - t > WINDOW) continue;
+    events.push({ t, add: gain(row) });
+  }
+  const ov = m.override && m.override.at <= now && now - m.override.at <= WINDOW ? m.override : null;
+  if (ov) events.push({ t: ov.at, set: ov.value });
+  if (!events.length) return 25;
+  events.sort((x, y) => x.t - y.t);
+  // До первой известной еды считаем, что был голоден
+  let s = 25;
+  let prev = events[0].t;
+  const decay = (from: number, to: number) => (awakeHours(from, to) * 100) / m.fullHours;
+  for (const e of events) {
+    s = Math.max(0, s - decay(prev, e.t));
+    s = e.set != null ? e.set : Math.min(110, s + (e.add ?? 0));
+    prev = e.t;
+  }
+  return clamp100(s - decay(prev, now));
 }
 
 /**
  * Ручная отметка «я сыт на value»: запоминаем её и подстраиваем темп.
- * Если после еды прошло h часов, а сытость value — значит, от сыт до голоден ≈ h / (1 − value/100).
+ * С последней еды (или прошлой отметки) сытость упала с «было» до value за h часов —
+ * значит, от сыт до пусто ≈ h × 100 / (было − value). Учитываем, что перекус насыщает меньше обеда.
  */
-export function calibrate(eaten: EatenRow[], exact: Record<string, number>, now: number, value: number, m: Metabolism = DEFAULT_METABOLISM): Metabolism {
+export function calibrate(
+  eaten: EatenRow[],
+  exact: Record<string, number>,
+  now: number,
+  value: number,
+  m: Metabolism = DEFAULT_METABOLISM,
+  gain: (row: EatenRow) => number = () => 100,
+): Metabolism {
   const last = lastMealAt(eaten, exact, now);
+  const prevAt = m.override && m.override.at <= now ? m.override.at : null;
+  const start = Math.max(last ?? 0, prevAt ?? 0);
   let { fullHours, n } = m;
-  if (last != null && value < 95) {
-    const h = awakeHours(last, now);
-    if (h >= 1) {
-      const implied = Math.max(5, Math.min(36, h / (1 - value / 100)));
-      // Первые отметки сильнее сдвигают темп, потом — осторожнее
+  if (start > 0) {
+    const h = awakeHours(start, now);
+    const was = satietyOf(eaten, exact, start, m, gain);
+    if (h >= 1 && value < 95) {
+      const drop = was - value;
+      // Сытее, чем думал Гера — темп чуть медленнее; голоднее — считаем по падению
+      const implied = drop > 3 ? Math.max(4, Math.min(36, (h * 100) / drop)) : Math.min(36, fullHours * 1.3);
       const w = n < 3 ? 0.5 : 0.25;
       fullHours = Math.round((fullHours * (1 - w) + implied * w) * 10) / 10;
       n += 1;
@@ -318,4 +361,60 @@ export const TALK = {
 export function pickTalk(kind: keyof typeof TALK): string {
   const list = TALK[kind];
   return list[Math.floor(Math.random() * list.length)];
+}
+
+// ---------- Погода, серия, приветствие ----------
+
+const WEATHER_TALK: Record<string, string[]> = {
+  clear: ['Солнышко! Погреть бы пузико', 'Какая погода — хоть на балкон'],
+  partly: ['Облачка плывут. Одно похоже на рыбку', 'Немного облаков, немного солнца'],
+  cloudy: ['Пасмурно. Самое время для супа', 'Серо за окном. Зато дома уютно'],
+  fog: ['Туман. Я ничего не вижу, кроме холодильника', 'Туман, как в сказке'],
+  drizzle: ['Моросит. Хорошо, что мы дома', 'Мелкий дождик. Я никуда не пойду'],
+  rain: ['Дождь! Я остаюсь на кухне', 'Слышишь дождь? Уютно'],
+  snow: ['Снег в Валенсии?! Невероятно', 'Снежинки! Можно я на них посмотрю'],
+  storm: ['Гроза… Можно я посижу рядом?', 'Гром! Я не боюсь. Почти'],
+};
+
+export function weatherTalk(kind: string, night: boolean, seed: number): string {
+  if (night && (kind === 'clear' || kind === 'partly')) {
+    const n = ['Смотри, какие звёзды', 'Луна сегодня похожа на сырник'];
+    return n[Math.abs(seed) % n.length];
+  }
+  const list = WEATHER_TALK[kind] ?? WEATHER_TALK.clear;
+  return list[Math.abs(seed) % list.length];
+}
+
+/** Сколько дней подряд ели дома (сегодня или по вчера включительно). */
+export function streakOf(eaten: EatenRow[], today: Date): number {
+  const days = new Set<string>();
+  for (const r of eaten) {
+    const d = parseDate(r.date);
+    if (d) days.add(d.toDateString());
+  }
+  const day = new Date(today);
+  day.setHours(12, 0, 0, 0);
+  // Сегодня ещё не ели — серия считается по вчера
+  if (!days.has(day.toDateString())) day.setDate(day.getDate() - 1);
+  let n = 0;
+  while (days.has(day.toDateString()) && n < 366) {
+    n++;
+    day.setDate(day.getDate() - 1);
+  }
+  return n;
+}
+
+export function streakTalk(n: number): string | null {
+  if (n < 2) return null;
+  const w = n % 10 === 1 && n % 100 !== 11 ? 'день' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'дня' : 'дней';
+  return `${n} ${w} подряд едим дома. Я горжусь!`;
+}
+
+/** Приветствие, когда вернулись на кухню. */
+export function greeting(hour: number, mood: Mood, seed: number): string {
+  if (mood === 'hungry' || mood === 'angry') return ['Ты вернулся! А еда?', 'Наконец-то! Я тут голодаю'][Math.abs(seed) % 2];
+  if (hour >= 5 && hour < 11) return ['Доброе утро!', 'Утро! Завтракать будем?'][Math.abs(seed) % 2];
+  if (hour >= 11 && hour < 17) return ['Привет! Как день?', 'О, ты пришёл!'][Math.abs(seed) % 2];
+  if (hour >= 17 && hour < 23) return ['Добрый вечер!', 'Вечер. Что на ужин?'][Math.abs(seed) % 2];
+  return ['Ты чего не спишь?', 'Ночной перекус? Я никому не скажу'][Math.abs(seed) % 2];
 }

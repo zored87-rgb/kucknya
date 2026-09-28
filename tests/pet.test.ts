@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { awakeHours, hungerText, lastMealAt, levelOf, moodOf, satiety, xpForLevel, xpOf } from '../src/logic/pet';
+import { awakeHours, hungerText, lastMealAt, levelOf, moodOf, satiety, xpForLevel, xpOf, streakOf, streakTalk, weatherTalk } from '../src/logic/pet';
 import type { EatenRow } from '../src/types';
 
 const row = (id: string, date: string, meal: string, dish = 'Борщ', recipeId = 'borsch'): EatenRow => ({ id, date, meal, dish, who: 'оба', score: '', recipeId });
@@ -110,5 +110,71 @@ describe('темп голода по росту и весу', () => {
   });
   it('выученный по отметкам темп важнее расчёта', () => {
     expect(metabolismOf('Крис', { fullHours: 9, n: 2, override: null }).fullHours).toBe(9);
+  });
+});
+
+import { gainOf, kcalOf, productKcal } from '../src/logic/kcal';
+import { BUILTIN_RECIPES } from '../src/data/recipes';
+
+describe('сытость по калориям', () => {
+  it('банан — перекус, а не полный обед', () => {
+    const banana = { ...row('k1', '28.09.2026', 'перекус', 'Банан', ''), who: 'Крис' };
+    expect(kcalOf(banana, BUILTIN_RECIPES)).toBe(105);
+    expect(gainOf(105, 'Крис')).toBeLessThan(20);
+    expect(gainOf(105, 'Кристина')).toBeGreaterThan(gainOf(105, 'Крис'));
+  });
+
+  it('обед по рецепту почти наполняет', () => {
+    const borsch = row('k2', '28.09.2026', 'обед');
+    expect(gainOf(kcalOf(borsch, BUILTIN_RECIPES), 'Крис')).toBeGreaterThan(80);
+  });
+
+  it('банан при голоде прибавляет немного', () => {
+    const banana = { ...row('k3', '28.09.2026', 'перекус', 'Банан', ''), who: 'Крис' };
+    const gain = (r: EatenRow) => gainOf(kcalOf(r, BUILTIN_RECIPES), 'Крис');
+    // Голоден (ручная отметка 10), через минуту съел банан
+    const m = { fullHours: 7, n: 0, override: { value: 10, at: at(28, 12) } };
+    const v = satietyOf([banana], { k3: at(28, 12) + 60_000 }, at(28, 12) + 120_000, m, gain);
+    expect(v).toBeGreaterThan(15);
+    expect(v).toBeLessThan(35);
+  });
+
+  it('калории продуктов: штуки и граммы', () => {
+    expect(productKcal('банан', 2)).toBe(210);
+    expect(productKcal('рис', 100)).toBe(350);
+  });
+});
+
+describe('серия, погода, перекус при калибровке', () => {
+  const day = (offset: number) => {
+    const d = new Date(2026, 8, 28 + offset);
+    return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+  };
+  const row = (date: string, dish = 'Суп', meal = 'обед'): EatenRow => ({ id: date + dish, date, meal, dish, who: 'оба', score: '', recipeId: '' }) as EatenRow;
+
+  it('считает дни подряд, сегодня можно ещё не есть', () => {
+    const today = new Date(2026, 8, 28, 10);
+    expect(streakOf([row(day(0)), row(day(-1)), row(day(-2)), row(day(-4))], today)).toBe(3);
+    expect(streakOf([row(day(-1)), row(day(-2))], today)).toBe(2);
+    expect(streakOf([row(day(-3))], today)).toBe(0);
+    expect(streakTalk(1)).toBeNull();
+    expect(streakTalk(3)).toContain('3 дня');
+    expect(streakTalk(5)).toContain('5 дней');
+  });
+
+  it('говорит о погоде без эмодзи', () => {
+    const t = weatherTalk('rain', false, 3);
+    expect(t.length).toBeGreaterThan(3);
+    expect(/\p{Extended_Pictographic}/u.test(t)).toBe(false);
+  });
+
+  it('перекус не делает метаболизм «быстрым»', () => {
+    const now = new Date(2026, 8, 28, 13).getTime();
+    const snack = row(day(0), 'Банан', 'перекус');
+    const exact = { [snack.id]: now - 2 * 3600e3 };
+    const m = { fullHours: 7, n: 0, override: { value: 40, at: now - 3 * 3600e3 } };
+    // Было 40%, банан +15 → 55, через 2 ч чувствую 30% — это голод, но не повод считать темп 5 ч
+    const next = calibrate([snack], exact, now, 30, m, () => 15);
+    expect(next.fullHours).toBeGreaterThan(6);
   });
 });

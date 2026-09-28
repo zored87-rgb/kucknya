@@ -10,6 +10,7 @@ import { formatQty, parseQty } from '../data/quantity';
 import { recipeIdForDish } from '../data/recipes';
 import type { Kitchen } from '../hooks/useKitchen';
 import { formatDate } from '../logic/dates';
+import { productKcal } from '../logic/kcal';
 import { mealForTime } from '../logic/suggest';
 import { MEALS, type FridgeRow, type Meal, type Who } from '../types';
 import { productEmoji } from './emoji';
@@ -59,14 +60,20 @@ export function OwnMealSheet({ k, onClose }: { k: Kitchen; onClose: () => void }
     const ops: OpBody[] = [
       { op: 'eaten.upsert', row: { id, date: formatDate(new Date()), meal, dish: name, who, score: '', recipeId: recipeIdForDish(name, k.recipes) ?? '' } },
     ];
+    // Калории: сколько каждого продукта ушло (было − осталось); вдвоём — пополам
+    let kcal = 0;
     for (const u of used) {
       const p = productOfRow(u.row);
       const n = parseQty(u.qty, p).n;
       if (u.finished || n === 0) ops.push({ op: 'fridge.delete', id: u.row.id });
       else if (n != null) ops.push({ op: 'fridge.upsert', row: { id: u.row.id, qty: formatQty(n, p) } });
+      const before = parseQty(u.row.qty, p).n;
+      const after = u.finished ? 0 : n;
+      const amount = before != null && after != null ? Math.max(0, before - after) : p?.unit === 'шт' ? 1 : 100;
+      if (p && amount > 0) kcal += productKcal(p.key, amount);
     }
     mutate(ops);
-    feedPet(id);
+    feedPet(id, kcal > 0 ? kcal / (who === 'оба' ? 2 : 1) : undefined);
     toast(used.length ? `Записано: ${name}. Холодильник обновлён` : `Записано: ${name}`);
     onClose();
   };

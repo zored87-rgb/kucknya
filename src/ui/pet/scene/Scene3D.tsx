@@ -16,7 +16,10 @@ export default function Scene3D({
   zoomReq,
   onZoomStart,
   active = true,
+  onLost,
 }: {
+  /** 3D временно пропало (iPhone отобрал графику) — пересоздать сцену. */
+  onLost?: () => void;
   /** Кухню снова показали — вернуть камеру на место. */
   active?: boolean;
   /** Камера начала подлёт — прячем подписи. */
@@ -37,8 +40,8 @@ export default function Scene3D({
   const box = useRef<HTMLDivElement>(null);
   const scene = useRef<KitchenScene | null>(null);
   // Свежие обработчики без пересоздания сцены
-  const h = useRef({ onTarget, onCatTap, onCatStroke, onAnchors, onZoomStart });
-  h.current = { onTarget, onCatTap, onCatStroke, onAnchors, onZoomStart };
+  const h = useRef({ onTarget, onCatTap, onCatStroke, onAnchors, onZoomStart, onLost });
+  h.current = { onTarget, onCatTap, onCatStroke, onAnchors, onZoomStart, onLost };
 
   useEffect(() => {
     const el = box.current!;
@@ -46,6 +49,8 @@ export default function Scene3D({
     try {
       s = new KitchenScene(el, {
         onTarget: (t) => {
+          // Окно — не раздел: Гера просто говорит о погоде
+          if (t === 'window') return h.current.onTarget(t);
           h.current.onZoomStart?.();
           if (t === 'fridge') s.openFridge(() => h.current.onTarget(t));
           else s.zoomTo(t, () => h.current.onTarget(t));
@@ -62,9 +67,11 @@ export default function Scene3D({
     el.addEventListener('scene-resize', anchors);
     anchors();
     const canvas = el.querySelector('canvas');
+    // iPhone иногда отбирает 3D (свернули приложение, мало памяти) — это не поломка:
+    // просим пересоздать сцену, а не выключаем 3D навсегда
     const lost = (e: Event) => {
       e.preventDefault();
-      onFail();
+      (h.current.onLost ?? onFail)();
     };
     canvas?.addEventListener('webglcontextlost', lost);
     onReady();

@@ -7,7 +7,7 @@ import type { Face } from '../Cat';
 import { Cat3D } from './cat3d';
 import { basketTexture, calendarTexture, cloudLayerTexture, dateTexture, doorInsideTexture, fishPictureTexture, floorTexture, fridgeInsideTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
 
-export type Target = 'fridge' | 'recipes' | 'eaten' | 'buy' | 'feed' | 'settings';
+export type Target = 'fridge' | 'recipes' | 'eaten' | 'buy' | 'feed' | 'settings' | 'window';
 
 export interface SceneState {
   face: Face;
@@ -112,6 +112,8 @@ export class KitchenScene {
   private clock3d: THREE.Group | null = null;
   /** Миска: Гера берёт её в лапки и ест, потом ставит на место. */
   private bowlNode: THREE.Object3D | null = null;
+  /** Запечённая кухня — чтобы понять, куда нажали мимо предметов. */
+  private roomModel: THREE.Object3D | null = null;
   private bowlRest = new THREE.Vector3();
   private bowlLift = 0;
   private zoom: { from: THREE.Vector3; look: THREE.Vector3; to: THREE.Vector3; start: number } | null = null;
@@ -528,6 +530,7 @@ export class KitchenScene {
       ['Clock', 'settings'],
       ['Basket', 'buy'],
       ['Bowl', 'feed'],
+      ['WindowGlass', 'window'],
     ];
     this.targets = [];
     for (const [n, t] of targets) {
@@ -603,6 +606,7 @@ export class KitchenScene {
 
     this.room.visible = false;
     this.scene.add(model);
+    this.roomModel = model;
     // Ночь — применить сразу
     const night = this.state.night;
     this.state = { ...this.state, night: undefined };
@@ -772,6 +776,7 @@ export class KitchenScene {
       buy: [1.2, 0.45, 0.9],
       feed: [-1.05, 0.15, 1.55],
       settings: [1.3, 4.85, -2.9],
+      window: [0, 4.2, -2.9],
     };
     const [x, y, z] = focus[target];
     this.zoom = { from: this.camera.position.clone(), look: this.look.clone(), to: new THREE.Vector3(x, y, z), start: this.clock.getElapsedTime() };
@@ -995,6 +1000,15 @@ export class KitchenScene {
     return hits[0] ?? null;
   }
 
+  /** Точка в комнате под пальцем (стена, пол) — для взгляда Геры. */
+  private pickRoom(e: PointerEvent): THREE.Vector3 | null {
+    if (!this.roomModel) return null;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const p = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+    this.ray.setFromCamera(p, this.camera);
+    return this.ray.intersectObject(this.roomModel, true)[0]?.point ?? null;
+  }
+
   private isCat(o: THREE.Object3D): boolean {
     let x: THREE.Object3D | null = o;
     while (x) {
@@ -1027,13 +1041,15 @@ export class KitchenScene {
     this.drag = null;
     if (!d || d.stroked || d.dist > 12) return;
     const hit = this.pick(e);
-    if (!hit) return;
-    if (this.isCat(hit.object)) {
+    if (hit && this.isCat(hit.object)) {
       this.cat.poke(1);
       this.handlers.onCatTap(this.cat.partAt(hit.point));
       return;
     }
-    const target = hit.object.userData.target as Target | undefined;
+    const target = hit?.object.userData.target as Target | undefined;
+    // Гера смотрит туда, куда нажали (на предмет или просто на пол и стену)
+    const point = hit?.point ?? this.pickRoom(e);
+    if (point) this.cat.lookAt(point);
     if (target) this.handlers.onTarget(target);
   };
 
@@ -1051,6 +1067,8 @@ export class KitchenScene {
       });
     });
     this.renderer.dispose();
+    // Освободить 3D-контекст сразу: у iPhone их мало, режим готовки открывает второй
+    this.renderer.forceContextLoss();
     this.renderer.domElement.remove();
   }
 }

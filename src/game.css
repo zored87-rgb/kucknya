@@ -2584,3 +2584,9 @@ button.obj-label.pin:active {
   height: 22px;
   flex: none;
 }
+
+.sat-last {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--ink, #4a3b2c);
+}

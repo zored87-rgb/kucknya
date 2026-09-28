@@ -19,11 +19,13 @@ export interface PetPrefs {
   lastXp: number;
   /** Мой темп голода и последняя ручная отметка сытости. */
   metab: Metabolism;
+  /** id записи «Съели» → калории (посчитаны по продуктам на этом телефоне). */
+  kcal: Record<string, number>;
 }
 
 const KEY = 'kukhnya.pet';
 
-const DEFAULTS: PetPrefs = { name: 'Гера', outfit: '', wall: '', sound: true, fed: {}, seenLevel: 0, pendingFeed: 0, lastXp: -1, metab: DEFAULT_METABOLISM };
+const DEFAULTS: PetPrefs = { name: 'Гера', outfit: '', wall: '', sound: true, fed: {}, seenLevel: 0, pendingFeed: 0, lastXp: -1, metab: DEFAULT_METABOLISM, kcal: {} };
 
 let prefs: PetPrefs = load();
 const listeners = new Set<() => void>();
@@ -69,11 +71,17 @@ export function usePet(): PetPrefs {
 }
 
 /** Записали еду: запоминаем время, кот поест при следующем показе кухни. */
-export function feedPet(rowId?: string) {
+export function feedPet(rowId?: string, kcal?: number) {
   const fed = { ...prefs.fed };
+  const kc = { ...(prefs.kcal ?? {}) };
   if (rowId) fed[rowId] = Date.now();
+  if (rowId && kcal) kc[rowId] = Math.round(kcal);
   // Старые метки не нужны: сытость смотрит только на последние дни.
   const cutoff = Date.now() - 14 * 24 * 3_600_000;
-  for (const [id, t] of Object.entries(fed)) if (t < cutoff) delete fed[id];
-  setPet({ fed, pendingFeed: Date.now() });
+  for (const [id, t] of Object.entries(fed))
+    if (t < cutoff) {
+      delete fed[id];
+      delete kc[id];
+    }
+  setPet({ fed, kcal: kc, pendingFeed: Date.now() });
 }

@@ -469,6 +469,16 @@ export class Cat3D {
     this.action = { name, start: this.lastT };
   }
 
+  private look = { turn: 0, until: 0 };
+
+  /** Повернуться к точке (куда нажали) и немного так посидеть. */
+  lookAt(world: THREE.Vector3) {
+    const local = this.root.worldToLocal(world.clone());
+    // Предметы за спиной (стена, окно) — только чуть в их сторону, а не разворот назад
+    const turn = Math.atan2(local.x, Math.max(1.2, Math.abs(local.z)));
+    this.look = { turn: Math.max(-0.75, Math.min(0.75, turn)), until: this.lastT + 1.8 };
+  }
+
   /** t — секунды с начала. */
   update(t: number) {
     const dt = Math.min(0.05, t - this.lastT || 0.016);
@@ -584,6 +594,9 @@ export class Cat3D {
       pose.armR = -0.3;
       pose.tail = 0.25 + Math.sin(t * 3) * 0.12;
     }
+
+    // Смотрит туда, куда нажали
+    if (t < this.look.until && !this.eating && !angry && !sleeping) pose.turn = this.look.turn;
 
     // Плавное следование позе
     const P = this.pose;

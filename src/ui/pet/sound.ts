@@ -11,7 +11,8 @@ function ac(): AudioContext | null {
       ctx = new AudioContext();
       void loadClips(ctx);
     }
-    if (ctx.state === 'suspended') void ctx.resume();
+    // iPhone после сворачивания ставит звук в «interrupted» — будим из любого не-running состояния
+    if (ctx.state !== 'running') void ctx.resume().catch(() => undefined);
     return ctx;
   } catch {
     return null;
