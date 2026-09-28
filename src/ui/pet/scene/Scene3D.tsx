@@ -12,7 +12,9 @@ export default function Scene3D({
   onAnchors,
   onReady,
   onFail,
+  mode = 'room',
 }: {
+  mode?: 'room' | 'chef';
   state: SceneState;
   /** Меняется — над котом вылетают сердечки. */
   heartsKey: number;
@@ -37,7 +39,7 @@ export default function Scene3D({
         onTarget: (t) => (t === 'fridge' ? s.openFridge(() => h.current.onTarget(t)) : h.current.onTarget(t)),
         onCatTap: (p) => h.current.onCatTap(p),
         onCatStroke: () => h.current.onCatStroke(),
-      });
+      }, mode);
     } catch {
       onFail();
       return;

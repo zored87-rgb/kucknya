@@ -49,6 +49,7 @@ export function Room({
   go,
   onFeed,
   full,
+  active = true,
   sync,
 }: {
   k: Kitchen;
@@ -58,6 +59,8 @@ export function Room({
   full?: boolean;
   /** Значок синхронизации в углу. */
   sync?: React.ReactNode;
+  /** Кухню сейчас видно (она не выгружается, пока открыты другие разделы). */
+  active?: boolean;
 }) {
   const pet = usePet();
   const weather = useWeather();
@@ -99,7 +102,7 @@ export function Room({
 
   // Покормили на другой вкладке — кот доедает, когда вернулись на кухню.
   useEffect(() => {
-    if (!pet.pendingFeed) return;
+    if (!pet.pendingFeed || !active) return;
     const fresh = Date.now() - pet.pendingFeed < 15 * 60_000;
     setPet({ pendingFeed: 0 });
     if (!fresh) return;
@@ -110,10 +113,11 @@ export function Room({
       setSay('Спасибо! Вкусно!');
     }, 3200);
     return () => window.clearTimeout(t);
-  }, [pet.pendingFeed]);
+  }, [pet.pendingFeed, active]);
 
   // «+30 опыта» — сколько прибавилось с прошлого раза.
   useEffect(() => {
+    if (!active) return;
     if (pet.lastXp < 0) {
       setPet({ lastXp: xp });
       return;
@@ -125,17 +129,17 @@ export function Room({
       return () => window.clearTimeout(t);
     }
     if (xp < pet.lastXp) setPet({ lastXp: xp });
-  }, [xp, pet.lastXp]);
+  }, [xp, pet.lastXp, active]);
 
   // Первый запуск: запоминаем уровень без поздравления.
   useEffect(() => {
     if (!pet.seenLevel) setPet({ seenLevel: lvl.level });
   }, [pet.seenLevel, lvl.level]);
-  const levelUp = pet.seenLevel > 0 && lvl.level > pet.seenLevel;
+  const levelUp = active && pet.seenLevel > 0 && lvl.level > pet.seenLevel;
 
   // Сам по себе мяукает: сытый — изредка, голодный — часто, злой — сердито.
   useEffect(() => {
-    if (!full) return;
+    if (!full || !active) return;
     const chance: Record<Mood, number> = { happy: 0.12, peckish: 0.2, hungry: 0.38, angry: 0.45, sad: 0.16, sleeping: 0 };
     const pick = (list: string[]) => list[Math.floor(Math.random() * list.length)];
     const id = window.setInterval(() => {
@@ -150,7 +154,7 @@ export function Room({
       }
     }, 9000);
     return () => window.clearInterval(id);
-  }, [full, mood, eating, say]);
+  }, [full, active, mood, eating, say]);
 
   // Фраза гаснет через 3 секунды после реакции.
   useEffect(() => {
@@ -239,7 +243,7 @@ export function Room({
     }),
     [mood, reaction, eating, say, pet.outfit, pet.wall, h, now, spoiling.length, weekMeals, weather?.kind, weather?.clouds],
   );
-  const flat = !ready3d;
+  const flat = !try3d;
   // Подпись не вылезает за край экрана
   const at = (key: string, dy = 0): React.CSSProperties | undefined => {
     const a = anchors[key];

@@ -97,24 +97,28 @@ function Shell() {
     window.scrollTo(0, 0);
   };
 
+  const title = tab === 'feed' ? `Чем покормить ${accusative(pet.name || 'кота')}` : TITLES[tab as Exclude<Tab, 'cook'>];
+
+  // Кухня с котом не выгружается при переходе в разделы — возврат мгновенный, без загрузки 3D
+  const room = (
+    <div className={`room-screen${tab === 'cook' ? '' : ' hidden'}`} aria-hidden={tab !== 'cook'}>
+      <Room k={k} go={go} full active={tab === 'cook'} onFeed={() => go('feed')} sync={<SyncBadge syncing={syncing} queue={queue} error={error} />} />
+      <div className="room-timers">{tab === 'cook' && <TimerChips />}</div>
+    </div>
+  );
+
   if (tab === 'cook') {
     return (
       <>
-        <div className="room-screen">
-          <Room k={k} go={go} full onFeed={() => go('feed')} sync={<SyncBadge syncing={syncing} queue={queue} error={error} />} />
-          <div className="room-timers">
-            <TimerChips />
-          </div>
-        </div>
+        {room}
         <ToastView />
       </>
     );
   }
 
-  const title = tab === 'feed' ? `Чем покормить ${accusative(pet.name || 'кота')}` : TITLES[tab];
-
   return (
     <>
+      {room}
       <div className="ptr" style={{ height: pull.distance }} aria-hidden>
         <span className={pull.ready ? 'ready' : ''}>{pull.ready ? '↻ отпусти' : '↓'}</span>
       </div>

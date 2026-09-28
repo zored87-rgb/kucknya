@@ -1,10 +1,17 @@
 // Режим готовки: шаги по одному крупно, таймеры из текста («10 мин» → кнопка), экран не гаснет.
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { RecipeCheck } from '../logic/availability';
 import { scaledQty, servingsOf, servingsText, stepsWithQty } from '../logic/portions';
 import { PantryLine } from './RecipeCard';
+import { isNight } from '../logic/pet';
+import { useWeather } from '../logic/weather';
+import type { SceneState } from './pet/scene/kitchenScene';
+import { usePet } from './pet/petStore';
+import { chirp } from './pet/sound';
+
+const Scene3D = lazy(() => import('./pet/scene/Scene3D'));
 import { dishEmoji } from './emoji';
 import { IconClose } from './icons';
 import { IngredientRow } from './IngredientRow';
@@ -91,6 +98,37 @@ export function CookMode({
   }, []);
 
   const go = (d: number) => setPage((p) => Math.min(pages.length - 1, Math.max(0, p + d)));
+
+  // Гера «проговаривает» подсказку пару секунд после каждого шага
+  const [talking, setTalking] = useState(true);
+  useEffect(() => {
+    setTalking(true);
+    const t = window.setTimeout(() => setTalking(false), 2200);
+    return () => window.clearTimeout(t);
+  }, [page]);
+  const pet = usePet();
+  const weather = useWeather();
+  const chefState: SceneState = useMemo(() => {
+    const now = new Date();
+    const h = now.getHours();
+    return {
+      face: 'smile',
+      mood: 'happy',
+      talking,
+      eating: false,
+      reaction: null,
+      outfit: 'chef',
+      wall: pet.wall,
+      sky: h >= 21 || h < 6 ? 'night' : h < 9 ? 'morning' : h < 18 ? 'day' : 'evening',
+      night: isNight(now),
+      spoiling: false,
+      weekMeals: 0,
+      day: now.getDate(),
+      month: now.getMonth(),
+      weather: weather?.kind ?? 'clear',
+      clouds: weather?.clouds ?? 20,
+    };
+  }, [talking, pet.wall, weather?.kind, weather?.clouds]);
   const times = page > 0 ? stepTimes(r.steps[page - 1]) : [];
 
   return createPortal(
@@ -113,6 +151,38 @@ export function CookMode({
         ))}
       </div>
 
+      {/* Гера-повар: сверху подсказка, что делать сейчас и что дальше */}
+      <section className="cm-stage">
+        <div className="cm-bubble" key={page}>
+          {page === 0 ? (
+            <p className="cm-step">Сначала проверим продукты — всё на месте? Тогда жми «Начать» 👨‍🍳</p>
+          ) : (
+            <>
+              <span className="cm-num">
+                Шаг {page} из {r.steps.length}
+              </span>
+              {pages[page]}
+            </>
+          )}
+        </div>
+        {page > 0 && page < r.steps.length && <p className="cm-next">Потом: {nextHint(r.steps[page])}</p>}
+        <div className="cm-chef">
+          <Suspense fallback={null}>
+            <Scene3D
+              mode="chef"
+              state={chefState}
+              heartsKey={0}
+              onTarget={() => undefined}
+              onCatTap={() => chirp()}
+              onCatStroke={() => chirp()}
+              onAnchors={() => undefined}
+              onReady={() => undefined}
+              onFail={() => undefined}
+            />
+          </Suspense>
+        </div>
+      </section>
+
       <main
         className="cm-body"
         onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
@@ -123,8 +193,7 @@ export function CookMode({
           if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1);
         }}
       >
-        {page > 0 && <span className="cm-num">Шаг {page} из {r.steps.length}</span>}
-        {pages[page]}
+        {page === 0 && pages[0]}
         {times.length > 0 && !systemTimerEnabled() && (
           <p className="cm-hint">Чтобы таймер звонил в других приложениях — ⚙️ → «Таймер в фоне».</p>
         )}
@@ -156,4 +225,11 @@ export function CookMode({
     </div>,
     document.body,
   );
+}
+
+/** Первые слова следующего шага: «Добавь лук, жарь ещё 4 мин…». */
+function nextHint(step: string): string {
+  // Делим по концу предложения, но не по сокращениям вроде «ст.л. масла»
+  const first = step.split(/(?<=[.!?])\s(?=[А-ЯЁA-Z])/)[0];
+  return first.length > 70 ? first.slice(0, 68).replace(/\s\S*$/, '') + '…' : first;
 }

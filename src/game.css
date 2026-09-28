@@ -2126,3 +2126,78 @@ button.obj-label.pin:active {
   max-height: 220px;
   overflow-y: auto;
 }
+
+.room-screen.hidden {
+  display: none;
+}
+
+/* ================= Режим готовки: Гера-повар и подсказка сверху ================= */
+
+.cm-stage {
+  position: relative;
+  flex: 1 1 55%;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  margin: 4px -16px 0;
+  background: linear-gradient(180deg, #fde6cc, #f6d8b6);
+  border-radius: 0 0 28px 28px;
+  overflow: hidden;
+}
+
+.cm-bubble {
+  position: relative;
+  z-index: 2;
+  margin: 10px 14px 0;
+  max-height: 34vh;
+  overflow-y: auto;
+  padding: 12px 16px;
+  border-radius: 20px;
+  background: #fff;
+  color: #2a211a;
+  border: 2.5px solid #e2c9a5;
+  box-shadow: 0 4px 0 #d9bf9b;
+  animation: bubble-pop 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.cm-bubble .cm-step {
+  font-size: 19px;
+  line-height: 1.4;
+}
+
+.cm-bubble .cm-num {
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* хвостик облачка — к Гере */
+.cm-bubble::after {
+  content: '';
+  position: sticky;
+  display: block;
+}
+
+.cm-next {
+  position: relative;
+  z-index: 2;
+  margin: 8px 18px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7a6048;
+}
+
+.cm-chef {
+  position: relative;
+  flex: 1;
+  min-height: 150px;
+}
+
+.cook-mode .cm-body {
+  flex: 0 1 auto;
+  max-height: 42vh;
+  justify-content: flex-start;
+}
+
+.cook-mode .cm-body:empty {
+  display: none;
+}

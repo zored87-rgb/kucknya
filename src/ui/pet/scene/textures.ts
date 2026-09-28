@@ -425,3 +425,72 @@ export function dateTexture(day: number, month: number): THREE.CanvasTexture {
     g.fillText(String(day), w / 2, 160);
   });
 }
+
+/** Нутро холодильника: светлые стенки, полки и продукты — видно, когда открывается дверца. */
+export function fridgeInsideTexture(): THREE.CanvasTexture {
+  return canvasTexture(256, 576, (g, w, h) => {
+    const grad = g.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#fffdf2');
+    grad.addColorStop(1, '#dff1f7');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, w, h);
+    // лампочка
+    g.fillStyle = '#fff6c9';
+    g.shadowColor = 'rgba(255,240,180,0.9)';
+    g.shadowBlur = 30;
+    g.fillRect(w / 2 - 30, 12, 60, 10);
+    g.shadowBlur = 0;
+    // морозилка сверху
+    g.fillStyle = '#cfeaf7';
+    g.fillRect(8, 30, w - 16, 150);
+    g.fillStyle = 'rgba(255,255,255,0.9)';
+    for (let i = 0; i < 30; i++) {
+      g.beginPath();
+      g.arc(10 + ((i * 53) % (w - 20)), 36 + ((i * 37) % 140), 2, 0, Math.PI * 2);
+      g.fill();
+    }
+    // полки
+    const shelves = [196, 300, 404, 508];
+    for (const y of shelves) {
+      g.fillStyle = 'rgba(170,205,220,0.9)';
+      g.fillRect(8, y, w - 16, 6);
+      g.fillStyle = 'rgba(255,255,255,0.8)';
+      g.fillRect(8, y, w - 16, 2);
+    }
+    // продукты
+    g.font = '44px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'bottom';
+    const rows: [number, string[]][] = [
+      [176, ['🧊', '🍦', '🥟']],
+      [296, ['🥛', '🧀', '🥚']],
+      [400, ['🍅', '🥒', '🥕']],
+      [504, ['🍗', '🥩', '🍋']],
+    ];
+    for (const [y, items] of rows) items.forEach((e, i) => g.fillText(e, 48 + i * 80, y));
+  });
+}
+
+/** Внутренняя сторона дверцы: светлая панель, на большой — полочки с бутылками. */
+export function doorInsideTexture(shelves: boolean): THREE.CanvasTexture {
+  return canvasTexture(128, shelves ? 256 : 128, (g, w, h) => {
+    g.fillStyle = '#eef8f5';
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#cfe6df';
+    g.lineWidth = 6;
+    g.strokeRect(6, 6, w - 12, h - 12);
+    if (!shelves) return;
+    g.font = '30px "Apple Color Emoji", sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'bottom';
+    for (const [y, items] of [
+      [80, ['🧃', '🍾']],
+      [160, ['🧈', '🥫']],
+      [240, ['🍯', '🧴']],
+    ] as [number, string[]][]) {
+      items.forEach((e, i) => g.fillText(e, 36 + i * 56, y - 6));
+      g.fillStyle = '#b9dcd2';
+      g.fillRect(10, y - 6, w - 20, 6);
+    }
+  });
+}

@@ -5,7 +5,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Face } from '../Cat';
 import { Cat3D } from './cat3d';
-import { basketTexture, calendarTexture, floorTexture, glyphTexture, dateTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
+import { basketTexture, calendarTexture, floorTexture, glyphTexture, dateTexture, doorInsideTexture, fridgeInsideTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
 
 export type Target = 'fridge' | 'recipes' | 'eaten' | 'buy' | 'feed' | 'settings';
 
@@ -98,6 +98,8 @@ export class KitchenScene {
   constructor(
     private container: HTMLElement,
     private handlers: SceneHandlers,
+    /** room — вся кухня; chef — крупный план: Гера-повар в режиме готовки. */
+    private mode: 'room' | 'chef' = 'room',
   ) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -507,6 +509,14 @@ export class KitchenScene {
       this.targets.push(o);
     }
     this.fridgeDoors = [node('FridgeDoorTop'), node('FridgeDoorMain')].filter((x): x is THREE.Object3D => !!x);
+    // Внутренняя сторона дверец — светлая, с полочками (при запекании там была тень)
+    this.fridgeDoors.forEach((door, i) => {
+      const h = i === 0 ? 0.62 : 1.36;
+      const inner = new THREE.Mesh(new THREE.PlaneGeometry(0.9, h), new THREE.MeshBasicMaterial({ map: doorInsideTexture(i === 1) }));
+      inner.position.set(0.48, 0, -0.045);
+      inner.rotation.y = Math.PI;
+      door.add(inner);
+    });
 
     // Корм в миске
     const bowl = node('Bowl');
@@ -538,6 +548,11 @@ export class KitchenScene {
     hands.position.set(1.3, 4.85, -2.86);
     this.clock3d = hands;
     model.add(hands);
+    // Нутро холодильника за дверцами — светлое, с полками (при запекании там была темнота)
+    const inside = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 2.05), new THREE.MeshBasicMaterial({ map: fridgeInsideTexture() }));
+    inside.position.set(-1.35, 1.12, -1.245);
+    model.add(inside);
+
     // Окно запечённой кухни больше и выше
     for (const m of [this.precip, this.flash]) {
       m.scale.set(1.6 / 1.5, 1.3 / 1.1, 1);
@@ -667,6 +682,8 @@ export class KitchenScene {
   };
 
   private tick() {
+    // Кухня спрятана (открыт другой раздел) — не рисуем, бережём батарею
+    if (!this.container.clientWidth) return;
     const t = this.clock.getElapsedTime();
     this.cat.update(t);
 
@@ -750,9 +767,16 @@ export class KitchenScene {
     this.renderer.setSize(w, h, false);
     const aspect = w / h;
     this.camera.aspect = aspect;
-    if (aspect < 0.7) {
-      // Весь экран телефона: ширина кадра — от холодильника до корзины, по высоте — сколько влезет
-      // Как камера в Blender, для которой запекали свет
+    if (this.mode === 'chef') {
+      // Крупный план: Гера-повар
+      const dist = 3.3;
+      const halfW = 1.05;
+      const hfov = 2 * Math.atan(halfW / dist);
+      this.camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / aspect));
+      this.camera.position.set(0, 1.35, 0.55 + dist);
+      this.look.set(0, 1.0, 0.5);
+    } else if (aspect < 0.7) {
+      // Весь экран телефона — как камера в Blender, для которой запекали свет
       const dist = 5.6;
       const halfW = 1.65;
       const hfov = 2 * Math.atan(halfW / dist);
