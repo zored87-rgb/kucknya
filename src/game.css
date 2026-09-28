@@ -2116,3 +2116,13 @@ button.obj-label.pin:active {
 .menu-card .recipe-title h4 {
   font-family: 'Lora Variable', Georgia, serif;
 }
+
+.menu-card .own-meal {
+  font-family: 'Nunito Variable', sans-serif;
+  border-style: dashed;
+}
+
+.used-picker {
+  max-height: 220px;
+  overflow-y: auto;
+}

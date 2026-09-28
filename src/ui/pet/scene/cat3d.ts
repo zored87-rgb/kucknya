@@ -73,10 +73,10 @@ function sphere(r: number, mat: THREE.Material, seg = 24): THREE.Mesh {
 const FACES: Record<Face, FaceTargets> = {
   smile: { lid: 0.92, lower: 0.08, tilt: 0, mouth: 0, smile: 'smile', eyeScale: 1 },
   flat: { lid: 0.82, lower: 0, tilt: 0, mouth: 0, smile: 'flat', eyeScale: 1 },
-  hungry: { lid: 0.95, lower: 0, tilt: -0.28, mouth: 0.15, smile: 'frown', eyeScale: 1.25 },
-  angry: { lid: 0.55, lower: 0.1, tilt: 0.5, mouth: 0.25, smile: 'frown', eyeScale: 0.9 },
+  hungry: { lid: 0.95, lower: 0, tilt: -0.28, mouth: 0, smile: 'frown', eyeScale: 1.08 },
+  angry: { lid: 0.55, lower: 0.1, tilt: 0.5, mouth: 0.15, smile: 'frown', eyeScale: 0.95 },
   hiss: { lid: 0.42, lower: 0.2, tilt: 0.55, mouth: 0.9, smile: 'frown', eyeScale: 0.85 },
-  sad: { lid: 0.6, lower: 0, tilt: -0.4, mouth: 0, smile: 'frown', eyeScale: 1.15 },
+  sad: { lid: 0.6, lower: 0, tilt: -0.4, mouth: 0, smile: 'frown', eyeScale: 1.05 },
   sleep: { lid: 0, lower: 0.3, tilt: 0, mouth: 0, smile: 'smile', eyeScale: 1 },
   meow: { lid: 0.45, lower: 0.3, tilt: 0, mouth: 0.7, smile: 'smile', eyeScale: 1 },
   giggle: { lid: 0.2, lower: 0.9, tilt: 0, mouth: 0.6, smile: 'smile', eyeScale: 1 },

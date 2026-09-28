@@ -41,17 +41,18 @@ export class CatFace {
 
   constructor(surface: Surface, lidColor: string) {
     const lidMat = new THREE.MeshPhysicalMaterial({ color: lidColor, roughness: 0.95, sheen: 0.5, sheenColor: new THREE.Color('#c9cdd3'), side: THREE.DoubleSide });
-    const beadMat = new THREE.MeshPhysicalMaterial({ color: '#0b0b10', roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05, sheen: 0.3, sheenColor: new THREE.Color('#3a4a6a') });
-    const glint = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+    const beadMat = new THREE.MeshPhysicalMaterial({ color: '#15171c', roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.08, sheen: 0.25, sheenColor: new THREE.Color('#40506a') });
+    const glint = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.75 });
     // У Геры глазки-бусинки маленькие и близко к переносице
-    const R = 0.074;
+    // Как у игрушки: маленькие бусинки, утопленные в мех
+    const R = 0.05;
 
     // Глаза
     for (const side of [-1, 1]) {
       const s = surface(side * 0.23, 1.44);
       if (!s) continue;
       const root = new THREE.Group();
-      orient(root, s, -0.02);
+      orient(root, s, -0.03);
       // Чуть смотрят вперёд, а не строго по нормали
       root.rotateY(-side * 0.12);
       const bead = new THREE.Group();
@@ -109,11 +110,7 @@ export class CatFace {
       if (v.length < 2) return new THREE.Group();
       return new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(v), 40, r, 6, false), thread);
     };
-    this.group.add(stitch([
-      [0, 1.25],
-      [0, 1.21],
-      [0, 1.175],
-    ]));
+    // У Геры рот спрятан в мехе — нитки не рисуем, рот появляется только когда открыт
     const w = (lift: number) => [
       [-0.1, 1.17 + lift],
       [-0.075, 1.152],
@@ -138,18 +135,22 @@ export class CatFace {
       [0.05, 1.158],
       [0.09, 1.14],
     ]);
-    Object.values(this.smiles).forEach((o) => this.group.add(o));
+    Object.values(this.smiles).forEach((o) => {
+      o.visible = false;
+      this.group.add(o);
+    });
 
     // Открытый рот: тёмная ямка под ниткой с розовым язычком
-    const mouth = surface(0, 1.135);
+    const mouth = surface(0, 1.1);
     if (mouth) {
-      const inner = new THREE.Mesh(new THREE.SphereGeometry(0.07, 24, 16), new THREE.MeshStandardMaterial({ color: '#4a2328', roughness: 0.9 }));
-      inner.scale.set(1.05, 1, 0.55);
-      const tongue = new THREE.Mesh(new THREE.SphereGeometry(0.045, 16, 12), new THREE.MeshPhysicalMaterial({ color: '#ec8595', roughness: 0.4, clearcoat: 0.4 }));
-      tongue.scale.set(1.1, 0.55, 0.7);
-      tongue.position.set(0, -0.032, 0.012);
+      // Утопленная в мех ямка: видна только её кромка — выглядит как настоящий приоткрытый ротик
+      const inner = new THREE.Mesh(new THREE.SphereGeometry(0.05, 24, 16), new THREE.MeshStandardMaterial({ color: '#6b3a40', roughness: 0.85 }));
+      inner.scale.set(1.1, 0.8, 0.6);
+      const tongue = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 12), new THREE.MeshPhysicalMaterial({ color: '#e7909a', roughness: 0.5, clearcoat: 0.3 }));
+      tongue.scale.set(1.1, 0.6, 0.7);
+      tongue.position.set(0, -0.018, 0.012);
       this.mouthCavity.add(inner, tongue);
-      orient(this.mouthCavity, mouth, -0.012);
+      orient(this.mouthCavity, mouth, -0.02);
       this.group.add(this.mouthCavity);
     }
 
@@ -206,8 +207,8 @@ export class CatFace {
       e.bottom.rotation.x = (Math.PI / 2) * (1 - c.lower * 0.6);
       e.bead.scale.setScalar(c.eyeScale);
     }
-    for (const [key, o] of Object.entries(this.smiles)) o.visible = key === c.smile;
+    for (const o of Object.values(this.smiles)) o.visible = false;
     this.mouthCavity.visible = c.mouth > 0.04;
-    this.mouthCavity.scale.set(0.75 + c.mouth * 0.35, Math.max(0.05, c.mouth), 1);
+    this.mouthCavity.scale.set(0.7 + c.mouth * 0.3, Math.max(0.05, c.mouth * 0.9), 1);
   }
 }

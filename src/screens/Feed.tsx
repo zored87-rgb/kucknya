@@ -11,6 +11,7 @@ import { dishEmoji, dishTone, productEmoji } from '../ui/emoji';
 import { Section, Segmented, Sheet } from '../ui/kit';
 import { productLabel } from '../ui/labels';
 import { Leftovers } from '../ui/Leftovers';
+import { OwnMealSheet } from '../ui/OwnMealSheet';
 import { RecipeCard } from '../ui/RecipeCard';
 
 const SLOT_MEAL: Record<Slot, string> = { breakfast: 'завтрак', lunch: 'обед', dinner: 'ужин' };
@@ -20,6 +21,7 @@ export function Feed({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
   const [slot, setSlot] = useState<Slot>(() => slotForTime(new Date()));
   const [more, setMore] = useState(false);
   const [peek, setPeek] = useState<Scored | null>(null);
+  const [own, setOwn] = useState(false);
   const s = useMemo(() => suggest(slot, k.ctx), [slot, k.ctx]);
 
   const expiring = [...k.stock.items.values()]
@@ -39,6 +41,9 @@ export function Feed({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
         <b>Меню</b>
         <span>кафе «У Геры»</span>
       </div>
+      <button className="btn ghost wide own-meal" onClick={() => setOwn(true)}>
+        ✏️ Своё блюдо или перекус
+      </button>
       {slot !== 'breakfast' && <Leftovers k={k} />}
 
       <Segmented<Slot>
@@ -114,6 +119,7 @@ export function Feed({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
           <RecipeCard check={peek.check} reasons={peek.reasons} k={k} defaultMeal={SLOT_MEAL[slot]} defaultOpen bare />
         </Sheet>
       )}
+      {own && <OwnMealSheet k={k} onClose={() => setOwn(false)} />}
     </div>
   );
 }
