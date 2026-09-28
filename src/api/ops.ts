@@ -6,24 +6,25 @@ import type { EatenRow, FridgeRow, MyRecipeRow, Person, PriceRow, Reaction, Rece
 type WithId<T> = Partial<T> & { id: string };
 
 export type OpBody =
-  | { op: 'fridge.upsert'; row: WithId<FridgeRow> }
+  | { op: 'fridge.upsert'; row: WithId<FridgeRow>; restore?: boolean }
   | { op: 'fridge.delete'; id: string }
-  | { op: 'eaten.upsert'; row: WithId<EatenRow> }
+  | { op: 'eaten.upsert'; row: WithId<EatenRow>; restore?: boolean }
   | { op: 'eaten.delete'; id: string }
-  | { op: 'shopping.upsert'; row: WithId<ShoppingRow> }
+  | { op: 'shopping.upsert'; row: WithId<ShoppingRow>; restore?: boolean }
   | { op: 'shopping.delete'; id: string }
   | { op: 'rating.set'; recipeId: string; dish: string; person: Person; value: Reaction }
-  | { op: 'myRecipe.upsert'; row: WithId<MyRecipeRow> }
+  | { op: 'myRecipe.upsert'; row: WithId<MyRecipeRow>; restore?: boolean }
   | { op: 'pantry.set'; items: string[] }
   | { op: 'stores.set'; items: string[] }
   | { op: 'pet.set'; person: string; data: { fullHours: number; n: number; override?: { value: number; at: number } | null } }
   | { op: 'inbox.delete'; id: string }
-  | { op: 'receipt.upsert'; row: WithId<ReceiptRow> }
+  | { op: 'receipt.upsert'; row: WithId<ReceiptRow>; restore?: boolean }
   | { op: 'receipt.delete'; id: string }
-  | { op: 'price.upsert'; row: WithId<PriceRow> }
+  | { op: 'price.upsert'; row: WithId<PriceRow>; restore?: boolean }
   | { op: 'price.delete'; id: string };
 
-export type Op = OpBody & { opId: string };
+/** restore — вернуть удалённую строку (кнопка «Вернуть»); без него удалённое не воскресает. */
+export type Op = OpBody & { opId: string; tries?: number };
 
 export const EMPTY_SNAPSHOT: Snapshot = {
   fridge: [],

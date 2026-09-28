@@ -161,7 +161,7 @@ export function ProductForm({
     const old = initial;
     mutate({ op: 'fridge.delete', id: initial.id });
     toast(`Закончилось: ${old.name}`, () =>
-      mutate({ op: 'fridge.upsert', row: { id: old.id!, name: old.name, where: old.where, qty: old.qty, expires: old.expires, note: old.note } }),
+      mutate({ op: 'fridge.upsert', row: { id: old.id!, name: old.name, where: old.where, qty: old.qty, expires: old.expires, note: old.note }, restore: true }),
     );
     onClose();
   };

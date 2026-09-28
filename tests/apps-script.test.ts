@@ -30,6 +30,9 @@ class FakeRange {
     this.sh.set(this.r, this.c, v);
     return this;
   }
+  getValue(): Cell {
+    return this.sh.get(this.r, this.c);
+  }
   setFontWeight() { return this; }
   setNumberFormat() { return this; }
   insertCheckboxes() { return this; }
@@ -63,6 +66,7 @@ class FakeSheet {
   getDataRange() { return new FakeRange(this, 1, 1, this.getLastRow(), this.getLastColumn()); }
   appendRow(v: Cell[]) { this.rows.splice(this.getLastRow(), 0, [...v]); }
   deleteRow(r: number) { this.rows.splice(r - 1, 1); }
+  deleteRows(r: number, n: number) { this.rows.splice(r - 1, n); }
   hideColumns(c: number) { this.hidden.push(c); }
   setFrozenRows() {}
 }
@@ -193,6 +197,34 @@ describe('Apps Script', () => {
     const del = call({ action: 'batch', token, ops: [{ op: 'fridge.delete', id: 'x1' }, { op: 'fridge.delete', id: 'x1' }] });
     expect(del.results.every((x: { ok: boolean }) => x.ok)).toBe(true);
     expect(del.data.fridge.some((f: { id: string }) => f.id === 'x1')).toBe(false);
+  });
+
+  it('удалённое не воскресает от опоздавшей правки, «Вернуть» — возвращает; всё в «Журнале»', () => {
+    const token = env.props.TOKEN;
+    const has = (d: { fridge: { id: string }[] }) => d.fridge.some((f) => f.id === 's1');
+    call({ action: 'batch', token, me: 'Кристина', ops: [{ op: 'fridge.upsert', opId: 'a', row: { id: 's1', name: 'Сметана', qty: '1' } }] });
+    call({ action: 'batch', token, me: 'Кристина', ops: [{ op: 'fridge.delete', opId: 'b', id: 's1' }] });
+    // Старая правка со второго телефона — частичная и целиком
+    let r = call({ action: 'batch', token, me: 'Крис', ops: [{ op: 'fridge.upsert', opId: 'c', row: { id: 's1', qty: '0,5' } }] });
+    expect(has(r.data)).toBe(false);
+    r = call({ action: 'batch', token, me: 'Крис', ops: [{ op: 'fridge.upsert', opId: 'd', row: { id: 's1', name: 'Сметана', qty: '1' } }] });
+    expect(has(r.data)).toBe(false);
+    expect(r.results[0]).toMatchObject({ ok: true, note: 'пропущено: уже удалено' });
+    r = call({ action: 'batch', token, me: 'Кристина', ops: [{ op: 'fridge.upsert', opId: 'e', row: { id: 's1', name: 'Сметана', qty: '1' }, restore: true }] });
+    expect(has(r.data)).toBe(true);
+    // Убавить у строки, которой никогда не было, — не создаёт пустую строку
+    r = call({ action: 'batch', token, ops: [{ op: 'fridge.upsert', opId: 'f', row: { id: 'ghost', qty: '1' } }] });
+    expect(r.data.fridge.some((f: { id: string }) => f.id === 'ghost')).toBe(false);
+    const log = main.getSheetByName('Журнал')!.rows;
+    expect(log[0]).toEqual(['Когда', 'Кто', 'Действие', 'Что', 'Итог']);
+    expect(log.slice(1).map((x) => [x[1], x[2], x[3], x[4]])).toEqual([
+      ['Кристина', 'fridge.upsert', 'Сметана · 1', 'ок'],
+      ['Кристина', 'fridge.delete', 'Сметана', 'ок'],
+      ['Крис', 'fridge.upsert', 's1 · 0,5', 'пропущено: уже удалено'],
+      ['Крис', 'fridge.upsert', 'Сметана · 1', 'пропущено: уже удалено'],
+      ['Кристина', 'fridge.upsert', 'Сметана · 1 · вернули', 'ок'],
+      ['', 'fridge.upsert', 'ghost · 1', 'пропущено: строки нет'],
+    ]);
   });
 
   it('оценки: у каждого своя, в таблице 👍/👎', () => {

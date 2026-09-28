@@ -38,7 +38,25 @@ function accusative(name: string): string {
   return name;
 }
 
-const handledInbox = new Set<string>();
+// Разобранные строки «Входящих» помним между запусками: старый кэш на телефоне не должен
+// второй раз класть те же продукты в холодильник
+const HANDLED_KEY = 'kukhnya.inboxDone';
+const handledInbox = new Set<string>(
+  (() => {
+    try {
+      return JSON.parse(localStorage.getItem(HANDLED_KEY) ?? '[]') as string[];
+    } catch {
+      return [];
+    }
+  })(),
+);
+function rememberInbox() {
+  try {
+    localStorage.setItem(HANDLED_KEY, JSON.stringify([...handledInbox].slice(-200)));
+  } catch {
+    /* приватный режим */
+  }
+}
 
 function tabFromHash(): Tab {
   const h = location.hash.replace('#', '') as Tab;
@@ -67,13 +85,15 @@ function Shell() {
 
   // Надиктованное через Siri лежит в листе «Входящие» — разбираем и кладём в холодильник.
   const inbox = useStore((s) => s.view.inbox);
+  const fresh = useStore((s) => s.fresh);
   useEffect(() => {
-    if (!inbox?.length) return;
-    const fresh = inbox.filter((row) => !handledInbox.has(row.id));
-    if (!fresh.length) return;
+    // Только по свежим данным с сервера: в кэше может лежать то, что уже разобрал другой телефон
+    if (!fresh || !inbox?.length) return;
+    const todo = inbox.filter((row) => !handledInbox.has(row.id));
+    if (!todo.length) return;
     const ops: OpBody[] = [];
     const names: string[] = [];
-    for (const row of fresh) {
+    for (const row of todo) {
       handledInbox.add(row.id);
       parseBulk(row.text).forEach((l, i) => {
         // id из id входящей строки: если оба телефона разберут одновременно, строка не задвоится.
@@ -82,9 +102,10 @@ function Shell() {
       });
       ops.push({ op: 'inbox.delete', id: row.id });
     }
+    rememberInbox();
     mutate(ops);
     if (names.length) toast(`От Siri в холодильник: ${names.join(', ')}`);
-  }, [inbox]);
+  }, [inbox, fresh]);
 
   useEffect(() => {
     const on = () => setTab(tabFromHash());

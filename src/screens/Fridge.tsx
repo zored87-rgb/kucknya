@@ -45,7 +45,7 @@ export function Fridge({ k }: { k: Kitchen }) {
 
   const finish = (row: FridgeRow) => {
     mutate({ op: 'fridge.delete', id: row.id });
-    toast(`Закончилось: ${row.name}`, () => mutate({ op: 'fridge.upsert', row }));
+    toast(`Закончилось: ${row.name}`, () => mutate({ op: 'fridge.upsert', row, restore: true }));
   };
 
   const minus = (row: FridgeRow, p: Product | undefined) => {

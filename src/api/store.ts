@@ -25,6 +25,8 @@ export interface State {
   badToken: boolean;
   lastSync: number | null;
   loaded: boolean;
+  /** В этом запуске уже получили свежие данные с сервера (а не только кэш с телефона). */
+  fresh: boolean;
 }
 
 const LS = { url: 'kukhnya.url', token: 'kukhnya.token', me: 'kukhnya.me' };
@@ -59,6 +61,7 @@ let state: State = {
   badToken: false,
   lastSync: null,
   loaded: false,
+  fresh: false,
 };
 
 const listeners = new Set<() => void>();
@@ -154,22 +157,27 @@ async function doSync(): Promise<boolean> {
   try {
     if (state.queue.length) {
       const sent = state.queue.slice(0, 100);
-      const { data, results } = await sendBatch(url, token, sent);
+      const { data, results } = await sendBatch(url, token, sent, state.config.me);
+      const failedIds = new Set(results.filter((r) => !r.ok && r.opId).map((r) => r.opId));
+      // Не сохранилось — пробуем ещё пару раз, а не теряем правку молча
+      const retry = sent.filter((o) => failedIds.has(o.opId) && (o.tries ?? 0) < 2).map((o) => ({ ...o, tries: (o.tries ?? 0) + 1 }));
       const sentIds = new Set(sent.map((o) => o.opId));
       const failed = results.filter((r) => !r.ok);
       update({
         server: data,
-        queue: state.queue.filter((o) => !sentIds.has(o.opId)),
+        queue: [...retry, ...state.queue.filter((o) => !sentIds.has(o.opId))],
         lastSync: Date.now(),
-        error: failed.length ? `Не сохранилось ${failed.length}: ${failed[0].error}` : null,
+        error: failed.length && !retry.length ? `Не сохранилось ${failed.length}: ${failed[0].error}` : null,
         badToken: false,
+        fresh: true,
       });
     } else {
       const data = await bootstrap(url, token);
-      update({ server: data, lastSync: Date.now(), error: null, badToken: false });
+      update({ server: data, lastSync: Date.now(), error: null, badToken: false, fresh: true });
     }
     await persist();
-    return true;
+    // Повторы отправим позже, а не в ту же секунду
+    return !state.queue.some((o) => o.tries);
   } catch (e) {
     if (e instanceof ApiError && e.code === 'bad_token') update({ badToken: true, error: e.message });
     else if (e instanceof ApiError && e.code === 'network') update({ error: navigator.onLine ? e.message : null });

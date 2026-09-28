@@ -126,7 +126,7 @@ export function Eaten({ k }: { k: Kitchen }) {
                     aria-label="Удалить запись"
                     onClick={() => {
                       mutate({ op: 'eaten.delete', id: row.id });
-                      toast('Запись удалена', () => mutate({ op: 'eaten.upsert', row }));
+                      toast('Запись удалена', () => mutate({ op: 'eaten.upsert', row, restore: true }));
                     }}
                   >
                     ✕

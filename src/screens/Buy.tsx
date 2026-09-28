@@ -413,7 +413,7 @@ function RecentReceipts({ receipts }: { receipts: ReceiptRow[] }) {
             aria-label="Удалить чек"
             onClick={() => {
               mutate({ op: 'receipt.delete', id: r.id });
-              toast('Чек удалён', () => mutate({ op: 'receipt.upsert', row: r }));
+              toast('Чек удалён', () => mutate({ op: 'receipt.upsert', row: r, restore: true }));
             }}
           >
             ✕

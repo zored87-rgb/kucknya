@@ -22,6 +22,11 @@
  *
  * Строки находятся по скрытой колонке id: номера строк съезжают, а id — нет.
  * Повторная отправка той же операции ничего не ломает.
+ *
+ * Удалённое не воскресает: id удалённых строк лежат в листе «Удалённые» (30 дней),
+ * и опоздавшее изменение со второго телефона их не создаёт заново. Вернуть можно только
+ * явно — кнопкой «Вернуть» (upsert с restore: true).
+ * Каждое изменение пишется в лист «Журнал»: кто, когда, что сделал — чтобы разбираться.
  */
 
 var SPREADSHEET_ID = '1LC7o3yIus1-5o1fz_DlvmW75Hiq0ZjNEnC3h01mbYCE';
@@ -83,6 +88,12 @@ var SHEETS = {
   },
 };
 
+// Служебные листы: приложение их не читает
+var TOMBS = { name: 'Удалённые', headers: ['Лист', 'id', 'Когда', 'Что'] };
+var LOG = { name: 'Журнал', headers: ['Когда', 'Кто', 'Действие', 'Что', 'Итог'] };
+var TOMB_DAYS = 30;
+var LOG_MAX = 3000;
+
 var DEFAULT_PANTRY = ['соль', 'перец', 'масло', 'мука', 'специи', 'чеснок', 'сахар', 'tomate triturado', 'соевый соус', 'мёд', 'майонез', 'кетчуп', 'рис', 'паста'];
 
 // Праздники Валенсии 2026-2027 (DOGV). Местные на 2027 — по обычному правилу.
@@ -108,6 +119,7 @@ function doGet() {
 }
 
 function doPost(e) {
+  tombCache_ = null;
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (!checkToken_(body.token)) return json_({ ok: false, error: 'bad_token' });
@@ -125,7 +137,11 @@ function doPost(e) {
         }));
       case 'batch':
         return json_(withLock_(function () {
-          var results = (body.ops || []).map(applyOpSafe_);
+          var ops = body.ops || [];
+          var results = ops.map(applyOpSafe_);
+          try {
+            writeLog_(String(body.me || ''), ops, results);
+          } catch (e) {}
           return { ok: true, results: results, data: readAll_() };
         }));
       default:
@@ -310,8 +326,8 @@ function reactionOut_(v) {
 
 function applyOpSafe_(op) {
   try {
-    applyOp_(op);
-    return { ok: true, opId: op.opId };
+    var note = applyOp_(op);
+    return { ok: true, opId: op.opId, note: note || '' };
   } catch (err) {
     return { ok: false, opId: op.opId, error: String(err && err.message ? err.message : err) };
   }
@@ -329,7 +345,7 @@ function applyOp_(op) {
   if (key === 'receipt') key = 'receipts';
   if (key === 'price') key = 'prices';
   if (!SHEETS[key]) throw new Error('unknown op ' + op.op);
-  if (verb === 'upsert') return upsert_(key, op.row || {});
+  if (verb === 'upsert') return upsert_(key, op.row || {}, op.restore === true);
   if (verb === 'delete') return deleteById_(key, op.id);
   throw new Error('unknown op ' + op.op);
 }
@@ -349,13 +365,19 @@ function cellIn_(key, f, v) {
   return v === null || v === undefined ? '' : v;
 }
 
-function upsert_(key, row) {
+function upsert_(key, row, restore) {
   if (!row.id) throw new Error('row.id обязателен');
   var sh = sheet_(key);
   var cols = columns_(key, sh);
   var r = findRow_(sh, cols.id, row.id);
   var fields = Object.keys(row).filter(function (f) { return cols[f]; });
   if (r < 0) {
+    // Строку уже удалили (на этом или другом телефоне) — опоздавшее изменение её не воскрешает
+    if (restore) untomb_(key, row.id);
+    else if (isTomb_(key, row.id)) return 'пропущено: уже удалено';
+    // «Убавить количество» у строки, которой нет, — не повод создавать пустую строку
+    var main = SHEETS[key].fields.name ? 'name' : SHEETS[key].fields.dish ? 'dish' : null;
+    if (main && !row[main]) return 'пропущено: строки нет';
     r = firstEmptyRow_(sh, cols);
     fields.forEach(function (f) { sh.getRange(r, cols[f]).setValue(cellIn_(key, f, row[f])); });
   } else {
@@ -382,10 +404,104 @@ function firstEmptyRow_(sh, cols) {
 }
 
 function deleteById_(key, id) {
+  if (!id) return '';
   var sh = sheet_(key);
   var cols = columns_(key, sh);
-  var r = findRow_(sh, cols.id, id);
-  if (r > 0) sh.deleteRow(r);
+  var name = '';
+  // Удаляем все строки с этим id (если вдруг задвоились)
+  var last = sh.getLastRow();
+  if (last >= 2) {
+    var ids = sh.getRange(2, cols.id, last - 1, 1).getValues();
+    for (var i = ids.length - 1; i >= 0; i--) {
+      if (String(ids[i][0]) !== String(id)) continue;
+      var mainCol = cols.name || cols.dish || cols.text || cols.product || cols.store;
+      if (mainCol && !name) name = String(sh.getRange(i + 2, mainCol).getValue());
+      sh.deleteRow(i + 2);
+    }
+  }
+  tomb_(key, id, name);
+  return name;
+}
+
+// ---------- «Удалённые»: чтобы удалённое не возвращалось ----------
+
+var tombCache_ = null;
+
+function tombSheet_() {
+  var ss = ss_();
+  var sh = ss.getSheetByName(TOMBS.name);
+  if (!sh) {
+    sh = ss.insertSheet(TOMBS.name);
+    sh.getRange(1, 1, 1, TOMBS.headers.length).setValues([TOMBS.headers]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function tombs_() {
+  if (tombCache_) return tombCache_;
+  tombCache_ = {};
+  // Лист появляется при первом удалении, просто чтение его не создаёт
+  var sh = ss_().getSheetByName(TOMBS.name);
+  if (!sh) return tombCache_;
+  var last = sh.getLastRow();
+  if (last < 2) return tombCache_;
+  var vals = sh.getRange(2, 1, last - 1, 3).getValues();
+  var old = Date.now() - TOMB_DAYS * 24 * 3600 * 1000;
+  var stale = 0;
+  vals.forEach(function (v, i) {
+    var at = v[2] instanceof Date ? v[2].getTime() : Date.parse(v[2]) || 0;
+    if (at && at < old) stale = i + 1;
+    else tombCache_[v[0] + '|' + v[1]] = true;
+  });
+  // Старые записи идут первыми — убираем их одной пачкой
+  if (stale > 0) sh.deleteRows(2, stale);
+  return tombCache_;
+}
+
+function isTomb_(key, id) {
+  return !!tombs_()[key + '|' + id];
+}
+
+function tomb_(key, id, name) {
+  if (isTomb_(key, id)) return;
+  tombSheet_().appendRow([key, String(id), new Date(), name || '']);
+  tombCache_[key + '|' + id] = true;
+}
+
+function untomb_(key, id) {
+  if (!isTomb_(key, id)) return;
+  var sh = tombSheet_();
+  var last = sh.getLastRow();
+  var vals = sh.getRange(2, 1, last - 1, 2).getValues();
+  for (var i = vals.length - 1; i >= 0; i--) if (vals[i][0] === key && String(vals[i][1]) === String(id)) sh.deleteRow(i + 2);
+  delete tombCache_[key + '|' + id];
+}
+
+// ---------- «Журнал»: кто и когда что менял ----------
+
+function writeLog_(who, ops, results) {
+  if (!ops.length) return;
+  var ss = ss_();
+  var sh = ss.getSheetByName(LOG.name);
+  if (!sh) {
+    sh = ss.insertSheet(LOG.name);
+    sh.getRange(1, 1, 1, LOG.headers.length).setValues([LOG.headers]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  var now = new Date();
+  var lines = ops.map(function (op, i) {
+    var r = results[i] || {};
+    var row = op.row || {};
+    var what = row.name || row.dish || row.product || row.store || op.dish || op.person || (String(op.op).indexOf('delete') > 0 ? r.note : '') || String(op.id || row.id || '').slice(0, 8);
+    if (row.qty && op.op.indexOf('upsert') > 0) what += ' · ' + row.qty;
+    if (op.restore) what += ' · вернули';
+    var result = !r.ok ? 'ошибка: ' + r.error : r.note && r.note.indexOf('пропущено') === 0 ? r.note : 'ок';
+    return [now, who, op.op, what, result];
+  });
+  var last = sh.getLastRow();
+  sh.getRange(last + 1, 1, lines.length, 5).setValues(lines);
+  if (last + lines.length > LOG_MAX) sh.deleteRows(2, 500);
 }
 
 function setRating_(op) {

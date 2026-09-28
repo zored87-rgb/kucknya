@@ -16,7 +16,7 @@ interface Response<T> {
   ok: boolean;
   error?: string;
   data?: T;
-  results?: { ok: boolean; opId?: string; error?: string }[];
+  results?: { ok: boolean; opId?: string; error?: string; note?: string }[];
 }
 
 async function post<T>(url: string, body: object, timeoutMs = 30000): Promise<Response<T>> {
@@ -55,7 +55,8 @@ export async function bootstrap(url: string, token: string): Promise<Snapshot> {
   return r.data as Snapshot;
 }
 
-export async function sendBatch(url: string, token: string, ops: Op[]) {
-  const r = await post<Snapshot>(url, { token, action: 'batch', ops }, 60000);
+export async function sendBatch(url: string, token: string, ops: Op[], me = '') {
+  // me — кто отправил: попадает в лист «Журнал»
+  const r = await post<Snapshot>(url, { token, action: 'batch', ops, me }, 60000);
   return { data: r.data as Snapshot, results: r.results ?? [] };
 }

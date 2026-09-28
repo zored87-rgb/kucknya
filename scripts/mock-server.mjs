@@ -19,6 +19,9 @@ class Range {
     this.sh.set(this.r, this.c, v);
     return this;
   }
+  getValue() {
+    return this.sh.get(this.r, this.c);
+  }
   setFontWeight() { return this; }
   setNumberFormat() { return this; }
   insertCheckboxes() { return this; }
@@ -48,6 +51,7 @@ class Sheet {
   getDataRange() { return new Range(this, 1, 1, this.getLastRow(), this.getLastColumn()); }
   appendRow(v) { this.rows.splice(this.getLastRow(), 0, [...v]); }
   deleteRow(r) { this.rows.splice(r - 1, 1); }
+  deleteRows(r, n) { this.rows.splice(r - 1, n); }
   hideColumns() {}
   setFrozenRows() {}
 }
@@ -119,6 +123,13 @@ const port = +(process.env.PORT ?? 8787);
 createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'GET') {
+    // Посмотреть лист: GET /sheet?name=Журнал
+    const u = new URL(req.url, 'http://x');
+    if (u.pathname === '/sheet') {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.end(JSON.stringify(main.getSheetByName(u.searchParams.get('name'))?.rows ?? null));
+      return;
+    }
     res.end(runInContext('doGet()', ctx).body);
     return;
   }
