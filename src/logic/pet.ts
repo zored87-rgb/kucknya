@@ -70,6 +70,58 @@ export function satiety(eaten: EatenRow[], exact: Record<string, number>, now: n
   return Math.max(0, Math.min(100, Math.round(100 - (h * 100) / FULL_HOURS)));
 }
 
+// ---------- Личная сытость и «метаболизм» ----------
+
+/** Как быстро человек голодает и его последняя ручная отметка. Учится по отметкам. */
+export interface Metabolism {
+  /** Часов бодрствования от «сыт» до «голоден». */
+  fullHours: number;
+  /** Сколько отметок уже учтено. */
+  n: number;
+  /** Последняя ручная отметка: «сейчас я сыт на value». */
+  override?: { value: number; at: number } | null;
+}
+
+export const DEFAULT_METABOLISM: Metabolism = { fullHours: FULL_HOURS, n: 0, override: null };
+
+/** Что ел этот человек: свои записи и общие «оба». */
+export function eatenBy(eaten: EatenRow[], person: string): EatenRow[] {
+  return eaten.filter((r) => !r.who || r.who === 'оба' || r.who === person);
+}
+
+function clamp100(x: number): number {
+  return Math.max(0, Math.min(100, Math.round(x)));
+}
+
+/** Сытость с учётом личного темпа и ручной отметки (если она позже последней еды). */
+export function satietyOf(eaten: EatenRow[], exact: Record<string, number>, now: number, m: Metabolism = DEFAULT_METABOLISM): number {
+  const last = lastMealAt(eaten, exact, now);
+  const ov = m.override && m.override.at <= now ? m.override : null;
+  if (ov && (last == null || ov.at >= last)) return clamp100(ov.value - (awakeHours(ov.at, now) * 100) / m.fullHours);
+  if (last == null) return 25;
+  return clamp100(100 - (awakeHours(last, now) * 100) / m.fullHours);
+}
+
+/**
+ * Ручная отметка «я сыт на value»: запоминаем её и подстраиваем темп.
+ * Если после еды прошло h часов, а сытость value — значит, от сыт до голоден ≈ h / (1 − value/100).
+ */
+export function calibrate(eaten: EatenRow[], exact: Record<string, number>, now: number, value: number, m: Metabolism = DEFAULT_METABOLISM): Metabolism {
+  const last = lastMealAt(eaten, exact, now);
+  let { fullHours, n } = m;
+  if (last != null && value < 95) {
+    const h = awakeHours(last, now);
+    if (h >= 1) {
+      const implied = Math.max(5, Math.min(36, h / (1 - value / 100)));
+      // Первые отметки сильнее сдвигают темп, потом — осторожнее
+      const w = n < 3 ? 0.5 : 0.25;
+      fullHours = Math.round((fullHours * (1 - w) + implied * w) * 10) / 10;
+      n += 1;
+    }
+  }
+  return { fullHours, n, override: { value: clamp100(value), at: now } };
+}
+
 export type Mood = 'sleeping' | 'angry' | 'hungry' | 'peckish' | 'sad' | 'happy';
 
 export function moodOf(sat: number, spoiling: number, now: Date): Mood {

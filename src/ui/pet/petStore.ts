@@ -2,6 +2,7 @@
 // Сытость и уровень считаются из общей истории — тут только то, что не нужно синхронизировать.
 
 import { useSyncExternalStore } from 'react';
+import { DEFAULT_METABOLISM, type Metabolism } from '../../logic/pet';
 
 export interface PetPrefs {
   name: string;
@@ -16,11 +17,13 @@ export interface PetPrefs {
   pendingFeed: number;
   /** Опыт, который уже показали «+10». */
   lastXp: number;
+  /** Мой темп голода и последняя ручная отметка сытости. */
+  metab: Metabolism;
 }
 
 const KEY = 'kukhnya.pet';
 
-const DEFAULTS: PetPrefs = { name: 'Гера', outfit: '', wall: '', sound: true, fed: {}, seenLevel: 0, pendingFeed: 0, lastXp: -1 };
+const DEFAULTS: PetPrefs = { name: 'Гера', outfit: '', wall: '', sound: true, fed: {}, seenLevel: 0, pendingFeed: 0, lastXp: -1, metab: DEFAULT_METABOLISM };
 
 let prefs: PetPrefs = load();
 const listeners = new Set<() => void>();

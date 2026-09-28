@@ -70,3 +70,33 @@ describe('погода за окном', () => {
     expect(kindOf(73, 100)).toBe('snow');
   });
 });
+
+import { calibrate, DEFAULT_METABOLISM, eatenBy, satietyOf } from '../src/logic/pet';
+
+describe('личная сытость и метаболизм', () => {
+  const eaten = [row('a', '28.09.2026', 'завтрак', 'Каша', 'kasha'), { ...row('b', '28.09.2026', 'обед'), who: 'Кристина' }];
+
+  it('у каждого — свои записи и общие', () => {
+    expect(eatenBy(eaten, 'Крис').map((r) => r.id)).toEqual(['a']);
+    expect(eatenBy(eaten, 'Кристина').map((r) => r.id)).toEqual(['a', 'b']);
+  });
+
+  it('ручная отметка важнее расчёта и дальше убывает', () => {
+    const now = at(28, 12);
+    const m = calibrate(eatenBy(eaten, 'Крис'), {}, now, 40);
+    expect(satietyOf(eatenBy(eaten, 'Крис'), {}, now, m)).toBe(40);
+    expect(satietyOf(eatenBy(eaten, 'Крис'), {}, at(28, 15), m)).toBeLessThan(40);
+  });
+
+  it('голодаю быстрее — темп становится короче', () => {
+    // Завтрак в 9, в 12 уже «голоден на 60%» → до пустого живота ~5 ч, а не 14
+    const m = calibrate(eatenBy(eaten, 'Крис'), {}, at(28, 12), 40, DEFAULT_METABOLISM);
+    expect(m.fullHours).toBeLessThan(DEFAULT_METABOLISM.fullHours);
+    expect(m.n).toBe(1);
+  });
+
+  it('новая еда после отметки снова наполняет', () => {
+    const m = calibrate(eatenBy(eaten, 'Кристина'), {}, at(28, 12), 20);
+    expect(satietyOf(eatenBy(eaten, 'Кристина'), { b: at(28, 13) }, at(28, 13), m)).toBe(100);
+  });
+});

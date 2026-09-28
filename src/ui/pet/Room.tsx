@@ -5,7 +5,8 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { Kitchen } from '../../hooks/useKitchen';
 import { parseDate, daysBetween } from '../../logic/dates';
 import { useWeather } from '../../logic/weather';
-import { hungerText, isNight, lastMealAt, levelOf, moodOf, phrase, satiety, xpOf, type Mood } from '../../logic/pet';
+import { DEFAULT_METABOLISM, eatenBy, hungerText, isNight, lastMealAt, levelOf, moodOf, phrase, satietyOf, xpOf, type Mood } from '../../logic/pet';
+import { SatietySheet } from './SatietySheet';
 import { productLabel } from '../labels';
 import { Cat, faceOf, type Reaction } from './Cat';
 import type { SceneState, Target } from './scene/kitchenScene';
@@ -35,6 +36,10 @@ function can3d(): boolean {
 }
 
 const TARGET_TAB: Record<Target, string> = { fridge: 'fridge', recipes: 'recipes', eaten: 'eaten', buy: 'buy', feed: '', settings: 'settings' };
+
+function toneOf(v: number): string {
+  return v >= 65 ? 'good' : v >= 35 ? 'ok' : v >= 10 ? 'low' : 'empty';
+}
 
 /** Небо в окне по времени: утро, день, вечер, ночь. */
 function skyOf(h: number): string {
@@ -97,8 +102,13 @@ export function Room({
   }, []);
 
   const eaten = k.view.eaten;
-  const sat = satiety(eaten, pet.fed, now);
-  const last = lastMealAt(eaten, pet.fed, now);
+  // Моя сытость (с личным темпом голода) и партнёра — по общему дневнику
+  const partner = k.me === 'Крис' ? 'Кристина' : 'Крис';
+  const myEaten = useMemo(() => eatenBy(eaten, k.me), [eaten, k.me]);
+  const sat = satietyOf(myEaten, pet.fed, now, pet.metab ?? DEFAULT_METABOLISM);
+  const partnerSat = satietyOf(eatenBy(eaten, partner), {}, now, k.view.settings.pets?.[partner] ?? DEFAULT_METABOLISM);
+  const last = lastMealAt(myEaten, pet.fed, now);
+  const [satOpen, setSatOpen] = useState(false);
   const spoiling = useMemo(
     () => [...k.stock.items.values()].filter((i) => i.daysLeft != null && i.daysLeft <= 1).sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0)),
     [k.stock],
@@ -260,7 +270,7 @@ export function Room({
     return { left: Math.min(w - 62, Math.max(62, a.x)), top: a.y + dy };
   };
 
-  const satTone = sat >= 65 ? 'good' : sat >= 35 ? 'ok' : sat >= 10 ? 'low' : 'empty';
+  const satTone = toneOf(sat);
 
   return (
     <div ref={roomRef} className={`room${full ? ' full' : ''}${zooming ? ' zooming' : ''} wall-${pet.wall || 'base'} sky-${skyOf(h)}${isNight(new Date(now)) ? ' night' : ''}${ready3d ? ' is-3d' : ''}`}>
@@ -290,17 +300,23 @@ export function Room({
       )}
 
       <div className="hud">
-        <div className="hud-pill hud-food" aria-label={`Сытость ${sat} из 100`}>
+        <button className="hud-pill hud-food" onClick={() => setSatOpen(true)} aria-label={`Моя сытость ${sat} из 100, ${partner} — ${partnerSat}. Изменить`}>
           <span className="hud-icon" aria-hidden>
             🍗
           </span>
           <div className="hud-col">
-            <b className="hud-name">{pet.name || 'Кот'}</b>
+            <b className="hud-name">{k.me}</b>
             <div className="hud-bar">
               <i className={satTone} style={{ width: `${Math.max(4, sat)}%` }} />
             </div>
+            <div className="hud-partner">
+              <span>{partner}</span>
+              <div className="hud-bar thin">
+                <i className={toneOf(partnerSat)} style={{ width: `${Math.max(4, partnerSat)}%` }} />
+              </div>
+            </div>
           </div>
-        </div>
+        </button>
         {sync && <div className="hud-sync">{sync}</div>}
         <button className="hud-pill hud-level" onClick={() => setWardrobe(true)} aria-label={`Уровень ${lvl.level}. Наряды`}>
           <span className="hud-star">{lvl.level}</span>
@@ -403,6 +419,7 @@ export function Room({
         </>
       )}
 
+      {satOpen && <SatietySheet k={k} myEaten={myEaten} sat={sat} onClose={() => setSatOpen(false)} />}
       {wardrobe && <Wardrobe level={lvl.level} xp={lvl} onClose={() => setWardrobe(false)} />}
       {levelUp && <LevelUp level={lvl.level} onClose={() => setPet({ seenLevel: lvl.level })} />}
     </div>

@@ -264,8 +264,15 @@ function readAll_() {
   var pantry = [];
   var holidays = [];
   var stores = [];
+  var pets = {};
   settingsRows.forEach(function (r) {
     var kind = String(r.kind).toLowerCase();
+    // Сытость и темп голода каждого: «сытость:Крис» → JSON
+    if (kind.indexOf('сытость:') === 0 && r.value) {
+      try {
+        pets[String(r.kind).slice('сытость:'.length)] = JSON.parse(r.value);
+      } catch (e) {}
+    }
     if (kind === 'кладовая' && r.value) pantry.push(r.value);
     if (kind === 'праздник' && r.value) holidays.push({ date: normDate_(r.value), name: r.comment || 'праздник' });
     if (kind === 'магазин' && r.value) stores.push(r.value);
@@ -279,7 +286,7 @@ function readAll_() {
     shopping: readSheet_('shopping'),
     ratings: ratings,
     myRecipes: readSheet_('myRecipes'),
-    settings: { pantry: pantry, holidays: holidays, stores: stores },
+    settings: { pantry: pantry, holidays: holidays, stores: stores, pets: pets },
     inbox: readSheet_('inbox'),
     receipts: readSheet_('receipts'),
     prices: readSheet_('prices'),
@@ -317,6 +324,7 @@ function applyOp_(op) {
   if (key === 'rating' && verb === 'set') return setRating_(op);
   if (key === 'pantry' && verb === 'set') return setKind_('кладовая', op.items || [], 'всегда есть дома');
   if (key === 'stores' && verb === 'set') return setKind_('магазин', op.items || [], '');
+  if (key === 'pet' && verb === 'set') return setKind_('сытость:' + String(op.person || ''), [JSON.stringify(op.data || {})], 'сытость и темп голода — для кота Геры');
   if (key === 'myRecipe') key = 'myRecipes';
   if (key === 'receipt') key = 'receipts';
   if (key === 'price') key = 'prices';
@@ -407,7 +415,7 @@ function setKind_(kind, items, comment) {
   if (last >= 2) {
     var kinds = sh.getRange(2, cols.kind, last - 1, 1).getValues();
     for (var i = kinds.length - 1; i >= 0; i--) {
-      if (String(kinds[i][0]).toLowerCase() === kind) sh.deleteRow(i + 2);
+      if (String(kinds[i][0]).toLowerCase() === kind.toLowerCase()) sh.deleteRow(i + 2);
     }
   }
   items.forEach(function (v) {

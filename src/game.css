@@ -2483,3 +2483,76 @@ button.obj-label.pin:active {
 .sketchbook .item {
   background: rgb(255 255 255 / 70%);
 }
+
+.hud-food {
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hud-partner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #8a7560;
+}
+
+.hud-partner span {
+  flex: none;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hud-bar.thin {
+  height: 6px;
+}
+
+.sat-levels {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.sat-level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 2px;
+  border-radius: 16px;
+  border: 2px solid var(--edge);
+  background: var(--surface);
+  box-shadow: 0 3px 0 var(--edge);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.sat-level.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.sat-emoji {
+  font-size: 30px;
+}
+
+.sat-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  min-height: 40px;
+}
+
+/* В колонке полоски не сжимаются по высоте */
+.hud-col .hud-bar {
+  flex: none;
+}
+
+.hud-partner .hud-bar {
+  flex: 1;
+}

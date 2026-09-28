@@ -141,6 +141,11 @@ export interface Settings {
   holidays: { date: string; name: string }[];
   /** Магазины, где покупаете. Пусто — стандартный список. */
   stores?: string[];
+  /**
+   * Личный темп голода и ручные отметки сытости: { Крис: {...}, Кристина: {...} }.
+   * Нет поля — скрипт таблицы старый и не умеет их хранить.
+   */
+  pets?: Record<string, { fullHours: number; n: number; override?: { value: number; at: number } | null }>;
 }
 
 /** Строка, надиктованная через Siri: приложение разберёт её и положит в холодильник. */

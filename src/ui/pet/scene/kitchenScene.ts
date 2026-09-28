@@ -41,8 +41,8 @@ export const ANCHORS: Record<string, THREE.Vector3> = {
   fridgeTop: new THREE.Vector3(-0.9, 2.25, -1.2),
   recipes: new THREE.Vector3(1.35, 2.45, -2.8),
   eaten: new THREE.Vector3(1.5, 1.33, -2.85),
-  buy: new THREE.Vector3(1.1, 0.2, 1.2),
-  buyTop: new THREE.Vector3(1.35, 0.85, 0.9),
+  buy: new THREE.Vector3(1.25, 0.2, 1.2),
+  buyTop: new THREE.Vector3(1.5, 0.85, 0.9),
   feed: new THREE.Vector3(-0.8, 0.45, 1.4),
   catHead: new THREE.Vector3(0, 1.95, 0.85),
   settings: new THREE.Vector3(1.3, 4.42, -2.9),
@@ -519,7 +519,7 @@ export class KitchenScene {
     }
     // Корзину чуть ближе к центру — иначе её обрезает край узкого экрана
     const basketNode = node('Basket');
-    if (basketNode) basketNode.position.x -= 0.2;
+    if (basketNode) basketNode.position.x -= 0.05;
     this.fridgeDoors = [node('FridgeDoorTop'), node('FridgeDoorMain')].filter((x): x is THREE.Object3D => !!x);
     // Внутренняя сторона дверец — светлая, с полочками (при запекании там была тень)
     this.fridgeDoors.forEach((door, i) => {
@@ -739,7 +739,7 @@ export class KitchenScene {
       fridge: [-1.35, 1.3, -1.6],
       recipes: [1.35, 2.85, -2.8],
       eaten: [1.5, 1.75, -2.9],
-      buy: [1.05, 0.45, 0.9],
+      buy: [1.2, 0.45, 0.9],
       feed: [-0.8, 0.15, 1.4],
       settings: [1.3, 4.85, -2.9],
     };

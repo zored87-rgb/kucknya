@@ -137,6 +137,8 @@ export class Cat3D {
   private armL = new THREE.Group();
   private armR = new THREE.Group();
   private tail = new THREE.Group();
+  /** Поворот всего хвоста вокруг кота: лежит сбоку-сзади и не задевает корзину. */
+  private tailYaw = new THREE.Group();
   private furMat: THREE.MeshPhysicalMaterial;
   private face: CatFace | null = null;
   private faceKind: Face = 'smile';
@@ -255,7 +257,9 @@ export class Cat3D {
     const tailMesh = new THREE.Mesh(new THREE.TubeGeometry(tailCurve, 48, 0.13, 16, false), plush(ringFurTexture(7), bump));
     tailMesh.userData.proc = true;
     this.tail.add(tailMesh);
-    this.root.add(this.tail);
+    this.tailYaw.add(this.tail);
+    this.tailYaw.rotation.y = 1.0;
+    this.root.add(this.tailYaw);
 
     this.buildOutfits(lineMat);
     this.root.add(this.body);
@@ -515,7 +519,7 @@ export class Cat3D {
     }
     if (act === 'slowblink') face.lid = 0.9 - 0.8 * b;
     if (act === 'bounce') pose.lift = Math.abs(Math.sin(p * Math.PI * 2)) * 0.18;
-    if (act === 'tailflick') pose.tail = Math.sin(p * Math.PI * 6) * 0.35;
+    if (act === 'tailflick') pose.tail = Math.abs(Math.sin(p * Math.PI * 6)) * 0.35;
     if (act === 'rub') {
       pose.armL = 0.45 + Math.sin(t * 6) * 0.15;
       pose.armR = -0.45 - Math.sin(t * 6) * 0.15;

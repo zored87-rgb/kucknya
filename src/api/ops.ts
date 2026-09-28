@@ -16,6 +16,7 @@ export type OpBody =
   | { op: 'myRecipe.upsert'; row: WithId<MyRecipeRow> }
   | { op: 'pantry.set'; items: string[] }
   | { op: 'stores.set'; items: string[] }
+  | { op: 'pet.set'; person: string; data: { fullHours: number; n: number; override?: { value: number; at: number } | null } }
   | { op: 'inbox.delete'; id: string }
   | { op: 'receipt.upsert'; row: WithId<ReceiptRow> }
   | { op: 'receipt.delete'; id: string }
@@ -80,6 +81,8 @@ export function applyOp(s: Snapshot, op: OpBody): Snapshot {
       return { ...s, settings: { ...s.settings, pantry: op.items } };
     case 'stores.set':
       return { ...s, settings: { ...s.settings, stores: op.items } };
+    case 'pet.set':
+      return { ...s, settings: { ...s.settings, pets: { ...(s.settings.pets ?? {}), [op.person]: op.data } } };
     case 'inbox.delete':
       return { ...s, inbox: (s.inbox ?? []).filter((x) => x.id !== op.id) };
     case 'receipt.upsert':
