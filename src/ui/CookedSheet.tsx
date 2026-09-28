@@ -15,6 +15,7 @@ import { QtyInput } from './ProductForm';
 import { productLabel } from './labels';
 import { toast } from './toast';
 import { mealForTime } from '../logic/suggest';
+import { feedPet } from './pet/petStore';
 
 interface Left {
   key: string;
@@ -61,10 +62,11 @@ export function CookedSheet({
   const patch = (i: number, p: Partial<Left>) => setLeft((l) => l.map((x, j) => (j === i ? { ...x, ...p } : x)));
 
   const save = () => {
+    const eatenId = newId();
     const ops: OpBody[] = [
       {
         op: 'eaten.upsert',
-        row: { id: newId(), date: formatDate(new Date()), meal, dish: r.name, who, score: '', recipeId: r.id },
+        row: { id: eatenId, date: formatDate(new Date()), meal, dish: r.name, who, score: '', recipeId: r.id },
       },
     ];
     left.forEach((l, i) => {
@@ -87,6 +89,7 @@ export function CookedSheet({
       });
     }
     mutate(ops);
+    feedPet(eatenId);
     toast(rest > 0 ? `Записано. В холодильнике: ${r.name}, ${portionsText(rest)}` : `Записано: ${r.name}`);
     onClose();
   };

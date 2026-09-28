@@ -9,6 +9,8 @@ import { PEOPLE, type Person } from '../types';
 import { Field, Section, Segmented } from '../ui/kit';
 import { setSystemTimer, shortcutUrl, SHORTCUT_NAME, systemTimerEnabled } from '../ui/timers';
 import { pantryLabel } from '../ui/labels';
+import { setPet, usePet } from '../ui/pet/petStore';
+import { meow } from '../ui/pet/sound';
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LC7o3yIus1-5o1fz_DlvmW75Hiq0ZjNEnC3h01mbYCE/edit';
 
@@ -34,6 +36,8 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
       <Section title="Кто пользуется этим телефоном">
         <Segmented<Person> value={k.me} options={PEOPLE.map((p) => ({ value: p, label: p }))} onChange={(me) => setConfig({ me })} />
       </Section>
+
+      <PetSettings />
 
       <Section title="Кладовая" hint="Всегда есть дома">
         <div className="chips">
@@ -164,5 +168,40 @@ export function Settings({ k, onBack }: { k: Kitchen; onBack: () => void }) {
       </Section>
       <p className="muted small center">Кухня · версия {__APP_VERSION__}</p>
     </>
+  );
+}
+
+function PetSettings() {
+  const pet = usePet();
+  return (
+    <Section title="🐱 Кот">
+      <Field label="Как зовут">
+        <input value={pet.name} onChange={(e) => setPet({ name: e.target.value })} placeholder="Пухля" maxLength={20} />
+      </Field>
+      <Segmented<'on' | 'off'>
+        value={pet.sound ? 'on' : 'off'}
+        options={[
+          { value: 'on', label: '🔊 Звуки' },
+          { value: 'off', label: '🔇 Без звука' },
+        ]}
+        onChange={(v) => {
+          setPet({ sound: v === 'on' });
+          if (v === 'on') meow();
+        }}
+      />
+      <button
+        className="link"
+        onClick={() => {
+          try {
+            localStorage.removeItem('kukhnya.no3d');
+          } catch {
+            /* ничего */
+          }
+          location.reload();
+        }}
+      >
+        Кухня не в 3D? Попробовать снова
+      </button>
+    </Section>
   );
 }

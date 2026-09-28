@@ -7,10 +7,11 @@ import { daysLeftText } from '../logic/dates';
 import { minutesOf } from '../logic/portions';
 import { isLate, slotForTime, suggest, type Scored, type Slot } from '../logic/suggest';
 import { dishEmoji, dishTone, productEmoji } from '../ui/emoji';
-import { plural, Section, Segmented, Sheet } from '../ui/kit';
+import { Section, Segmented, Sheet } from '../ui/kit';
 import { productLabel } from '../ui/labels';
 import { Leftovers } from '../ui/Leftovers';
 import { RecipeCard } from '../ui/RecipeCard';
+import { Room } from '../ui/pet/Room';
 
 const SLOT_MEAL: Record<Slot, string> = { breakfast: 'завтрак', lunch: 'обед', dinner: 'ужин' };
 const SHOW = 5;
@@ -30,28 +31,14 @@ export function Cook({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
   const quick = (x: Scored) => Number((minutesOf(x.recipe.time) ?? 99) <= 20);
   const all = late ? [...s.ready].sort((a, b) => quick(b) - quick(a)) : s.ready;
   const ready = more ? all : all.slice(0, SHOW);
-  const h = new Date().getHours();
-  const hello = h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
 
   return (
     <>
-      <div className="hero">
-        <p className="hero-hello">
-          {hello}, {k.me}
-        </p>
-        <div className="hero-main">
-          <span className="hero-num">{s.ready.length}</span>
-          <span className="hero-label">{plural(s.ready.length, 'блюдо', 'блюда', 'блюд')} можно
-            <br />
-            приготовить
-          </span>
-        </div>
-        <div className="hero-stats">
-          <span>🧊 {k.stock.items.size} дома</span>
-          {expiring.length > 0 && <span>⏳ {expiring.length} скоро {plural(expiring.length, 'испортится', 'испортятся', 'испортятся')}</span>}
-          {k.leftoverRows.length > 0 && <span>🍲 {k.leftoverRows.length} доесть</span>}
-        </div>
-      </div>
+      <Room k={k} go={go} onFeed={() => document.getElementById('feed')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+
+      <h2 id="feed" className="feed-title">
+        🍽 Чем покормить
+      </h2>
 
       {slot !== 'breakfast' && <Leftovers k={k} />}
 

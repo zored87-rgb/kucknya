@@ -1,0 +1,1255 @@
+/* ================= Игровой вид: объёмные кнопки, панели, нижняя панель ================= */
+
+:root {
+  --edge: #e8d6bd;
+  --edge-strong: #d9bf9b;
+  --accent-edge: #b8471a;
+  --room-ink: #2a211a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --edge: #0d0a08;
+    --edge-strong: #080605;
+    --accent-edge: #8f3510;
+  }
+}
+
+body {
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--accent) 7%, transparent) 1.5px, transparent 2px) 0 0 / 22px 22px,
+    var(--bg);
+}
+
+.top h1 {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 0 var(--edge);
+}
+
+.card {
+  border: 2px solid var(--edge);
+  box-shadow: 0 4px 0 var(--edge);
+}
+
+.btn {
+  font-weight: 800;
+  box-shadow: 0 4px 0 var(--edge-strong);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.btn.primary {
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  box-shadow: 0 4px 0 var(--accent-edge);
+  text-shadow: 0 1px 0 rgb(0 0 0 / 15%);
+}
+
+.btn.ghost {
+  background: var(--surface);
+  border: 2px solid var(--edge);
+  box-shadow: 0 3px 0 var(--edge);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--edge-strong);
+}
+
+.btn.primary:active:not(:disabled) {
+  box-shadow: 0 1px 0 var(--accent-edge);
+}
+
+.chip {
+  border: 2px solid var(--edge);
+  box-shadow: 0 2px 0 var(--edge);
+  font-weight: 700;
+}
+
+.chip.on {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent-edge);
+  box-shadow: 0 2px 0 var(--accent-edge);
+}
+
+.segmented {
+  border: 2px solid var(--edge);
+}
+
+.segmented button {
+  font-weight: 800;
+}
+
+.section-head h3 {
+  font-weight: 900;
+}
+
+/* Нижняя панель как в игре: иконки в кружках, активная подпрыгивает */
+.bottom-nav {
+  border-top: 2px solid var(--edge);
+  background: var(--surface);
+}
+
+.bottom-nav button {
+  font-weight: 800;
+  gap: 3px;
+}
+
+.bottom-nav button svg {
+  width: 40px;
+  height: 34px;
+  padding: 6px 9px;
+  border-radius: 14px;
+  transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1), background 0.2s;
+}
+
+.bottom-nav button.on svg {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 3px 0 var(--accent-edge);
+  transform: translateY(-3px) scale(1.05);
+}
+
+.feed-title {
+  margin: 8px 0 -4px;
+  font-size: 22px;
+  font-weight: 900;
+  scroll-margin-top: 70px;
+}
+
+/* ================= Кухня-комната ================= */
+
+.room {
+  position: relative;
+  height: 440px;
+  margin: 0 -6px;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 3px solid #e2c9a5;
+  box-shadow: 0 5px 0 #d9bf9b;
+  color: var(--room-ink);
+  isolation: isolate;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.room.wall-base {
+  background: repeating-linear-gradient(90deg, #fde9d2 0 22px, #fae0c3 22px 44px);
+}
+
+.room.wall-check {
+  background:
+    linear-gradient(90deg, rgb(226 72 61 / 16%) 50%, transparent 50%) 0 0 / 30px 30px,
+    linear-gradient(rgb(226 72 61 / 16%) 50%, transparent 50%) 0 0 / 30px 30px,
+    #fff6ee;
+}
+
+.room.wall-stars {
+  background:
+    radial-gradient(#ffd966 1.6px, transparent 2.2px) 0 0 / 28px 28px,
+    radial-gradient(#fff 1px, transparent 1.6px) 14px 14px / 28px 28px,
+    #33407a;
+}
+
+.room.wall-gold {
+  background: repeating-linear-gradient(45deg, #ffeab0 0 14px, #ffe08a 14px 28px);
+}
+
+/* Ночью в комнате полумрак */
+.room.night::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(25 30 80 / 20%);
+  z-index: 4;
+  pointer-events: none;
+}
+
+.floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30%;
+  background: repeating-linear-gradient(90deg, #cf935b 0 62px, #b97b46 62px 64px);
+  border-top: 7px solid #9c6436;
+  z-index: 0;
+}
+
+.rug {
+  position: absolute;
+  left: 50%;
+  bottom: 3%;
+  width: 60%;
+  height: 11%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #f59a7a 0 50%, #e2483d 52% 70%, #f59a7a 72% 100%);
+  z-index: 1;
+}
+
+/* Окно */
+.room-window {
+  position: absolute;
+  left: 33%;
+  width: 34%;
+  top: 14%;
+  height: 21%;
+  border: 6px solid #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 #d9bf9b;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#8fd3ff, #d4f0ff);
+}
+
+.sky-morning .sky {
+  background: linear-gradient(#ffc79a, #ffeeda);
+}
+
+.sky-evening .sky {
+  background: linear-gradient(#ff8f63, #ffcf8a);
+}
+
+.sky-night .sky {
+  background: linear-gradient(#18204a, #3a4a8a);
+}
+
+.sun {
+  position: absolute;
+  left: 14%;
+  top: 16%;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffd23d;
+  box-shadow: 0 0 0 6px rgb(255 210 61 / 30%);
+}
+
+.sky-night .sun {
+  background: transparent;
+  box-shadow: inset -8px 3px 0 0 #fff3b0;
+}
+
+.cloud {
+  position: absolute;
+  height: 14px;
+  width: 38px;
+  border-radius: 10px;
+  background: #fff;
+  animation: drift 26s linear infinite;
+}
+
+.cloud::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: -8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.cloud.c1 {
+  top: 52%;
+  left: -30%;
+}
+
+.cloud.c2 {
+  top: 24%;
+  left: -30%;
+  animation-delay: -13s;
+  transform: scale(0.7);
+}
+
+.sky-night .cloud {
+  display: none;
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  display: none;
+  background:
+    radial-gradient(#fff 1px, transparent 1.5px) 5px 6px / 23px 19px,
+    radial-gradient(#fff 0.8px, transparent 1.2px) 14px 12px / 31px 23px;
+}
+
+.sky-night .stars {
+  display: block;
+}
+
+.frame-v,
+.frame-h {
+  position: absolute;
+  background: #fff;
+}
+
+.frame-v {
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  transform: translateX(-50%);
+}
+
+.frame-h {
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 5px;
+  transform: translateY(-50%);
+}
+
+@keyframes drift {
+  to {
+    left: 110%;
+  }
+}
+
+/* Предметы */
+.obj {
+  position: absolute;
+  z-index: 2;
+  padding: 0;
+  background: none;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--room-ink);
+  transition: transform 0.15s cubic-bezier(0.3, 1.6, 0.5, 1);
+  touch-action: manipulation;
+}
+
+.obj:active {
+  transform: scale(0.94);
+}
+
+.obj svg {
+  overflow: visible;
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 3px 0 rgb(0 0 0 / 12%));
+}
+
+.obj-label {
+  margin-top: 3px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 92%);
+  border: 2px solid #e2c9a5;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  color: var(--room-ink);
+}
+
+.obj-badge {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  border: 2.5px solid #fff;
+  animation: badge-bob 1.6s ease-in-out infinite;
+}
+
+.obj-badge.warn {
+  background: #e2483d;
+}
+
+@keyframes badge-bob {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.obj-fridge {
+  left: 3%;
+  bottom: 13%;
+  width: 25%;
+}
+
+.fridge-door,
+.fridge-door-top {
+  transform-origin: 8px 0;
+  transition: transform 0.35s ease-in;
+}
+
+.obj-fridge.opening .fridge-door,
+.obj-fridge.opening .fridge-door-top {
+  transform: scaleX(0.12);
+}
+
+.stink path {
+  animation: stink 1.4s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+.stink path:nth-child(2) {
+  animation-delay: -0.7s;
+}
+
+.fly {
+  animation: fly 1.2s linear infinite;
+  transform-origin: 74px -14px;
+}
+
+@keyframes stink {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-6px);
+    opacity: 0.9;
+  }
+}
+
+@keyframes fly {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.obj-shelf {
+  right: 3%;
+  top: 15%;
+  width: 29%;
+}
+
+.obj-diary {
+  right: 8%;
+  top: 40%;
+  width: 18%;
+}
+
+.diary-page {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: #fff;
+  border-top: 9px solid #e2483d;
+  box-shadow: 0 3px 0 rgb(0 0 0 / 12%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.diary-page small {
+  font-size: 10px;
+  font-weight: 800;
+  color: #9a8a7a;
+}
+
+.diary-page b {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--room-ink);
+}
+
+.obj-basket {
+  right: 2%;
+  bottom: 3%;
+  width: 25%;
+}
+
+.obj-bowl {
+  left: 27%;
+  bottom: 2%;
+  width: 17%;
+  z-index: 4;
+}
+
+.bowl-food {
+  animation: food-shrink 3.2s ease-in forwards;
+  transform-origin: 40px 20px;
+}
+
+@keyframes food-shrink {
+  to {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* HUD: сытость и уровень */
+.hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 6;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hud-pill {
+  position: relative;
+  flex: 1;
+  max-width: 48%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 6px;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 94%);
+  border: 2.5px solid #e2c9a5;
+  box-shadow: 0 3px 0 #d9bf9b;
+  color: var(--room-ink);
+}
+
+.hud-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.hud-bar {
+  flex: 1;
+  height: 13px;
+  border-radius: 7px;
+  background: #ecdfcc;
+  box-shadow: inset 0 2px 0 rgb(0 0 0 / 8%);
+  overflow: hidden;
+}
+
+.hud-bar.big {
+  height: 18px;
+  border-radius: 9px;
+}
+
+.hud-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.8s cubic-bezier(0.3, 1.3, 0.5, 1);
+  background-image: linear-gradient(135deg, rgb(255 255 255 / 28%) 25%, transparent 25% 50%, rgb(255 255 255 / 28%) 50% 75%, transparent 75%);
+  background-size: 14px 14px;
+  animation: stripes 1s linear infinite;
+}
+
+.hud-bar i.good {
+  background-color: #45b85a;
+}
+
+.hud-bar i.ok {
+  background-color: #f2b632;
+}
+
+.hud-bar i.low {
+  background-color: #f2803a;
+}
+
+.hud-bar i.empty {
+  background-color: #e2483d;
+  animation:
+    stripes 1s linear infinite,
+    blink-bar 0.8s ease-in-out infinite alternate;
+}
+
+.hud-bar i.xp {
+  background-color: #6b7bff;
+}
+
+@keyframes stripes {
+  to {
+    background-position: 14px 0;
+  }
+}
+
+@keyframes blink-bar {
+  to {
+    opacity: 0.5;
+  }
+}
+
+.hud-star {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: #ffc83d;
+  clip-path: polygon(50% 0, 62% 35%, 100% 38%, 70% 60%, 80% 100%, 50% 77%, 20% 100%, 30% 60%, 0 38%, 38% 35%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  padding-top: 3px;
+  text-shadow: 0 1px 0 #c98a00;
+}
+
+.xp-float {
+  position: absolute;
+  right: 6px;
+  top: 110%;
+  font-size: 15px;
+  font-weight: 900;
+  color: #5563ff;
+  text-shadow: 0 2px 0 #fff;
+  white-space: nowrap;
+  animation: xp-up 2.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes xp-up {
+  0% {
+    transform: translateY(10px) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    transform: translateY(0) scale(1.15);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-16px);
+    opacity: 0;
+  }
+}
+
+/* Кот и облачко */
+.room-cat {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: 46%;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.bubble {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 6px;
+  width: max-content;
+  max-width: 220px;
+  padding: 7px 12px;
+  border-radius: 16px;
+  background: #fff;
+  border: 2.5px solid #e2c9a5;
+  box-shadow: 0 3px 0 #d9bf9b;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--room-ink);
+  animation: bubble-in 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-right: 2.5px solid #e2c9a5;
+  border-bottom: 2.5px solid #e2c9a5;
+  transform: translate(-50%, -6px) rotate(45deg);
+}
+
+.bubble.b-angry {
+  color: #c2261b;
+  border-color: #f0a097;
+}
+
+@keyframes bubble-in {
+  from {
+    transform: translateX(-50%) scale(0.5);
+    opacity: 0;
+  }
+}
+
+.cat-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.cat {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.cat-shadow {
+  fill: rgb(0 0 0 / 16%);
+}
+
+.cat-body {
+  transform-box: view-box;
+  transform-origin: 100px 225px;
+  animation: breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    transform: scale(1.012, 0.985);
+  }
+}
+
+.cat-tail {
+  transform-box: view-box;
+  transform-origin: 150px 204px;
+  animation: tail 2.6s ease-in-out infinite;
+}
+
+@keyframes tail {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+
+.cat-eyes {
+  transform-box: view-box;
+  transform-origin: 100px 81px;
+  animation: blink 4.6s infinite;
+}
+
+@keyframes blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+
+.cat-ear {
+  transform-box: view-box;
+}
+
+.ear-l {
+  transform-origin: 62px 48px;
+  animation: ear 6s infinite;
+}
+
+.ear-r {
+  transform-origin: 138px 48px;
+  animation: ear 7.5s 2s infinite;
+}
+
+@keyframes ear {
+  0%,
+  90%,
+  100% {
+    transform: rotate(0);
+  }
+  93% {
+    transform: rotate(-12deg);
+  }
+  96% {
+    transform: rotate(5deg);
+  }
+}
+
+.cat-arm {
+  transform-box: view-box;
+  transform-origin: 46px 128px;
+  animation: arm-idle 3.4s ease-in-out infinite;
+}
+
+@keyframes arm-idle {
+  50% {
+    transform: rotate(7deg);
+  }
+}
+
+/* Голодный — гладит живот */
+.mood-hungry .cat-arm,
+.mood-sad .cat-arm {
+  animation: rub 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes rub {
+  from {
+    transform: rotate(-4deg);
+  }
+  to {
+    transform: rotate(-16deg);
+  }
+}
+
+/* Злой — кулаки вверх, трясётся */
+.mood-angry .cat-arm,
+.r-hiss .cat-arm {
+  animation: fists 0.28s ease-in-out infinite alternate;
+}
+
+@keyframes fists {
+  from {
+    transform: rotate(96deg);
+  }
+  to {
+    transform: rotate(120deg);
+  }
+}
+
+.mood-angry .cat,
+.r-hiss .cat {
+  animation: shake 0.22s linear infinite;
+}
+
+.mood-angry .cat-tail {
+  animation-duration: 0.45s;
+}
+
+@keyframes shake {
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+.cat-red {
+  animation: red-pulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes red-pulse {
+  from {
+    opacity: 0.16;
+  }
+  to {
+    opacity: 0.4;
+  }
+}
+
+.cat-steam circle {
+  animation: steam 1.1s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.cat-steam circle:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+@keyframes steam {
+  from {
+    transform: translateY(8px) scale(0.4);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateY(-14px) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* Спит */
+.mood-sleeping .cat-body {
+  animation-duration: 5s;
+}
+
+.mood-sleeping .cat-tail,
+.mood-sleeping .cat-arm {
+  animation: none;
+}
+
+.cat-zzz text {
+  font: 900 18px 'Nunito Variable', sans-serif;
+  animation: zzz 3s ease-in-out infinite;
+  opacity: 0;
+}
+
+.cat-zzz text:nth-child(2) {
+  animation-delay: 1s;
+}
+
+.cat-zzz text:nth-child(3) {
+  animation-delay: 2s;
+}
+
+@keyframes zzz {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  30% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.cat-tear {
+  animation: tear 1.6s ease-in infinite;
+}
+
+@keyframes tear {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+}
+
+/* Говорит и ест */
+.cat-talk .cat-mouth-open {
+  transform-box: view-box;
+  transform-origin: 100px 103px;
+  animation: talk 0.2s ease-in-out infinite alternate;
+}
+
+.cat-chomp ellipse {
+  transform-box: view-box;
+  transform-origin: 100px 104px;
+  animation: talk 0.14s ease-in-out infinite alternate;
+}
+
+@keyframes talk {
+  from {
+    transform: scaleY(0.25);
+  }
+}
+
+.eating .cat-face {
+  transform-box: view-box;
+  transform-origin: 100px 100px;
+  animation: nom 0.28s ease-in-out infinite alternate;
+}
+
+@keyframes nom {
+  to {
+    transform: translateY(4px);
+  }
+}
+
+/* Реакции на касание */
+.r-meow .cat,
+.r-wake .cat {
+  animation: hop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.r-meow .arm-r {
+  animation: wave 0.22s ease-in-out 4 alternate;
+}
+
+@keyframes hop {
+  40% {
+    transform: translateY(-14px) scale(1.03, 0.97);
+  }
+}
+
+@keyframes wave {
+  from {
+    transform: rotate(100deg);
+  }
+  to {
+    transform: rotate(135deg);
+  }
+}
+
+.r-giggle .cat-body {
+  animation: wiggle 0.12s ease-in-out infinite alternate;
+}
+
+@keyframes wiggle {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+
+.r-purr .cat-body {
+  animation: sway 1s ease-in-out infinite alternate;
+}
+
+@keyframes sway {
+  from {
+    transform: rotate(-2deg) scale(1.01, 0.99);
+  }
+  to {
+    transform: rotate(2deg);
+  }
+}
+
+.cat-heart {
+  position: absolute;
+  top: 18%;
+  font-size: 24px;
+  pointer-events: none;
+  animation: heart-up 1.6s ease-out forwards;
+}
+
+@keyframes heart-up {
+  from {
+    transform: translateY(0) scale(0.5);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-90px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* Наряды и новый уровень */
+.xp-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.rewards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 6px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 2px solid var(--edge);
+  box-shadow: 0 3px 0 var(--edge);
+  text-align: center;
+}
+
+.reward.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.reward.locked {
+  opacity: 0.55;
+}
+
+.reward-emoji {
+  font-size: 30px;
+}
+
+.reward-name {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.reward small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.levelup {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 50%);
+  animation: fade-in 0.2s;
+  overflow: hidden;
+}
+
+.levelup-card {
+  position: relative;
+  width: min(320px, 88vw);
+  padding: 26px 20px 20px;
+  border-radius: 28px;
+  background: var(--surface);
+  border: 3px solid var(--accent);
+  box-shadow: 0 6px 0 var(--accent-edge);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: bubble-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.levelup-card h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.levelup-card p {
+  margin: 0;
+}
+
+.levelup-star {
+  width: 96px;
+  height: 96px;
+  margin: -70px auto 0;
+  display: grid;
+  place-items: center;
+  padding-top: 10px;
+  background: #ffc83d;
+  clip-path: polygon(50% 0, 62% 35%, 100% 38%, 70% 60%, 80% 100%, 50% 77%, 20% 100%, 30% 60%, 0 38%, 38% 35%);
+  color: #fff;
+  font-size: 32px;
+  font-weight: 900;
+  text-shadow: 0 2px 0 #c98a00;
+  animation: spin-in 0.8s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes bubble-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+@keyframes spin-in {
+  from {
+    transform: rotate(-180deg) scale(0.2);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.confetti i {
+  position: absolute;
+  top: -20px;
+  width: 9px;
+  height: 15px;
+  border-radius: 2px;
+  animation: fall 2.4s linear infinite;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110dvh) rotate(720deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room *,
+  .levelup *,
+  .cat * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ================= 3D-кухня ================= */
+
+.room-3d {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.room-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.room.is-3d::before {
+  display: none;
+}
+
+.pin {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, 0);
+}
+
+button.obj-label.pin {
+  min-height: 30px;
+  padding: 3px 10px;
+  box-shadow: 0 3px 0 #d9bf9b;
+  touch-action: manipulation;
+}
+
+button.obj-label.pin:active {
+  transform: translate(-50%, 2px);
+  box-shadow: 0 1px 0 #d9bf9b;
+}
+
+.obj-label.pin.feed {
+  background: var(--accent);
+  border-color: var(--accent-edge);
+  box-shadow: 0 3px 0 var(--accent-edge);
+  color: #fff;
+}
+
+.obj-badge.pin {
+  animation: none;
+  transform: translate(-50%, -50%);
+  top: auto;
+  right: auto;
+}
+
+.bubble.pin3d {
+  bottom: auto;
+  z-index: 5;
+  transform: translate(-50%, -100%);
+  margin: -8px 0 0;
+  animation: bubble-in-3d 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+  pointer-events: none;
+}
+
+@keyframes bubble-in-3d {
+  from {
+    transform: translate(-50%, -100%) scale(0.5);
+    opacity: 0;
+  }
+}
+
+.hud-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hud-name {
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -5,6 +5,7 @@ import { init } from './api/store';
 import { App } from './App';
 import '@fontsource-variable/nunito';
 import './styles.css';
+import './game.css';
 
 // Новая версия приложения ставится сама при следующем открытии.
 registerSW({ immediate: true });

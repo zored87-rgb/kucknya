@@ -15,6 +15,7 @@ import { Empty, Field, plural, Section, Segmented, Sheet } from '../ui/kit';
 import { dishEmoji, dishTone } from '../ui/emoji';
 import { RecipeCard, setReaction } from '../ui/RecipeCard';
 import { toast } from '../ui/toast';
+import { feedPet } from '../ui/pet/petStore';
 
 const MEAL_ICON: Record<string, string> = { завтрак: '☀️', обед: '🍲', ужин: '🌙', перекус: '🍎' };
 
@@ -174,10 +175,11 @@ function AddEaten({ k, onClose }: { k: Kitchen; onClose: () => void }) {
   const save = () => {
     if (!dish.trim()) return;
     const recipeId = recipeIdForDish(dish, k.recipes) ?? '';
-    mutate({
-      op: 'eaten.upsert',
-      row: { id: newId(), date: formatDate(parseDate(date) ?? new Date()), meal, dish: dish.trim(), who, score: '', recipeId },
-    });
+    const id = newId();
+    const day = formatDate(parseDate(date) ?? new Date());
+    mutate({ op: 'eaten.upsert', row: { id, date: day, meal, dish: dish.trim(), who, score: '', recipeId } });
+    // Записали сегодняшнюю еду — кот тоже поел.
+    if (day === formatDate(new Date())) feedPet(id);
     toast('Записано');
     onClose();
   };

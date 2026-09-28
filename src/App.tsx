@@ -20,10 +20,10 @@ import { usePullToRefresh } from './ui/usePullToRefresh';
 type Tab = 'cook' | 'fridge' | 'buy' | 'eaten' | 'recipes' | 'settings';
 
 const TABS: { id: Exclude<Tab, 'settings'>; label: string; title: string; icon: ReactNode }[] = [
-  { id: 'cook', label: 'Готовим', title: 'Что готовим', icon: <IconPot /> },
+  { id: 'cook', label: 'Кухня', title: 'Кухня', icon: <IconPot /> },
   { id: 'fridge', label: 'Холодильник', title: 'Холодильник', icon: <IconFridge /> },
-  { id: 'buy', label: 'Купить', title: 'Что купить', icon: <IconCart /> },
-  { id: 'eaten', label: 'Съели', title: 'Что ели', icon: <IconHistory /> },
+  { id: 'buy', label: 'Магазин', title: 'Магазин', icon: <IconCart /> },
+  { id: 'eaten', label: 'Дневник', title: 'Дневник', icon: <IconHistory /> },
   { id: 'recipes', label: 'Рецепты', title: 'Рецепты', icon: <IconBook /> },
 ];
 
@@ -103,7 +103,7 @@ function Shell() {
       </header>
 
       <TimerChips />
-      <main className="content">
+      <main className={`content tab-${tab}`}>
         {!hasData && syncing ? (
           <div className="empty">Загружаю данные из таблицы…</div>
         ) : (

@@ -9,18 +9,21 @@ import type { FridgeRow, Who } from '../types';
 import { dishEmoji } from './emoji';
 import { toast } from './toast';
 import { mealForTime } from '../logic/suggest';
+import { feedPet } from './pet/petStore';
 
 function eat(row: FridgeRow, n: number, who: Who, k: Kitchen) {
   const left = portions(row) - n;
   const meal = mealForTime(new Date());
+  const eatenId = newId();
   const ops: OpBody[] = [
     {
       op: 'eaten.upsert',
-      row: { id: newId(), date: formatDate(new Date()), meal, dish: dishOf(row), who, score: '', recipeId: leftoverRecipeId(row, k.recipes) ?? '' },
+      row: { id: eatenId, date: formatDate(new Date()), meal, dish: dishOf(row), who, score: '', recipeId: leftoverRecipeId(row, k.recipes) ?? '' },
     },
     left > 0 ? { op: 'fridge.upsert', row: { id: row.id, qty: portionsText(left) } } : { op: 'fridge.delete', id: row.id },
   ];
   mutate(ops);
+  feedPet(eatenId);
   toast(left > 0 ? `Приятного! Осталось ${portionsText(left)}` : `Приятного! ${dishOf(row)} доели`);
 }
 
