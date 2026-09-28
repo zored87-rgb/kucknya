@@ -4,11 +4,12 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { Kitchen } from '../../hooks/useKitchen';
 import { parseDate, daysBetween } from '../../logic/dates';
+import { useWeather, WEATHER_ICON, WEATHER_PHRASE } from '../../logic/weather';
 import { hungerText, isNight, lastMealAt, levelOf, moodOf, phrase, satiety, xpOf, type Mood } from '../../logic/pet';
 import { productLabel } from '../labels';
 import { Cat, faceOf, type Reaction } from './Cat';
 import type { SceneState, Target } from './scene/kitchenScene';
-import { giggle, hiss, meow, purr } from './sound';
+import { angryMeow, audioReady, giggle, hiss, meow, purr } from './sound';
 import { LevelUp, Wardrobe } from './Wardrobe';
 import { setPet, usePet } from './petStore';
 
@@ -59,6 +60,7 @@ export function Room({
   sync?: React.ReactNode;
 }) {
   const pet = usePet();
+  const weather = useWeather();
   const [now, setNow] = useState(() => Date.now());
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 100));
   const [say, setSay] = useState<string | null>(null);
@@ -131,6 +133,25 @@ export function Room({
   }, [pet.seenLevel, lvl.level]);
   const levelUp = pet.seenLevel > 0 && lvl.level > pet.seenLevel;
 
+  // Сам по себе мяукает: сытый — изредка, голодный — часто, злой — сердито.
+  useEffect(() => {
+    if (!full) return;
+    const chance: Record<Mood, number> = { happy: 0.12, peckish: 0.2, hungry: 0.38, angry: 0.45, sad: 0.16, sleeping: 0 };
+    const pick = (list: string[]) => list[Math.floor(Math.random() * list.length)];
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== 'visible' || !audioReady() || eating || say) return;
+      if (Math.random() > chance[mood]) return;
+      if (mood === 'angry') {
+        angryMeow();
+        setSay(pick(['МЯУ!!', 'Р-р-мяу!', 'Мррау!!']));
+      } else {
+        meow(mood === 'hungry' ? 0.95 : 1, mood === 'hungry' ? 1.3 : 0.6);
+        setSay(mood === 'hungry' ? pick(['Мя-я-яу…', 'Мяу! Есть хочу', 'Мррр-мяу?']) : pick(['Мяу!', 'Мрр?', 'Мяу 💛']));
+      }
+    }, 9000);
+    return () => window.clearInterval(id);
+  }, [full, mood, eating, say]);
+
   // Фраза гаснет через 3 секунды после реакции.
   useEffect(() => {
     if (!say) return;
@@ -144,6 +165,8 @@ export function Room({
       const base = phrase(mood, seed);
       return `${base} ${last ? `Я ${hungerText(last, now)}!` : ''}`.trim();
     }
+    // Иногда — про погоду за окном
+    if (weather && (mood === 'happy' || mood === 'peckish') && seed % 3 === 0) return WEATHER_PHRASE[weather.kind];
     return phrase(mood, seed);
   })();
   const bubble = say ?? moodText;
@@ -211,8 +234,10 @@ export function Room({
       night: isNight(new Date(now)),
       spoiling: spoiling.length > 0,
       weekMeals,
+      weather: weather?.kind ?? 'clear',
+      clouds: weather?.clouds ?? 20,
     }),
-    [mood, reaction, eating, say, pet.outfit, pet.wall, h, now, spoiling.length, weekMeals],
+    [mood, reaction, eating, say, pet.outfit, pet.wall, h, now, spoiling.length, weekMeals, weather?.kind, weather?.clouds],
   );
   const flat = !ready3d;
   // Подпись не вылезает за край экрана
@@ -348,6 +373,11 @@ export function Room({
           {toBuy > 0 && (
             <span className="obj-badge pin" style={at('buyTop')}>
               {toBuy}
+            </span>
+          )}
+          {weather && (
+            <span className="obj-label pin small weather-tag" style={at('window', 2)}>
+              {WEATHER_ICON[weather.kind]} {weather.temp}° Валенсия
             </span>
           )}
           <button className="obj-label pin small" style={at('settings', 4)} onClick={() => go('settings')}>

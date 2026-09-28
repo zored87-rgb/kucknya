@@ -1583,3 +1583,8 @@ button.obj-label.pin:active {
   border-radius: 14px;
   padding: 2px 6px;
 }
+
+.weather-tag {
+  pointer-events: none;
+  background: rgb(255 255 255 / 85%);
+}

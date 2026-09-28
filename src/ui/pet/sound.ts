@@ -7,12 +7,73 @@ let ctx: AudioContext | null = null;
 function ac(): AudioContext | null {
   if (!getPet().sound) return null;
   try {
-    ctx ??= new AudioContext();
+    if (!ctx) {
+      ctx = new AudioContext();
+      void loadClips(ctx);
+    }
     if (ctx.state === 'suspended') void ctx.resume();
     return ctx;
   } catch {
     return null;
   }
+}
+
+/** Звук уже разрешён (было касание) — можно мяукать самому. */
+export function audioReady(): boolean {
+  return !!ctx && ctx.state === 'running' && getPet().sound;
+}
+
+// ---------- Настоящие мяуканья из записей ----------
+
+interface Clip {
+  file: string;
+  dur: number;
+}
+type Kind = 'meow' | 'angry';
+const clips: Record<Kind, { clip: Clip; buf: AudioBuffer }[]> = { meow: [], angry: [] };
+let lastClip = '';
+
+async function loadClips(c: AudioContext) {
+  try {
+    const base = `${import.meta.env.BASE_URL}sounds/`;
+    const man = (await (await fetch(base + 'sounds.json')).json()) as Record<Kind, Clip[]>;
+    for (const kind of ['meow', 'angry'] as Kind[]) {
+      await Promise.all(
+        (man[kind] ?? []).map(async (clip) => {
+          const data = await (await fetch(base + clip.file)).arrayBuffer();
+          const buf = await c.decodeAudioData(data);
+          clips[kind].push({ clip, buf });
+        }),
+      );
+    }
+  } catch {
+    /* нет сети — останется синтезированный голос */
+  }
+}
+
+/**
+ * Проиграть случайное мяуканье. long — выбрать подлиннее (голодный), short — покороче.
+ * rate чуть меняем, чтобы не повторялось. Возвращает длительность в секундах или 0.
+ */
+function playClip(kind: Kind, opts: { long?: boolean; short?: boolean; rate?: number; gain?: number } = {}): number {
+  const c = ac();
+  if (!c) return 0;
+  let list = clips[kind];
+  if (opts.long) list = list.filter((x) => x.clip.dur >= 0.7).length ? list.filter((x) => x.clip.dur >= 0.7) : list;
+  if (opts.short) list = list.filter((x) => x.clip.dur <= 0.62).length ? list.filter((x) => x.clip.dur <= 0.62) : list;
+  if (!list.length) return 0;
+  let pick = list[Math.floor(Math.random() * list.length)];
+  if (pick.clip.file === lastClip && list.length > 1) pick = list[(list.indexOf(pick) + 1) % list.length];
+  lastClip = pick.clip.file;
+  const src = c.createBufferSource();
+  src.buffer = pick.buf;
+  const rate = (opts.rate ?? 1) * (0.95 + Math.random() * 0.1);
+  src.playbackRate.value = rate;
+  const g = c.createGain();
+  g.gain.value = opts.gain ?? 0.9;
+  src.connect(g).connect(c.destination);
+  src.start();
+  return pick.buf.duration / rate;
 }
 
 function noise(c: AudioContext, seconds: number): AudioBufferSourceNode {
@@ -28,9 +89,11 @@ function noise(c: AudioContext, seconds: number): AudioBufferSourceNode {
  * Ленивое милое «мрр-ряу»: короткое мурлыкающее начало, мягкий подъём и долгий спад,
  * лёгкое дрожание голоса и придыхание. pitch 1 — обычный, больше — выше и короче.
  */
-export function meow(pitch = 1, length = 0.9) {
+export function meow(pitch = 1, length = 0.9): number {
+  const real = playClip('meow', { long: length >= 1.1, short: length < 0.5, rate: pitch > 1.2 ? 1.1 : pitch < 0.9 ? 0.92 : 1 });
+  if (real) return real;
   const c = ac();
-  if (!c) return;
+  if (!c) return 0;
   const t = c.currentTime;
   const p = pitch * (0.96 + Math.random() * 0.08);
   const L = length / Math.sqrt(pitch);
@@ -115,10 +178,17 @@ export function meow(pitch = 1, length = 0.9) {
     o.stop(t + L + 0.2);
   }
   breath.start(t);
+  return L;
+}
+
+/** Злое мяуканье — когда Гера голодный и сердитый. */
+export function angryMeow(): number {
+  return playClip('angry', { gain: 0.8 }) || (hiss(), 0.7);
 }
 
 /** Ленивый зевок: долгое низкое «а-а-ау» с выдохом. */
 export function yawnSound() {
+  if (playClip('meow', { long: true, rate: 0.82, gain: 0.55 })) return;
   const c = ac();
   if (!c) return;
   const t = c.currentTime;
@@ -155,6 +225,7 @@ export function yawnSound() {
 
 /** Короткое довольное «мрр?» */
 export function chirp() {
+  if (playClip('meow', { short: true, rate: 1.12, gain: 0.7 })) return;
   meow(1.35, 0.32);
 }
 
@@ -190,6 +261,10 @@ export function purr(seconds = 1.6) {
 export function hiss() {
   const c = ac();
   if (!c) return;
+  if (clips.angry.length) {
+    playClip('angry', { gain: 0.8, rate: 1.05 });
+    return;
+  }
   const t = c.currentTime;
   const src = noise(c, 0.7);
   const hp = c.createBiquadFilter();
@@ -244,5 +319,6 @@ export function fanfare() {
 
 /** Хихиканье: три коротких довольных «мрр». */
 export function giggle() {
+  if (playClip('meow', { short: true, rate: 1.18 })) return;
   [0, 0.2, 0.4].forEach((d, i) => setTimeout(() => meow(1.3 + i * 0.08, 0.22), d * 1000));
 }

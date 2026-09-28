@@ -55,3 +55,18 @@ describe('опыт и уровни', () => {
     expect(levelOf(60).progress).toBeCloseTo(0.25);
   });
 });
+
+import { kindOf } from '../src/logic/weather';
+
+describe('погода за окном', () => {
+  it('коды WMO → что рисовать', () => {
+    expect(kindOf(0, 5)).toBe('clear');
+    expect(kindOf(2, 50)).toBe('partly');
+    expect(kindOf(3, 100)).toBe('cloudy');
+    expect(kindOf(61, 100)).toBe('rain');
+    expect(kindOf(53, 90)).toBe('drizzle');
+    expect(kindOf(95, 100)).toBe('storm');
+    expect(kindOf(45, 100)).toBe('fog');
+    expect(kindOf(73, 100)).toBe('snow');
+  });
+});

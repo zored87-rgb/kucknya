@@ -233,21 +233,31 @@ export function floorTexture(): THREE.CanvasTexture {
   return t;
 }
 
-export function skyTexture(sky: string): THREE.CanvasTexture {
+/** Небо в окне: время суток + погода (облачность, пасмурно, туман). */
+export function skyTexture(sky: string, weather = 'clear', clouds = 20): THREE.CanvasTexture {
   return canvasTexture(256, 192, (g, w, h) => {
-    const stops: Record<string, [string, string]> = {
-      day: ['#7cc8ff', '#d4f0ff'],
-      morning: ['#ffc08c', '#ffeeda'],
-      evening: ['#ff8457', '#ffcf8a'],
-      night: ['#141b44', '#34447f'],
-    };
+    const grey = weather === 'cloudy' || weather === 'rain' || weather === 'storm' || weather === 'drizzle' || weather === 'fog';
+    const stops: Record<string, [string, string]> = grey
+      ? {
+          day: ['#8fa1b3', '#d3dbe2'],
+          morning: ['#a9a3a6', '#dcd6d2'],
+          evening: ['#7d7482', '#b8a9a8'],
+          night: ['#141824', '#2c3345'],
+        }
+      : {
+          day: ['#7cc8ff', '#d4f0ff'],
+          morning: ['#ffc08c', '#ffeeda'],
+          evening: ['#ff8457', '#ffcf8a'],
+          night: ['#141b44', '#34447f'],
+        };
     const [a, b] = stops[sky] ?? stops.day;
     const grad = g.createLinearGradient(0, 0, 0, h);
     grad.addColorStop(0, a);
     grad.addColorStop(1, b);
     g.fillStyle = grad;
     g.fillRect(0, 0, w, h);
-    if (sky === 'night') {
+    const night = sky === 'night';
+    if (night && !grey) {
       g.fillStyle = '#fff';
       for (let i = 0; i < 40; i++) {
         g.globalAlpha = 0.4 + (i % 5) / 8;
@@ -256,36 +266,82 @@ export function skyTexture(sky: string): THREE.CanvasTexture {
         g.fill();
       }
       g.globalAlpha = 1;
-      g.fillStyle = '#fff3b0';
-      g.beginPath();
-      g.arc(70, 55, 26, 0, Math.PI * 2);
-      g.fill();
-      g.fillStyle = a;
-      g.beginPath();
-      g.arc(84, 46, 24, 0, Math.PI * 2);
-      g.fill();
-    } else {
-      g.fillStyle = '#ffd23d';
-      g.shadowColor = 'rgba(255,210,61,0.8)';
-      g.shadowBlur = 24;
-      g.beginPath();
-      g.arc(60, 55, 24, 0, Math.PI * 2);
-      g.fill();
-      g.shadowBlur = 0;
-      g.fillStyle = '#fff';
-      for (const [x, y, s] of [
-        [150, 60, 1],
-        [200, 120, 0.8],
-        [90, 140, 0.7],
-      ]) {
+    }
+    // Солнце или луна — если небо не затянуто
+    if (!grey) {
+      if (night) {
+        g.fillStyle = '#fff3b0';
         g.beginPath();
-        g.ellipse(x, y, 34 * s, 13 * s, 0, 0, Math.PI * 2);
-        g.arc(x - 8 * s, y - 10 * s, 15 * s, 0, Math.PI * 2);
-        g.arc(x + 12 * s, y - 8 * s, 12 * s, 0, Math.PI * 2);
+        g.arc(70, 55, 26, 0, Math.PI * 2);
         g.fill();
+        g.fillStyle = a;
+        g.beginPath();
+        g.arc(84, 46, 24, 0, Math.PI * 2);
+        g.fill();
+      } else {
+        g.fillStyle = '#ffd23d';
+        g.shadowColor = 'rgba(255,210,61,0.8)';
+        g.shadowBlur = 24;
+        g.beginPath();
+        g.arc(60, 55, 24, 0, Math.PI * 2);
+        g.fill();
+        g.shadowBlur = 0;
+      }
+    }
+    // Облака: чем больше облачность, тем больше и серее
+    const n = weather === 'clear' ? Math.round(clouds / 25) : grey ? 7 : 2 + Math.round(clouds / 20);
+    const cloudColor = grey ? (night ? '#3d4456' : '#b9c2cb') : night ? '#5a6490' : '#ffffff';
+    g.fillStyle = cloudColor;
+    for (let i = 0; i < n; i++) {
+      const x = ((i * 97 + 40) % (w + 60)) - 30;
+      const y = 30 + ((i * 53) % (h - 70));
+      const s = 0.6 + ((i * 37) % 10) / 16;
+      g.globalAlpha = grey ? 0.85 : 0.95;
+      g.beginPath();
+      g.ellipse(x, y, 36 * s, 13 * s, 0, 0, Math.PI * 2);
+      g.arc(x - 9 * s, y - 10 * s, 15 * s, 0, Math.PI * 2);
+      g.arc(x + 13 * s, y - 8 * s, 13 * s, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.globalAlpha = 1;
+    if (weather === 'fog') {
+      g.fillStyle = 'rgba(235,238,240,0.65)';
+      g.fillRect(0, 0, w, h);
+    }
+  });
+}
+
+/** Дождь или снег: полупрозрачная текстура, которую прокручиваем вниз. */
+export function precipTexture(kind: 'rain' | 'drizzle' | 'snow'): THREE.CanvasTexture {
+  const t = canvasTexture(256, 256, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    if (kind === 'snow') {
+      g.fillStyle = '#ffffff';
+      for (let i = 0; i < 70; i++) {
+        g.globalAlpha = 0.6 + Math.random() * 0.4;
+        g.beginPath();
+        g.arc(Math.random() * w, Math.random() * h, 1.5 + Math.random() * 2.5, 0, Math.PI * 2);
+        g.fill();
+      }
+    } else {
+      g.strokeStyle = '#dbe8f5';
+      g.lineCap = 'round';
+      const count = kind === 'rain' ? 90 : 35;
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+        const l = kind === 'rain' ? 14 + Math.random() * 12 : 6 + Math.random() * 6;
+        g.globalAlpha = 0.45 + Math.random() * 0.4;
+        g.lineWidth = kind === 'rain' ? 1.6 : 1.2;
+        g.beginPath();
+        g.moveTo(x, y);
+        g.lineTo(x - l * 0.18, y + l);
+        g.stroke();
       }
     }
   });
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
 }
 
 export function calendarTexture(n: number): THREE.CanvasTexture {

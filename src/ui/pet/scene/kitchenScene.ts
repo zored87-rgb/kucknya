@@ -5,7 +5,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Face } from '../Cat';
 import { Cat3D } from './cat3d';
-import { basketTexture, calendarTexture, floorTexture, glyphTexture, numberTexture, rugTexture, skyTexture, wallTexture } from './textures';
+import { basketTexture, calendarTexture, floorTexture, glyphTexture, numberTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
 
 export type Target = 'fridge' | 'recipes' | 'eaten' | 'buy' | 'feed' | 'settings';
 
@@ -21,6 +21,9 @@ export interface SceneState {
   night: boolean;
   spoiling: boolean;
   weekMeals: number;
+  /** Погода за окном: clear, partly, cloudy, fog, drizzle, rain, snow, storm. */
+  weather: string;
+  clouds: number;
 }
 
 export interface SceneHandlers {
@@ -40,6 +43,7 @@ export const ANCHORS: Record<string, THREE.Vector3> = {
   feed: new THREE.Vector3(-0.8, 0.45, 1.4),
   catHead: new THREE.Vector3(0, 1.75, 0.55),
   settings: new THREE.Vector3(1.3, 4.42, -2.9),
+  window: new THREE.Vector3(-0.45, 4.3, -2.8),
 };
 
 function mat(color: string, extra: THREE.MeshStandardMaterialParameters = {}) {
@@ -70,6 +74,11 @@ export class KitchenScene {
   /** Материалы запечённой комнаты: ночью затемняем. */
   private baked: THREE.MeshBasicMaterial[] = [];
   private calendarNum: THREE.Mesh | null = null;
+  /** Дождь/снег за окном и вспышка молнии. */
+  private precip: THREE.Mesh;
+  private flash: THREE.Mesh;
+  private nextFlash = 0;
+  private lastFlash = -10;
   private fridgeOpenAt = -1;
   private stink = new THREE.Group();
   private food = new THREE.Group();
@@ -105,6 +114,13 @@ export class KitchenScene {
     this.buildLights();
     this.buildRoom();
     this.buildObjects();
+    this.precip = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.1), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false }));
+    this.flash = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.1), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, depthWrite: false }));
+    // Процедурное окно
+    this.precip.position.set(0, 2.55, -2.965);
+    this.flash.position.set(0, 2.55, -2.96);
+    this.precip.visible = false;
+    this.scene.add(this.precip, this.flash);
 
     this.cat.root.position.set(0, 0.03, 0.55);
     this.cat.root.scale.setScalar(0.72);
@@ -512,6 +528,11 @@ export class KitchenScene {
     hands.position.set(1.3, 4.85, -2.86);
     this.clock3d = hands;
     model.add(hands);
+    // Окно запечённой кухни больше и выше
+    for (const m of [this.precip, this.flash]) {
+      m.scale.set(1.6 / 1.5, 1.3 / 1.1, 1);
+      m.position.set(0, 3.45, m === this.flash ? -2.935 : -2.94);
+    }
     // Запах — над новым холодильником
     this.stink.position.set(-1.35, 2.45, -1.6);
 
@@ -539,10 +560,23 @@ export class KitchenScene {
         m.needsUpdate = true;
       }
     }
-    if (s.sky !== prev.sky) {
+    if (s.sky !== prev.sky || s.weather !== prev.weather || s.clouds !== prev.clouds) {
       this.skyMat.map?.dispose();
-      this.skyMat.map = skyTexture(s.sky);
+      this.skyMat.map = skyTexture(s.sky, s.weather, s.clouds);
       this.skyMat.needsUpdate = true;
+    }
+    if (s.weather !== prev.weather) {
+      const kind = s.weather === 'storm' ? 'rain' : s.weather;
+      const pm = this.precip.material as THREE.MeshBasicMaterial;
+      pm.map?.dispose();
+      if (kind === 'rain' || kind === 'drizzle' || kind === 'snow') {
+        pm.map = precipTexture(kind);
+        pm.needsUpdate = true;
+        this.precip.visible = true;
+      } else {
+        pm.map = null;
+        this.precip.visible = false;
+      }
     }
     if (s.night !== prev.night) {
       // Запечённая комната: ночью — тёплый полумрак
@@ -666,6 +700,26 @@ export class KitchenScene {
       s.scale.setScalar(0.25 + age * 0.15);
       (s as THREE.Sprite).material.opacity = 1 - age / 1.6;
     }
+
+    // Дождь и снег за окном, молнии в грозу
+    if (this.precip.visible) {
+      const map = (this.precip.material as THREE.MeshBasicMaterial).map;
+      if (map) {
+        const snow = this.state.weather === 'snow';
+        map.offset.y = (t * (snow ? 0.12 : 1.4)) % 1;
+        map.offset.x = snow ? Math.sin(t * 0.7) * 0.05 : (t * 0.25) % 1;
+      }
+    }
+    const fm = this.flash.material as THREE.MeshBasicMaterial;
+    if (this.state.weather === 'storm') {
+      if (t > this.nextFlash) {
+        this.lastFlash = t;
+        this.nextFlash = t + 4 + Math.random() * 6;
+      }
+      // Двойная вспышка молнии
+      const f = t - this.lastFlash;
+      fm.opacity = f < 0.12 ? 0.9 * (1 - f / 0.12) : f > 0.22 && f < 0.3 ? 0.5 : 0;
+    } else fm.opacity = 0;
 
     if (this.clock3d) {
       const d = new Date();
