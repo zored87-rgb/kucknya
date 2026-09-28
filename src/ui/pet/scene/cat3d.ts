@@ -1,9 +1,13 @@
-// 3D-кот по игрушке Russ «Prudence»: пухлое тело-«груша», голова без шеи, белые грудка и мордочка,
-// розовый нос и ушки, лапки с белыми кончиками, длинный полосатый хвост лежит на полу.
-// Выражения лица — наборы деталей, которые показываем и прячем. Анимации — в update().
+// 3D-кот по игрушке Russ «Prudence». Тело, лапки, уши и хвост — модель из Blender (cat.glb),
+// пока она грузится — такой же кот из простых фигур. Лицо — в catFace.ts.
+// Анимации: дыхание, плюшевое «сплющивание» от касаний, выражения и случайные дела,
+// которыми кот занят сам (оглядывается, зевает, машет лапкой…).
 
 import * as THREE from 'three';
 import type { Face } from '../Cat';
+import { chirp, yawnSound } from '../sound';
+import { CatFace, type FaceTargets, type Surface } from './catFace';
+import { addFur } from './fur';
 import { creamTexture, FUR_DARK, furTexture, glyphTexture, PINK, plainFurTexture, ringFurTexture } from './textures';
 
 /** Профиль тела снизу вверх: [радиус, высота]. Вращаем вокруг оси — получается «картофелина». */
@@ -65,39 +69,99 @@ function sphere(r: number, mat: THREE.Material, seg = 24): THREE.Mesh {
   return m;
 }
 
-/** Дуга (для закрытых глаз, улыбки, бровей). up — выпуклостью вверх. */
-function arc(r: number, tube: number, mat: THREE.Material, up: boolean): THREE.Mesh {
-  const m = new THREE.Mesh(new THREE.TorusGeometry(r, tube, 8, 20, Math.PI), mat);
-  if (!up) m.rotation.z = Math.PI;
-  return m;
+
+/** Выражение лица для каждого «лица» из Cat.tsx. Кот ленивый: глаза по умолчанию чуть прикрыты. */
+const FACES: Record<Face, FaceTargets> = {
+  smile: { lid: 0.72, lower: 0.15, tilt: 0, mouth: 0, smile: 'smile', eyeScale: 1 },
+  flat: { lid: 0.62, lower: 0, tilt: 0, mouth: 0, smile: 'flat', eyeScale: 1 },
+  hungry: { lid: 0.95, lower: 0, tilt: -0.28, mouth: 0.15, smile: 'frown', eyeScale: 1.25 },
+  angry: { lid: 0.55, lower: 0.1, tilt: 0.5, mouth: 0.25, smile: 'frown', eyeScale: 0.9 },
+  hiss: { lid: 0.42, lower: 0.2, tilt: 0.55, mouth: 0.9, smile: 'frown', eyeScale: 0.85 },
+  sad: { lid: 0.6, lower: 0, tilt: -0.4, mouth: 0, smile: 'frown', eyeScale: 1.15 },
+  sleep: { lid: 0, lower: 0.3, tilt: 0, mouth: 0, smile: 'smile', eyeScale: 1 },
+  meow: { lid: 0.45, lower: 0.3, tilt: 0, mouth: 0.7, smile: 'smile', eyeScale: 1 },
+  giggle: { lid: 0.2, lower: 0.9, tilt: 0, mouth: 0.6, smile: 'smile', eyeScale: 1 },
+  purr: { lid: 0.12, lower: 0.7, tilt: 0, mouth: 0, smile: 'smile', eyeScale: 1 },
+  eat: { lid: 0.25, lower: 0.8, tilt: 0, mouth: 0.5, smile: 'smile', eyeScale: 1 },
+};
+
+type Action = 'look' | 'tilt' | 'wave' | 'yawn' | 'slowblink' | 'bounce' | 'tailflick' | 'rub' | 'lookBowl' | 'stomp' | 'turnAway' | 'lookFridge' | 'sigh' | 'snore';
+
+const ACTIONS: Record<string, Action[]> = {
+  happy: ['look', 'tilt', 'wave', 'yawn', 'slowblink', 'bounce', 'tailflick', 'look'],
+  peckish: ['look', 'tilt', 'yawn', 'lookBowl', 'slowblink', 'tailflick'],
+  hungry: ['rub', 'lookBowl', 'sigh', 'rub', 'lookBowl'],
+  angry: ['stomp', 'turnAway', 'stomp'],
+  sad: ['lookFridge', 'sigh', 'lookFridge'],
+  sleeping: ['snore', 'snore', 'tailflick'],
+};
+
+const DURATION: Record<Action, number> = {
+  look: 3,
+  tilt: 2.2,
+  wave: 1.8,
+  yawn: 2.6,
+  slowblink: 1.8,
+  bounce: 1.1,
+  tailflick: 1.2,
+  rub: 2.4,
+  lookBowl: 2.6,
+  stomp: 1.2,
+  turnAway: 3,
+  lookFridge: 2.6,
+  sigh: 2.2,
+  snore: 3.5,
+};
+
+/** Плавный «колокол» 0→1→0 по доле p с держанием в середине. */
+function bell(p: number, hold = 0.5): number {
+  const a = (1 - hold) / 2;
+  if (p < a) return ease(p / a);
+  if (p > 1 - a) return ease((1 - p) / a);
+  return 1;
+}
+
+function ease(x: number): number {
+  x = Math.min(1, Math.max(0, x));
+  return x * x * (3 - 2 * x);
+}
+
+function damp(cur: number, target: number, speed: number, dt: number): number {
+  return cur + (target - cur) * (1 - Math.exp(-speed * dt));
 }
 
 export class Cat3D {
   readonly root = new THREE.Group();
-  /** Всё, что дышит и качается. */
+  /** Всё, что дышит, качается и сплющивается. */
   private body = new THREE.Group();
   private head = new THREE.Group();
   private armL = new THREE.Group();
   private armR = new THREE.Group();
   private tail = new THREE.Group();
   private furMat: THREE.MeshPhysicalMaterial;
-  private faces: Record<string, THREE.Object3D> = {};
-  private eyes = new THREE.Group();
-  private mouthOpen = new THREE.Group();
-  private blush = new THREE.Group();
+  private face: CatFace | null = null;
+  private faceKind: Face = 'smile';
   private steam = new THREE.Group();
   private zzz = new THREE.Group();
   private tear: THREE.Mesh;
   private outfits: Record<string, THREE.Object3D> = {};
-  private face: Face = 'smile';
   private mood = 'happy';
   private talking = false;
   private eating = false;
   private reaction: string | null = null;
   private reactionAt = 0;
+  private lastT = 0;
   private blinkAt = 2;
+  private action: { name: Action; start: number } | null = null;
+  private nextActionAt = 3;
+  /** Пружина «плюшевого» сплющивания. */
+  private squash = 0;
+  private squashV = 0;
+  /** Текущая поза — к ней плавно тянемся. */
+  private pose = { turn: 0, tilt: 0, lean: 0, lift: 0, armL: 0, armR: 0, tail: 0, stretch: 0 };
   /** Меши, по которым ловим касания. */
   readonly hitMeshes: THREE.Object3D[] = [];
+  private lidColor = '#8f949a';
 
   constructor() {
     const bump = undefined;
@@ -106,28 +170,21 @@ export class Cat3D {
     const plainMat = plush(plainFurTexture(), bump);
     const whiteMat = plush(creamTexture(), bump, '#ffffff');
     const pinkMat = new THREE.MeshPhysicalMaterial({ color: PINK, roughness: 0.8, sheen: 0.6, sheenColor: new THREE.Color('#ffd7d9') });
-    const inkMat = new THREE.MeshPhysicalMaterial({ color: '#111114', roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.1 });
     const lineMat = new THREE.MeshStandardMaterial({ color: '#2a292d', roughness: 0.6 });
-    const mouthMat = new THREE.MeshStandardMaterial({ color: '#5a3438', roughness: 0.7 });
-    const tongueMat = new THREE.MeshStandardMaterial({ color: '#e67a86', roughness: 0.5 });
-    const shineMat = new THREE.MeshBasicMaterial({ color: '#ffffff' });
 
-    // Тело
+    // Временное тело (пока грузится модель)
     const bodyGeo = new THREE.LatheGeometry(POINTS, 64, Math.PI, Math.PI * 2);
     const bodyMesh = new THREE.Mesh(bodyGeo, this.furMat);
     bodyMesh.scale.z = DEPTH;
     bodyMesh.castShadow = true;
-    bodyMesh.name = 'cat-body';
     bodyMesh.userData.proc = true;
     this.body.add(bodyMesh);
     this.hitMeshes.push(bodyMesh);
 
-    // Уши: треугольные, розовые внутри, тёмные кончики
     for (const side of [-1, 1]) {
       const ear = new THREE.Group();
       const outer = new THREE.Mesh(new THREE.ConeGeometry(0.29, 0.5, 24), plainMat);
       outer.scale.z = 0.45;
-      outer.castShadow = true;
       const inner = new THREE.Mesh(new THREE.ConeGeometry(0.19, 0.34, 20), pinkMat);
       inner.scale.z = 0.3;
       inner.position.set(0, -0.05, 0.09);
@@ -137,193 +194,41 @@ export class Cat3D {
       ear.add(outer, inner, tip);
       ear.position.set(side * 0.5, 1.82, 0.04);
       ear.rotation.z = -side * 0.42;
-      ear.rotation.x = -0.12;
-      ear.userData.side = side;
-      ear.name = side < 0 ? 'ear-l' : 'ear-r';
       ear.userData.proc = true;
       this.head.add(ear);
     }
 
-    // Мордочка: белые щёчки-подушечки и подбородок
-    const zM = surfaceZ(0, 1.18);
-    for (const side of [-1, 1]) {
-      const cheek = sphere(0.17, whiteMat);
-      cheek.scale.set(1.05, 0.85, 0.7);
-      cheek.position.set(side * 0.13, 1.19, zM - 0.02);
-      cheek.userData.proc = true;
-      this.head.add(cheek);
-      this.hitMeshes.push(cheek);
-    }
-    const chin = sphere(0.12, whiteMat);
-    chin.scale.set(1.2, 0.8, 0.7);
-    chin.position.set(0, 1.05, zM - 0.06);
-    chin.userData.proc = true;
-    this.head.add(chin);
-    // Белое пятно на лбу над носом
-    const bridge = sphere(0.1, whiteMat);
-    bridge.scale.set(0.9, 1.4, 0.5);
-    bridge.position.set(0, 1.36, surfaceZ(0, 1.36) - 0.02);
-    bridge.userData.proc = true;
-    this.head.add(bridge);
-
-    // Нос
-    const nose = sphere(0.06, pinkMat);
-    nose.scale.set(1.35, 0.85, 0.8);
-    nose.position.set(0, 1.28, surfaceZ(0, 1.28) + 0.07);
-    this.head.add(nose);
-
-    // Усы
-    const whiskerMat = new THREE.LineBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.85 });
-    for (const side of [-1, 1]) {
-      for (const [dy, tilt] of [
-        [0.03, 0.12],
-        [-0.02, 0],
-        [-0.07, -0.12],
-      ]) {
-        const from = new THREE.Vector3(side * 0.2, 1.19 + dy, zM + 0.08);
-        const to = new THREE.Vector3(side * 0.62, 1.19 + dy + tilt, zM - 0.05);
-        const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([from, to]), whiskerMat);
-        line.userData.anchor = [side * 0.24, 1.19 + dy];
-        this.head.add(line);
-      }
-    }
-
-    // Глаза: маленькие чёрные бусинки с бликом
-    const eyeY = 1.43;
-    const eyeX = 0.27;
-    for (const side of [-1, 1]) {
-      const eye = new THREE.Group();
-      const ball = sphere(0.065, inkMat, 20);
-      ball.scale.z = 0.6;
-      const shine = sphere(0.02, shineMat, 8);
-      shine.position.set(0.022, 0.025, 0.035);
-      eye.add(ball, shine);
-      eye.position.set(side * eyeX, eyeY, surfaceZ(side * eyeX, eyeY) + 0.01);
-      eye.rotation.y = side * 0.35;
-      this.eyes.add(eye);
-    }
-    this.head.add(this.eyes);
-    this.faces.eyesOpen = this.eyes;
-
-    const eyeArcs = (up: boolean) => {
-      const g = new THREE.Group();
-      for (const side of [-1, 1]) {
-        const a = arc(0.06, 0.014, lineMat, up);
-        a.position.set(side * eyeX, eyeY - (up ? 0.02 : -0.01), surfaceZ(side * eyeX, eyeY) + 0.02);
-        a.rotation.y = side * 0.35;
-        g.add(a);
-      }
-      this.head.add(g);
-      return g;
-    };
-    this.faces.eyesHappy = eyeArcs(true);
-    this.faces.eyesSleep = eyeArcs(false);
-
-    const brows = (angry: boolean) => {
-      const g = new THREE.Group();
-      for (const side of [-1, 1]) {
-        const b = new THREE.Mesh(new THREE.CapsuleGeometry(0.018, 0.13, 4, 8), lineMat);
-        b.rotation.z = Math.PI / 2 + side * (angry ? 0.45 : -0.35);
-        b.position.set(side * 0.27, 1.56, surfaceZ(side * 0.27, 1.56) + 0.02);
-        b.rotation.y = side * 0.35;
-        g.add(b);
-      }
-      this.head.add(g);
-      return g;
-    };
-    this.faces.browsAngry = brows(true);
-    this.faces.browsWorried = brows(false);
-
-    // Рты
-    const mouthZ = zM + 0.1;
-    const smile = new THREE.Group();
-    for (const side of [-1, 1]) {
-      const a = arc(0.045, 0.011, lineMat, false);
-      a.position.set(side * 0.045, 1.17, mouthZ);
-      smile.add(a);
-    }
-    this.head.add(smile);
-    this.faces.mouthSmile = smile;
-
-    const open = sphere(0.07, mouthMat, 16);
-    open.scale.set(1, 1.1, 0.45);
-    const tongue = sphere(0.04, tongueMat, 12);
-    tongue.scale.set(1.2, 0.6, 0.6);
-    tongue.position.set(0, -0.04, 0.02);
-    this.mouthOpen.add(open, tongue);
-    this.mouthOpen.position.set(0, 1.12, mouthZ - 0.01);
-    this.head.add(this.mouthOpen);
-    this.faces.mouthOpen = this.mouthOpen;
-
-    const angryMouth = new THREE.Group();
-    const am = sphere(0.075, mouthMat, 16);
-    am.scale.set(1.7, 0.9, 0.45);
-    const teeth = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.03, 0.02), new THREE.MeshStandardMaterial({ color: '#ffffff' }));
-    teeth.position.set(0, 0.04, 0.03);
-    angryMouth.add(am, teeth);
-    angryMouth.position.set(0, 1.12, mouthZ - 0.01);
-    this.head.add(angryMouth);
-    this.faces.mouthAngry = angryMouth;
-
-    const small = sphere(0.03, mouthMat, 12);
-    small.scale.z = 0.5;
-    small.position.set(0, 1.13, mouthZ);
-    this.head.add(small);
-    this.faces.mouthSmall = small;
-
-    const frown = arc(0.05, 0.011, lineMat, true);
-    frown.position.set(0, 1.11, mouthZ);
-    this.head.add(frown);
-    this.faces.mouthFrown = frown;
-
-    // Румянец
-    const blushMat = new THREE.MeshBasicMaterial({ color: '#f28c8c', transparent: true, opacity: 0.45, depthWrite: false });
-    for (const side of [-1, 1]) {
-      const b = new THREE.Mesh(new THREE.CircleGeometry(0.075, 20), blushMat);
-      b.scale.y = 0.6;
-      const x = side * 0.42;
-      b.position.set(x, 1.27, surfaceZ(x, 1.27) + 0.012);
-      b.rotation.y = Math.asin(x / radiusAt(1.27)) * 0.9;
-      this.blush.add(b);
-    }
-    this.head.add(this.blush);
-
-    // Слеза
+    // Слеза, пар, Zzz
     this.tear = sphere(0.035, new THREE.MeshPhysicalMaterial({ color: '#7cc4ff', roughness: 0.1, transmission: 0.3, clearcoat: 1 }), 12);
     this.tear.scale.y = 1.3;
+    this.tear.visible = false;
     this.head.add(this.tear);
-
-    // Пар из ушей
     const steamMat = new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.8 });
     for (let i = 0; i < 4; i++) {
       const puff = sphere(0.09, steamMat, 12);
       puff.userData = { side: i % 2 ? 1 : -1, phase: i / 4 };
       this.steam.add(puff);
     }
+    this.steam.visible = false;
     this.head.add(this.steam);
-
-    // Zzz
     const zTex = glyphTexture('z', '#3a4a8a');
     for (let i = 0; i < 3; i++) {
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: zTex, transparent: true, depthWrite: false }));
       s.userData.phase = i / 3;
       this.zzz.add(s);
     }
+    this.zzz.visible = false;
     this.head.add(this.zzz);
-
     this.body.add(this.head);
 
-    // Лапки: торчат вперёд-в стороны, белые кончики
     const armMat = plush(ringFurTexture(3), bump);
     for (const [arm, side] of [
       [this.armL, -1],
       [this.armR, 1],
     ] as const) {
       const limb = new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.28, 8, 16), armMat);
-      limb.castShadow = true;
       limb.position.set(0, -0.2, 0);
       const paw = sphere(0.165, whiteMat);
-      paw.scale.set(1, 0.9, 1);
       paw.position.set(0, -0.4, 0.02);
       const inner = new THREE.Group();
       inner.add(limb, paw);
@@ -333,23 +238,14 @@ export class Cat3D {
       arm.add(inner);
       arm.position.set(side * 0.74, 1.0, 0.32);
       this.body.add(arm);
-      this.hitMeshes.push(paw);
     }
-
-    // Задние лапки: белые «тапочки» спереди внизу
     for (const side of [-1, 1]) {
-      const leg = sphere(0.26, plush(ringFurTexture(2), bump), 20);
-      leg.scale.set(1, 0.7, 1.15);
-      leg.position.set(side * 0.42, 0.16, 0.45);
-      const foot = sphere(0.2, whiteMat, 20);
-      foot.scale.set(1.05, 0.75, 1.1);
-      foot.position.set(side * 0.44, 0.12, 0.66);
-      leg.userData.proc = true;
+      const foot = sphere(0.22, whiteMat, 20);
+      foot.scale.set(1.05, 0.75, 1.2);
+      foot.position.set(side * 0.43, 0.13, 0.6);
       foot.userData.proc = true;
-      this.body.add(leg, foot);
+      this.body.add(foot);
     }
-
-    // Хвост: толстый, полосатый, лежит на полу и заворачивает вперёд справа
     const tailCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(0.25, 0.3, -0.65),
       new THREE.Vector3(0.75, 0.14, -0.62),
@@ -358,20 +254,28 @@ export class Cat3D {
       new THREE.Vector3(1.08, 0.13, 0.58),
     ]);
     const tailMesh = new THREE.Mesh(new THREE.TubeGeometry(tailCurve, 48, 0.13, 16, false), plush(ringFurTexture(7), bump));
-    tailMesh.castShadow = true;
-    const tip = sphere(0.13, plainMat, 16);
-    tip.position.copy(tailCurve.getPoint(1));
     tailMesh.userData.proc = true;
-    tip.userData.proc = true;
-    this.tail.add(tailMesh, tip);
-    this.tail.position.set(0, 0, 0);
+    this.tail.add(tailMesh);
     this.root.add(this.tail);
 
-    // Наряды
     this.buildOutfits(lineMat);
-
     this.root.add(this.body);
-    this.setFace('smile');
+
+    // Лицо на временном теле — по формуле поверхности
+    this.buildFace((x, y) => {
+      const z = surfaceZ(x, y);
+      if (!z) return null;
+      return { p: new THREE.Vector3(x, y, z), n: new THREE.Vector3(x, 0, z / (DEPTH * DEPTH)).normalize() };
+    });
+  }
+
+  private buildFace(surface: Surface) {
+    if (this.face) {
+      this.head.remove(this.face.group);
+      this.face.group.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
+    }
+    this.face = new CatFace(surface, this.lidColor);
+    this.head.add(this.face.group);
   }
 
   private buildOutfits(lineMat: THREE.Material) {
@@ -462,15 +366,15 @@ export class Cat3D {
     add('crown', crown);
   }
 
+
   /**
    * Подставить модель из Blender (cat.glb): тело, лапки, уши, хвост.
-   * Самодельные фигуры прячем, черты лица сажаем точно на новую поверхность мордочки.
+   * Временные фигуры прячем, лицо строим заново точно по поверхности мордочки.
    */
   useModel(model: THREE.Object3D) {
     const node = (n: string) => model.getObjectByName(n);
     const body = node('CatBody');
     if (!body) return;
-    // Убрать временные фигуры
     this.root.traverse((o) => {
       if (o.userData.proc) o.visible = false;
     });
@@ -479,7 +383,6 @@ export class Cat3D {
         c.castShadow = true;
         c.receiveShadow = true;
       });
-    // Позиции узлов glb — в координатах кота
     const take = (o: THREE.Object3D, into: THREE.Group, pivot: boolean) => {
       shadows(o);
       if (pivot) {
@@ -491,7 +394,6 @@ export class Cat3D {
     };
     take(body, this.body, false);
     this.hitMeshes.splice(0, this.hitMeshes.length, body);
-    // Краснеет от злости уже новая шёрстка
     const mat = (body as THREE.Mesh).material;
     if (mat && !Array.isArray(mat) && 'emissive' in mat) this.furMat = mat as THREE.MeshPhysicalMaterial;
     for (const [n, g] of [
@@ -502,6 +404,7 @@ export class Cat3D {
       if (a) {
         take(a, g, true);
         this.hitMeshes.push(a);
+        addFur(a, 0.028);
       }
     }
     for (const n of ['EarL', 'EarR']) {
@@ -512,36 +415,31 @@ export class Cat3D {
       this.head.add(e);
     }
     const tail = node('Tail');
-    if (tail) take(tail, this.tail, true);
+    if (tail) {
+      take(tail, this.tail, true);
+      addFur(tail, 0.03);
+    }
+    // Пушистый ворс; у мордочки короче, чтобы не закрывал глаза и нос
+    addFur(body, 0.035, (p) => {
+      const face = p.z > 0.45 && p.y > 0.98 && p.y < 1.62 && Math.abs(p.x) < 0.5;
+      return face ? 0.25 : 1;
+    });
 
-    // Черты лица — на поверхность новой модели: луч спереди на мордочку
-    body.updateWorldMatrix(true, true);
+    // Лицо — по лучам на новую поверхность
+    this.root.updateWorldMatrix(true, true);
     const ray = new THREE.Raycaster();
-    const surface = (x: number, y: number): number | null => {
-      // Луч в координатах кота: спереди, перпендикулярно мордочке
+    const inv = new THREE.Matrix4();
+    this.buildFace((x, y) => {
       const from = this.body.localToWorld(new THREE.Vector3(x, y, 5));
       const to = this.body.localToWorld(new THREE.Vector3(x, y, -5));
       ray.set(from, to.sub(from).normalize());
-      const hit = ray.intersectObject(body, true)[0];
-      return hit ? this.body.worldToLocal(hit.point.clone()).z : null;
-    };
-    this.root.updateWorldMatrix(true, true);
-    const shift = (o: THREE.Object3D, x: number, y: number) => {
-      const want = surface(x, y);
-      if (want != null) o.position.z += want - surfaceZ(x, y);
-    };
-    const skip = new Set<THREE.Object3D>([this.steam, this.zzz, this.tear, ...Object.values(this.outfits)]);
-    for (const c of [...this.head.children]) {
-      if (skip.has(c) || c.userData.proc || c.name.startsWith('ear') || c.name.startsWith('Ear')) continue;
-      if (c.userData.anchor) {
-        const [x, y] = c.userData.anchor as [number, number];
-        shift(c, x, y);
-      } else if (c instanceof THREE.Group && c.children.length && c.position.lengthSq() === 0) {
-        for (const g of c.children) shift(g, g.position.x, g.position.y);
-      } else {
-        shift(c, c.position.x, c.position.y);
-      }
-    }
+      const hit = ray.intersectObject(body, false)[0];
+      if (!hit || !hit.face) return null;
+      inv.copy(this.body.matrixWorld).invert();
+      const p = hit.point.clone().applyMatrix4(inv);
+      const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld).transformDirection(inv);
+      return { p, n };
+    });
   }
 
   setOutfit(id: string) {
@@ -549,139 +447,195 @@ export class Cat3D {
   }
 
   setState(s: { face: Face; mood: string; talking: boolean; eating: boolean; reaction: string | null }) {
-    if (s.reaction !== this.reaction) this.reactionAt = performance.now() / 1000;
+    if (s.reaction !== this.reaction && s.reaction) this.reactionAt = this.lastT;
+    if (s.mood !== this.mood) this.action = null;
     this.mood = s.mood;
     this.talking = s.talking;
     this.eating = s.eating;
     this.reaction = s.reaction;
-    if (s.face !== this.face) this.setFace(s.face);
+    this.faceKind = s.face;
+    if (this.face) this.face.blush.visible = ['smile', 'meow', 'giggle', 'purr', 'eat'].includes(s.face);
+    this.tear.visible = s.face === 'sad';
+    this.steam.visible = s.face === 'angry' || s.face === 'hiss';
+    this.zzz.visible = s.face === 'sleep';
   }
 
-  private setFace(face: Face) {
-    this.face = face;
-    const show = (keys: string[]) => {
-      for (const [k, o] of Object.entries(this.faces)) o.visible = keys.includes(k);
-    };
-    const map: Record<Face, string[]> = {
-      smile: ['eyesOpen', 'mouthSmile'],
-      flat: ['eyesOpen', 'mouthSmall'],
-      hungry: ['eyesOpen', 'browsWorried', 'mouthSmall'],
-      angry: ['eyesOpen', 'browsAngry', 'mouthAngry'],
-      hiss: ['eyesOpen', 'browsAngry', 'mouthAngry'],
-      sad: ['eyesOpen', 'browsWorried', 'mouthFrown'],
-      sleep: ['eyesSleep', 'mouthSmile'],
-      meow: ['eyesHappy', 'mouthOpen'],
-      giggle: ['eyesHappy', 'mouthOpen'],
-      purr: ['eyesHappy', 'mouthSmile'],
-      eat: ['eyesHappy', 'mouthOpen'],
-    };
-    show(map[face]);
-    this.blush.visible = ['smile', 'meow', 'giggle', 'purr', 'eat'].includes(face);
-    this.tear.visible = face === 'sad';
-    this.steam.visible = face === 'angry' || face === 'hiss';
-    this.zzz.visible = face === 'sleep';
-    // Голодные глаза — большие и блестящие
-    const big = face === 'hungry' || face === 'sad' ? 1.35 : 1;
-    this.eyes.children.forEach((e) => e.scale.setScalar(big));
+  /** Касание: плюш сплющивается и пружинит обратно. */
+  poke(strength = 1) {
+    this.squashV -= 3.2 * strength;
+    this.action = null;
+  }
+
+  /** Сделать что-то сейчас (например, помахать, когда нажали на холодильник). */
+  play(name: Action) {
+    this.action = { name, start: this.lastT };
   }
 
   /** t — секунды с начала. */
   update(t: number) {
+    const dt = Math.min(0.05, t - this.lastT || 0.016);
+    this.lastT = t;
     const r = this.reaction;
     const since = t - this.reactionAt;
-    const angry = this.face === 'angry' || this.face === 'hiss';
+    const angry = this.faceKind === 'angry' || this.faceKind === 'hiss';
     const sleeping = this.mood === 'sleeping' && !r;
 
-    // Дыхание
-    const breath = Math.sin(t * (sleeping ? 1.2 : 2.2));
-    this.body.scale.set(1 + breath * 0.008, 1 + breath * 0.014, 1 + breath * 0.008);
+    // Случайные дела, когда кота не трогают
+    if (!r && !this.eating && !this.action && t > this.nextActionAt) {
+      const list = ACTIONS[this.mood] ?? ACTIONS.happy;
+      const name = list[Math.floor(Math.random() * list.length)];
+      this.action = { name, start: t };
+      if (name === 'yawn') yawnSound();
+      if (name === 'bounce') chirp();
+    }
+    let act: Action | null = null;
+    let p = 0;
+    if (this.action) {
+      p = (t - this.action.start) / DURATION[this.action.name];
+      if (p >= 1) {
+        this.action = null;
+        this.nextActionAt = t + (sleeping ? 5 : 4) + Math.random() * 6;
+      } else act = this.action.name;
+    }
+    const b = act ? bell(p) : 0;
 
-    // Поза тела
-    let rotZ = 0;
-    let rotX = 0;
-    let y = 0;
-    let x = 0;
-    let rotY = Math.sin(t * 0.4) * 0.12;
+    // Цели позы
+    const pose = { turn: Math.sin(t * 0.35) * 0.06, tilt: 0, lean: 0, lift: 0, armL: Math.sin(t * 1.4) * 0.05, armR: -Math.sin(t * 1.4) * 0.05, tail: Math.sin(t * 1.6) * 0.08, stretch: 0 };
+    const face: FaceTargets = { ...FACES[this.faceKind] };
+
+    if (act === 'look') pose.turn = Math.sin(p * Math.PI * 2) * 0.45;
+    if (act === 'tilt') pose.tilt = b * 0.16;
+    if (act === 'wave') {
+      pose.armR = 1.5 * b + Math.sin(t * 14) * 0.3 * b;
+      face.lid = Math.min(face.lid, 0.5);
+      face.lower = 0.5 * b;
+      face.mouth = 0.3 * b;
+    }
+    if (act === 'yawn') {
+      pose.stretch = b;
+      pose.armL = -1.2 * b;
+      pose.armR = 1.2 * b;
+      pose.lean = -0.08 * b;
+      face.lid = 0.05;
+      face.mouth = b;
+    }
+    if (act === 'slowblink') face.lid = 0.72 - 0.65 * b;
+    if (act === 'bounce') pose.lift = Math.abs(Math.sin(p * Math.PI * 2)) * 0.18;
+    if (act === 'tailflick') pose.tail = Math.sin(p * Math.PI * 6) * 0.35;
+    if (act === 'rub') {
+      pose.armL = 0.45 + Math.sin(t * 6) * 0.15;
+      pose.armR = -0.45 - Math.sin(t * 6) * 0.15;
+      pose.lean = 0.05 * b;
+    }
+    if (act === 'lookBowl') {
+      pose.turn = -0.35 * b;
+      pose.lean = 0.1 * b;
+      pose.tilt = 0.08 * b;
+    }
+    if (act === 'lookFridge') {
+      pose.turn = -0.5 * b;
+      pose.tilt = -0.06 * b;
+    }
+    if (act === 'sigh') {
+      pose.stretch = -0.5 * b;
+      pose.lean = 0.08 * b;
+      face.lid = Math.min(face.lid, 0.5);
+    }
+    if (act === 'stomp') pose.lift = Math.abs(Math.sin(p * Math.PI * 3)) * 0.08;
+    if (act === 'turnAway') {
+      pose.turn = 1.1 * b;
+      face.lid = 0.35;
+    }
+    if (act === 'snore') pose.stretch = Math.sin(p * Math.PI) * 0.35;
+
+    // Настроение поверх
     if (angry) {
-      x = Math.sin(t * 40) * 0.02;
-      rotY = 0;
-    } else if (r === 'giggle') {
-      rotZ = Math.sin(t * 28) * 0.08;
-    } else if (r === 'purr') {
-      rotZ = Math.sin(t * 3) * 0.06;
-      rotY = 0;
-    } else if ((r === 'meow' || r === 'wake') && since < 0.5) {
-      y = Math.sin((since / 0.5) * Math.PI) * 0.22;
-    } else if (this.eating) {
-      rotX = 0.12 + Math.sin(t * 14) * 0.05;
-      rotY = 0;
+      pose.armL = -1.9 + Math.sin(t * 20) * 0.2;
+      pose.armR = 1.9 - Math.sin(t * 20 + 1) * 0.2;
+      pose.tail = Math.sin(t * 12) * 0.2;
+      pose.turn = act === 'turnAway' ? pose.turn : 0;
+    } else if ((this.mood === 'hungry' || this.mood === 'sad') && !act) {
+      pose.armL = 0.3 + Math.sin(t * 2) * 0.05;
+      pose.armR = -0.3 - Math.sin(t * 2) * 0.05;
+      pose.lean = 0.04;
     } else if (sleeping) {
-      rotZ = 0.08;
-      rotX = 0.08;
-      rotY = 0;
-    } else if (this.mood === 'sad' || this.mood === 'hungry') {
-      rotZ = Math.sin(t * 0.8) * 0.05;
-      rotX = 0.04;
+      pose.tilt = 0.1;
+      pose.lean = 0.08;
+      pose.turn = 0;
+      pose.tail = 0;
+      pose.armL = 0.1;
+      pose.armR = -0.1;
     }
-    this.body.rotation.set(rotX, rotY, rotZ);
-    this.body.position.set(x, y, 0);
-    this.head.rotation.z = sleeping ? 0.1 : this.mood === 'hungry' ? Math.sin(t * 1.3) * 0.06 : 0;
 
-    // Лапки
-    let armL = Math.sin(t * 1.6) * 0.06;
-    let armR = -armL;
-    if (angry) {
-      armL = -1.9 + Math.sin(t * 22) * 0.2;
-      armR = 1.9 - Math.sin(t * 22 + 1) * 0.2;
-    } else if (r === 'meow' && since < 1.2) {
-      armR = 1.6 + Math.sin(t * 16) * 0.35;
-    } else if (this.mood === 'hungry' || this.mood === 'sad') {
-      armL = 0.35 + Math.sin(t * 5) * 0.12;
-      armR = -0.35 - Math.sin(t * 5) * 0.12;
-    } else if (this.eating) {
-      armL = 0.3;
-      armR = -0.3;
+    // Реакции на касания
+    if (r === 'meow' && since < 1.2) {
+      pose.armR = 1.4 + Math.sin(t * 14) * 0.3;
+      pose.lift = since < 0.45 ? Math.sin((since / 0.45) * Math.PI) * 0.15 : 0;
     }
-    this.armL.rotation.z = armL;
-    this.armR.rotation.z = armR;
+    if (r === 'giggle') pose.tilt = Math.sin(t * 24) * 0.08;
+    if (r === 'purr') {
+      pose.tilt = Math.sin(t * 2.5) * 0.08;
+      pose.turn = 0;
+    }
+    if (r === 'wake' && since < 0.6) pose.lift = Math.sin((since / 0.6) * Math.PI) * 0.1;
+    if (this.eating) {
+      pose.lean = 0.16 + Math.sin(t * 13) * 0.04;
+      pose.turn = -0.25;
+      pose.armL = 0.3;
+      pose.armR = -0.3;
+    }
 
-    // Хвост
-    const wag = angry ? Math.sin(t * 14) * 0.18 : sleeping ? 0 : Math.sin(t * 1.8) * 0.07;
-    this.tail.rotation.y = wag;
+    // Плавное следование позе
+    const P = this.pose;
+    const sp = r || angry ? 14 : 5;
+    for (const key of Object.keys(P) as (keyof typeof P)[]) P[key] = damp(P[key], pose[key], sp, dt);
+
+    // Пружина сплющивания
+    this.squashV += (-this.squash * 90 - this.squashV * 9) * dt;
+    this.squash += this.squashV * dt;
+
+    // Дыхание
+    const breath = Math.sin(t * (sleeping ? 1.1 : 2.1));
+    const sy = 1 + breath * 0.012 + this.squash * 0.12 + P.stretch * 0.05;
+    const sx = 1 + breath * 0.006 - this.squash * 0.08 - P.stretch * 0.02;
+    this.body.scale.set(sx, sy, sx);
+    this.body.rotation.set(P.lean, P.turn, P.tilt);
+    const shake = angry ? Math.sin(t * 38) * 0.015 : 0;
+    this.body.position.set(shake, P.lift, 0);
+    this.armL.rotation.z = P.armL;
+    this.armR.rotation.z = P.armR;
+    this.tail.rotation.y = P.tail;
 
     // Уши подёргиваются
-    const twitch = (t % 6.5) > 6.2 ? Math.sin(t * 40) * 0.12 : 0;
-    this.head.getObjectByName('ear-l')!.rotation.x = -0.12 + twitch;
+    const earL = this.head.getObjectByName('ear-l');
+    if (earL) earL.rotation.x = t % 6.5 > 6.2 ? Math.sin(t * 40) * 0.12 : 0;
 
-    // Моргание
-    if (this.faces.eyesOpen.visible) {
-      if (t > this.blinkAt + 0.14) this.blinkAt = t + 2.5 + Math.random() * 3;
-      const blinking = t > this.blinkAt && t < this.blinkAt + 0.14;
-      this.eyes.scale.y = blinking ? 0.1 : 1;
-    }
-
-    // Рот говорит / жуёт
-    if (this.faces.mouthOpen.visible) {
-      const speed = this.eating ? 16 : 11;
-      const open = this.talking || this.eating || r === 'meow' || r === 'giggle' ? 0.35 + Math.abs(Math.sin(t * speed)) * 0.75 : 1;
-      this.mouthOpen.scale.y = open;
+    // Моргание: ленивое, иногда двойное
+    if (this.face) {
+      if (t > this.blinkAt + 0.3) this.blinkAt = t + 2.5 + Math.random() * 4;
+      const bt = t - this.blinkAt;
+      this.face.blink = bt > 0 && bt < 0.3 ? 1 - Math.sin((bt / 0.3) * Math.PI) : 1;
+      // Говорит: рот живо открывается и закрывается
+      if (this.talking || r === 'meow' || r === 'giggle') {
+        const talk = 0.25 + 0.75 * Math.abs(Math.sin(t * 9) * Math.sin(t * 5.3 + 1));
+        face.mouth = Math.max(face.mouth * 0.6, talk * (r === 'giggle' ? 0.7 : 0.9));
+      }
+      if (this.eating) face.mouth = 0.2 + 0.6 * Math.abs(Math.sin(t * 13));
+      this.face.update(face, dt);
     }
 
     // Злость: краснеет
-    this.furMat.emissive.setRGB(angry ? 0.9 : 0, angry ? 0.15 : 0, angry ? 0.1 : 0);
+    this.furMat.emissive?.setRGB(angry ? 0.9 : 0, angry ? 0.15 : 0, angry ? 0.1 : 0);
     this.furMat.emissiveIntensity = angry ? 0.12 + Math.abs(Math.sin(t * 4)) * 0.18 : 0;
 
-    // Пар
     if (this.steam.visible) {
-      this.steam.children.forEach((p) => {
-        const ph = (t * 0.9 + p.userData.phase) % 1;
-        p.position.set(p.userData.side * (0.55 + ph * 0.15), 1.95 + ph * 0.55, 0);
-        p.scale.setScalar(0.5 + ph * 1.2);
-        ((p as THREE.Mesh).material as THREE.MeshStandardMaterial).opacity = 0.8 * (1 - ph);
+      this.steam.children.forEach((pf) => {
+        const ph = (t * 0.9 + pf.userData.phase) % 1;
+        pf.position.set(pf.userData.side * (0.55 + ph * 0.15), 1.95 + ph * 0.55, 0);
+        pf.scale.setScalar(0.5 + ph * 1.2);
+        ((pf as THREE.Mesh).material as THREE.MeshStandardMaterial).opacity = 0.8 * (1 - ph);
       });
     }
-
-    // Zzz
     if (this.zzz.visible) {
       this.zzz.children.forEach((z) => {
         const ph = (t * 0.35 + z.userData.phase) % 1;
@@ -690,11 +644,9 @@ export class Cat3D {
         (z as THREE.Sprite).material.opacity = Math.sin(ph * Math.PI);
       });
     }
-
-    // Слеза
     if (this.tear.visible) {
       const ph = (t * 0.6) % 1;
-      this.tear.position.set(-0.3, 1.36 - ph * 0.3, surfaceZ(0.3, 1.3) + 0.04);
+      this.tear.position.set(-0.3, 1.36 - ph * 0.3, surfaceZ(0.3, 1.3) + 0.06);
       this.tear.scale.setScalar(ph < 0.9 ? 1 : 0.01);
     }
   }

@@ -1,4 +1,5 @@
-// «Готовим»: что можно приготовить прямо сейчас и чего не хватает одного продукта.
+// «Чем покормить»: что можно приготовить прямо сейчас и чего не хватает одного продукта.
+// Открывается миской в кухне-комнате.
 
 import { useMemo, useState } from 'react';
 import type { Kitchen } from '../hooks/useKitchen';
@@ -11,12 +12,11 @@ import { Section, Segmented, Sheet } from '../ui/kit';
 import { productLabel } from '../ui/labels';
 import { Leftovers } from '../ui/Leftovers';
 import { RecipeCard } from '../ui/RecipeCard';
-import { Room } from '../ui/pet/Room';
 
 const SLOT_MEAL: Record<Slot, string> = { breakfast: 'завтрак', lunch: 'обед', dinner: 'ужин' };
 const SHOW = 5;
 
-export function Cook({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
+export function Feed({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
   const [slot, setSlot] = useState<Slot>(() => slotForTime(new Date()));
   const [more, setMore] = useState(false);
   const [peek, setPeek] = useState<Scored | null>(null);
@@ -34,12 +34,6 @@ export function Cook({ k, go }: { k: Kitchen; go: (tab: string) => void }) {
 
   return (
     <>
-      <Room k={k} go={go} onFeed={() => document.getElementById('feed')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
-
-      <h2 id="feed" className="feed-title">
-        🍽 Чем покормить
-      </h2>
-
       {slot !== 'breakfast' && <Leftovers k={k} />}
 
       <Segmented<Slot>

@@ -1,37 +1,48 @@
 // Каркас: шапка, вкладки, нижняя навигация, обновление жестом вниз.
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import type { OpBody } from './api/ops';
 import { isConfigured, mutate, sync, useStore } from './api/store';
 import { parseBulk } from './data/bulk';
 import { useKitchen } from './hooks/useKitchen';
 import { Buy } from './screens/Buy';
-import { Cook } from './screens/Cook';
+import { Feed } from './screens/Feed';
 import { Eaten } from './screens/Eaten';
 import { Fridge } from './screens/Fridge';
 import { Recipes } from './screens/Recipes';
 import { Settings } from './screens/Settings';
 import { Setup } from './screens/Setup';
-import { IconBook, IconCart, IconFridge, IconGear, IconHistory, IconPot } from './ui/icons';
+import { IconGear } from './ui/icons';
+import { usePet } from './ui/pet/petStore';
+import { Room } from './ui/pet/Room';
 import { TimerChips, useTimerTicker } from './ui/TimerBar';
 import { dismissToast, toast, useToast } from './ui/toast';
 import { usePullToRefresh } from './ui/usePullToRefresh';
 
-type Tab = 'cook' | 'fridge' | 'buy' | 'eaten' | 'recipes' | 'settings';
+// Главный экран — кухня-комната. Остальные разделы открываются предметами в ней.
+type Tab = 'cook' | 'feed' | 'fridge' | 'buy' | 'eaten' | 'recipes' | 'settings';
 
-const TABS: { id: Exclude<Tab, 'settings'>; label: string; title: string; icon: ReactNode }[] = [
-  { id: 'cook', label: 'Кухня', title: 'Кухня', icon: <IconPot /> },
-  { id: 'fridge', label: 'Холодильник', title: 'Холодильник', icon: <IconFridge /> },
-  { id: 'buy', label: 'Магазин', title: 'Магазин', icon: <IconCart /> },
-  { id: 'eaten', label: 'Дневник', title: 'Дневник', icon: <IconHistory /> },
-  { id: 'recipes', label: 'Рецепты', title: 'Рецепты', icon: <IconBook /> },
-];
+const TITLES: Record<Exclude<Tab, 'cook'>, string> = {
+  feed: 'Чем покормить',
+  fridge: 'Холодильник',
+  buy: 'Магазин',
+  eaten: 'Дневник',
+  recipes: 'Рецепты',
+  settings: 'Настройки',
+};
+
+/** «Гера» → «Геру»: для «Чем покормить Геру». */
+function accusative(name: string): string {
+  if (/а$/.test(name)) return name.slice(0, -1) + 'у';
+  if (/я$/.test(name)) return name.slice(0, -1) + 'ю';
+  return name;
+}
 
 const handledInbox = new Set<string>();
 
 function tabFromHash(): Tab {
   const h = location.hash.replace('#', '') as Tab;
-  return [...TABS.map((t) => t.id), 'settings'].includes(h) ? h : 'cook';
+  return h in TITLES ? h : 'cook';
 }
 
 export function App() {
@@ -50,7 +61,8 @@ function Shell() {
   const queue = useStore((s) => s.queue.length);
   const error = useStore((s) => s.error);
   const hasData = useStore((s) => s.server !== null);
-  const pull = usePullToRefresh(() => sync());
+  const pull = usePullToRefresh(() => sync(), tab !== 'cook');
+  const pet = usePet();
   useTimerTicker();
 
   // Надиктованное через Siri лежит в листе «Входящие» — разбираем и кладём в холодильник.
@@ -85,7 +97,21 @@ function Shell() {
     window.scrollTo(0, 0);
   };
 
-  const current = TABS.find((t) => t.id === tab);
+  if (tab === 'cook') {
+    return (
+      <>
+        <div className="room-screen">
+          <Room k={k} go={go} full onFeed={() => go('feed')} sync={<SyncBadge syncing={syncing} queue={queue} error={error} />} />
+          <div className="room-timers">
+            <TimerChips />
+          </div>
+        </div>
+        <ToastView />
+      </>
+    );
+  }
+
+  const title = tab === 'feed' ? `Чем покормить ${accusative(pet.name || 'кота')}` : TITLES[tab];
 
   return (
     <>
@@ -93,14 +119,19 @@ function Shell() {
         <span className={pull.ready ? 'ready' : ''}>{pull.ready ? '↻ отпусти' : '↓'}</span>
       </div>
       <header className="top">
-        <h1>{current?.title ?? 'Настройки'}</h1>
+        <button className="back-home" onClick={() => go('cook')} aria-label="На кухню">
+          ‹ Кухня
+        </button>
         <div className="top-right">
           <SyncBadge syncing={syncing} queue={queue} error={error} />
-          <button className="icon-btn" onClick={() => go('settings')} aria-label="Настройки">
-            <IconGear />
-          </button>
+          {tab !== 'settings' && (
+            <button className="icon-btn" onClick={() => go('settings')} aria-label="Настройки">
+              <IconGear />
+            </button>
+          )}
         </div>
       </header>
+      <h1 className="page-title">{title}</h1>
 
       <TimerChips />
       <main className={`content tab-${tab}`}>
@@ -108,7 +139,7 @@ function Shell() {
           <div className="empty">Загружаю данные из таблицы…</div>
         ) : (
           <>
-            {tab === 'cook' && <Cook k={k} go={go} />}
+            {tab === 'feed' && <Feed k={k} go={go} />}
             {tab === 'fridge' && <Fridge k={k} />}
             {tab === 'buy' && <Buy k={k} />}
             {tab === 'eaten' && <Eaten k={k} />}
@@ -117,15 +148,6 @@ function Shell() {
           </>
         )}
       </main>
-
-      <nav className="bottom-nav">
-        {TABS.map((t) => (
-          <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => go(t.id)} aria-current={tab === t.id ? 'page' : undefined}>
-            {t.icon}
-            <span>{t.label}</span>
-          </button>
-        ))}
-      </nav>
       <ToastView />
     </>
   );

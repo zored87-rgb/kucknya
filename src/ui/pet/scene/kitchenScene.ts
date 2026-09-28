@@ -5,9 +5,9 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Face } from '../Cat';
 import { Cat3D } from './cat3d';
-import { basketTexture, calendarTexture, floorTexture, glyphTexture, rugTexture, skyTexture, wallTexture } from './textures';
+import { basketTexture, calendarTexture, floorTexture, glyphTexture, numberTexture, rugTexture, skyTexture, wallTexture } from './textures';
 
-export type Target = 'fridge' | 'recipes' | 'eaten' | 'buy' | 'feed';
+export type Target = 'fridge' | 'recipes' | 'eaten' | 'buy' | 'feed' | 'settings';
 
 export interface SceneState {
   face: Face;
@@ -31,14 +31,15 @@ export interface SceneHandlers {
 
 /** Точки для HTML-подписей поверх сцены. */
 export const ANCHORS: Record<string, THREE.Vector3> = {
-  fridge: new THREE.Vector3(-1.55, 0.0, -1.0),
-  fridgeTop: new THREE.Vector3(-1.2, 2.05, -1.0),
-  recipes: new THREE.Vector3(1.4, 2.13, -2.8),
-  eaten: new THREE.Vector3(1.85, 0.95, -2.85),
-  buy: new THREE.Vector3(1.3, -0.02, 1.05),
-  buyTop: new THREE.Vector3(1.55, 0.72, 1.0),
-  feed: new THREE.Vector3(-0.8, -0.02, 1.6),
-  catHead: new THREE.Vector3(0, 2.25, 0.45),
+  fridge: new THREE.Vector3(-1.3, 2.45, -1.6),
+  fridgeTop: new THREE.Vector3(-0.9, 2.25, -1.2),
+  recipes: new THREE.Vector3(1.35, 2.45, -2.8),
+  eaten: new THREE.Vector3(1.5, 1.33, -2.85),
+  buy: new THREE.Vector3(1.3, 0.2, 1.2),
+  buyTop: new THREE.Vector3(1.55, 0.85, 0.9),
+  feed: new THREE.Vector3(-0.8, 0.45, 1.4),
+  catHead: new THREE.Vector3(0, 1.75, 0.55),
+  settings: new THREE.Vector3(1.3, 4.42, -2.9),
 };
 
 function mat(color: string, extra: THREE.MeshStandardMaterialParameters = {}) {
@@ -60,10 +61,15 @@ export class KitchenScene {
   private running = false;
   private ray = new THREE.Raycaster();
   private targets: THREE.Object3D[] = [];
-  private wallMats: THREE.MeshStandardMaterial[] = [];
+  private wallMats: (THREE.MeshStandardMaterial | THREE.MeshBasicMaterial)[] = [];
   private skyMat!: THREE.MeshBasicMaterial;
   private calendarMat!: THREE.MeshStandardMaterial;
-  private fridgeDoors: THREE.Group[] = [];
+  private fridgeDoors: THREE.Object3D[] = [];
+  /** Комната из простых фигур — пока не загрузилась запечённая из Blender. */
+  private room = new THREE.Group();
+  /** Материалы запечённой комнаты: ночью затемняем. */
+  private baked: THREE.MeshBasicMaterial[] = [];
+  private calendarNum: THREE.Mesh | null = null;
   private fridgeOpenAt = -1;
   private stink = new THREE.Group();
   private food = new THREE.Group();
@@ -74,6 +80,8 @@ export class KitchenScene {
   private state: Partial<SceneState> = {};
   private drag: { x: number; y: number; dist: number; stroked: boolean; onCat: boolean } | null = null;
   private resizeObs: ResizeObserver;
+  private clock3d: THREE.Group | null = null;
+  private look = new THREE.Vector3(0, 1.05, 0);
 
   constructor(
     private container: HTMLElement,
@@ -98,10 +106,19 @@ export class KitchenScene {
     this.buildRoom();
     this.buildObjects();
 
-    this.cat.root.position.set(0, 0, 0.45);
-    this.cat.root.scale.setScalar(0.95);
+    this.cat.root.position.set(0, 0.03, 0.55);
+    this.cat.root.scale.setScalar(0.72);
+    this.scene.add(this.room);
     this.scene.add(this.cat.root);
     this.scene.add(this.hearts);
+    // Тень кота на полу запечённой комнаты
+    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(5, 5), new THREE.ShadowMaterial({ opacity: 0.28 }));
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.set(0, 0.05, 0.6);
+    shadow.receiveShadow = true;
+    this.scene.add(shadow);
+    // Запечённая кухня из Blender
+    new GLTFLoader().load(`${import.meta.env.BASE_URL}models/room.glb`, (gltf) => this.useRoomModel(gltf.scene), undefined, () => undefined);
     // Модель кота из Blender; пока грузится — кот из простых фигур
     new GLTFLoader().load(
       `${import.meta.env.BASE_URL}models/cat.glb`,
@@ -152,14 +169,15 @@ export class KitchenScene {
   private buildRoom() {
     const W = 8;
     const D = 6;
-    const H = 4.6;
+    // Стены высокие: на весь экран телефона видно много стены над котом
+    const H = 10;
     const floorTex = floorTexture();
-    floorTex.repeat.set(3, 2.2);
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), mat('#ffffff', { map: floorTex, roughness: 0.75 }));
+    floorTex.repeat.set(3, 6);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, 16), mat('#ffffff', { map: floorTex, roughness: 0.75 }));
     floor.rotation.x = -Math.PI / 2;
-    floor.position.z = 0;
+    floor.position.z = 5;
     floor.receiveShadow = true;
-    this.scene.add(floor);
+    this.room.add(floor);
 
     const makeWall = (w: number) => {
       const t = wallTexture('base');
@@ -177,12 +195,12 @@ export class KitchenScene {
     const right = left.clone();
     right.rotation.y = -Math.PI / 2;
     right.position.x = W / 2;
-    this.scene.add(back, left, right);
+    this.room.add(back, left, right);
 
     // Плинтус
     const skirting = new THREE.Mesh(new THREE.BoxGeometry(W, 0.16, 0.05), mat('#9c6436'));
     skirting.position.set(0, 0.08, -2.97);
-    this.scene.add(skirting);
+    this.room.add(skirting);
 
     // Окно
     const win = new THREE.Group();
@@ -206,14 +224,14 @@ export class KitchenScene {
     sill.position.set(0, -0.68, 0.1);
     win.add(sill);
     win.position.set(0, 2.55, -2.98);
-    this.scene.add(win);
+    this.room.add(win);
 
     // Коврик
     const rug = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.03, 48), mat('#ffffff', { map: rugTexture(), roughness: 1 }));
     rug.scale.z = 0.62;
     rug.position.set(0, 0.015, 0.55);
     rug.receiveShadow = true;
-    this.scene.add(rug);
+    this.room.add(rug);
   }
 
   private buildObjects() {
@@ -257,7 +275,7 @@ export class KitchenScene {
     main.add(note);
     fridge.position.set(-1.55, 0, -1.4);
     fridge.rotation.y = 0.35;
-    this.scene.add(tag(fridge, 'fridge'));
+    this.room.add(tag(fridge, 'fridge'));
     this.targets.push(fridge);
 
     // Запах от испорченного: зелёные облачка над холодильником
@@ -304,7 +322,7 @@ export class KitchenScene {
       shelf.add(leaf);
     }
     shelf.position.set(1.4, 2.2, -2.8);
-    this.scene.add(tag(shelf, 'recipes'));
+    this.room.add(tag(shelf, 'recipes'));
     this.targets.push(shelf);
 
     // ----- Календарь-дневник -----
@@ -312,8 +330,38 @@ export class KitchenScene {
     const cal = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.62, 0.04, 2, 0.03), this.calendarMat);
     cal.position.set(1.85, 1.3, -2.95);
     cal.castShadow = true;
-    this.scene.add(tag(cal, 'eaten'));
+    this.room.add(tag(cal, 'eaten'));
     this.targets.push(cal);
+
+    // ----- Часы на стене — настройки -----
+    const clock = new THREE.Group();
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.08, 40), mat('#e2483d', { roughness: 0.4 }));
+    rim.rotation.x = Math.PI / 2;
+    const dial = new THREE.Mesh(new THREE.CircleGeometry(0.3, 40), mat('#fffaf0', { roughness: 0.6 }));
+    dial.position.z = 0.045;
+    clock.add(rim, dial);
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      const tick = new THREE.Mesh(new THREE.BoxGeometry(0.02, i % 3 ? 0.04 : 0.07, 0.01), mat('#2a211a'));
+      tick.position.set(Math.sin(a) * 0.25, Math.cos(a) * 0.25, 0.05);
+      tick.rotation.z = -a;
+      clock.add(tick);
+    }
+    const hand = (len: number, w: number, name: string) => {
+      const pivot = new THREE.Group();
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, len, 0.012), mat('#2a211a'));
+      m.position.y = len / 2;
+      pivot.add(m);
+      pivot.position.z = 0.06;
+      pivot.name = name;
+      clock.add(pivot);
+    };
+    hand(0.15, 0.03, 'hour');
+    hand(0.23, 0.02, 'minute');
+    clock.position.set(-1.45, 3.35, -2.94);
+    this.clock3d = clock;
+    this.room.add(tag(clock, 'settings'));
+    this.targets.push(clock);
 
     // ----- Корзина из магазина -----
     const basket = new THREE.Group();
@@ -342,7 +390,7 @@ export class KitchenScene {
     basket.add(wall, bottom, handle, baguette, carrot, leaves, apple);
     basket.position.set(1.55, 0, 1.0);
     basket.rotation.y = -0.4;
-    this.scene.add(tag(basket, 'buy'));
+    this.room.add(tag(basket, 'buy'));
     this.targets.push(basket);
 
     // ----- Миска -----
@@ -370,8 +418,109 @@ export class KitchenScene {
     this.food.visible = false;
     bowl.add(this.food);
     bowl.position.set(-0.85, 0, 1.45);
-    this.scene.add(tag(bowl, 'feed'));
+    this.room.add(tag(bowl, 'feed'));
     this.targets.push(bowl);
+  }
+
+  /**
+   * Кухня из Blender: свет и тени запечены в текстуры, поэтому материалы простые (без расчёта света).
+   * Стены и пол — обои/доски из приложения поверх запечённой карты света (вторая развёртка).
+   */
+  private useRoomModel(model: THREE.Object3D) {
+    const lightTex = { value: null as THREE.Texture | null };
+    const wallMat = new THREE.MeshBasicMaterial({ map: wallTexture(this.state.wall || 'base') });
+    const floorTex = floorTexture();
+    const floorMat = new THREE.MeshBasicMaterial({ map: floorTex });
+    model.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      const src = m.material as THREE.MeshStandardMaterial;
+      if (m.name === 'WindowGlass' || o.parent?.name === 'WindowGlass') {
+        m.material = this.skyMat;
+        return;
+      }
+      if (m.name.startsWith('Walls') || m.name.startsWith('Floor') || o.parent?.name === 'Walls' || o.parent?.name === 'Floor') {
+        lightTex.value = src.map;
+        m.material = m.name.startsWith('Floor') || o.parent?.name === 'Floor' ? floorMat : wallMat;
+        return;
+      }
+      const basic = new THREE.MeshBasicMaterial({ map: src.map });
+      this.baked.push(basic);
+      m.material = basic;
+    });
+    for (const [mat, tex] of [
+      [wallMat, wallMat.map],
+      [floorMat, floorTex],
+    ] as const) {
+      if (!lightTex.value) continue;
+      tex!.wrapS = tex!.wrapT = THREE.RepeatWrapping;
+      tex!.repeat.set(1, 1);
+      mat.lightMap = lightTex.value;
+      mat.lightMap.channel = 1;
+      // Свет стен запекали на 45% — возвращаем и делим на π (так считает three)
+      mat.lightMapIntensity = Math.PI / 0.45;
+      this.baked.push(mat);
+    }
+    this.wallMats = [wallMat];
+
+    const node = (n: string) => model.getObjectByName(n);
+    const targets: [string, Target][] = [
+      ['Fridge', 'fridge'],
+      ['FridgeDoorTop', 'fridge'],
+      ['FridgeDoorMain', 'fridge'],
+      ['Shelf', 'recipes'],
+      ['Calendar', 'eaten'],
+      ['Clock', 'settings'],
+      ['Basket', 'buy'],
+      ['Bowl', 'feed'],
+    ];
+    this.targets = [];
+    for (const [n, t] of targets) {
+      const o = node(n);
+      if (!o) continue;
+      tag(o, t);
+      this.targets.push(o);
+    }
+    this.fridgeDoors = [node('FridgeDoorTop'), node('FridgeDoorMain')].filter((x): x is THREE.Object3D => !!x);
+
+    // Корм в миске
+    const bowl = node('Bowl');
+    if (bowl) {
+      this.food.removeFromParent();
+      this.food.position.set(-0.8, 0.02, 1.4);
+      this.scene.add(this.food);
+    }
+    // Число в календаре
+    const num = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.4), new THREE.MeshBasicMaterial({ map: numberTexture(this.state.weekMeals ?? 0), transparent: true }));
+    num.position.set(1.5, 1.68, -2.92);
+    this.calendarNum = num;
+    model.add(num);
+    // Стрелки часов
+    const hands = new THREE.Group();
+    const handMat = new THREE.MeshBasicMaterial({ color: '#2a211a' });
+    for (const [len, w, name] of [
+      [0.15, 0.03, 'hour'],
+      [0.23, 0.02, 'minute'],
+    ] as const) {
+      const pivot = new THREE.Group();
+      const hm = new THREE.Mesh(new THREE.BoxGeometry(w, len, 0.01), handMat);
+      hm.position.y = len / 2;
+      pivot.add(hm);
+      pivot.name = name;
+      hands.add(pivot);
+    }
+    hands.position.set(1.3, 4.85, -2.86);
+    this.clock3d = hands;
+    model.add(hands);
+    // Запах — над новым холодильником
+    this.stink.position.set(-1.35, 2.45, -1.6);
+
+    this.room.visible = false;
+    this.scene.add(model);
+    // Ночь — применить сразу
+    const night = this.state.night;
+    this.state = { ...this.state, night: undefined };
+    if (night !== undefined) this.setState({ ...(this.state as SceneState), night });
   }
 
   // ---------- Состояние ----------
@@ -396,10 +545,18 @@ export class KitchenScene {
       this.skyMat.needsUpdate = true;
     }
     if (s.night !== prev.night) {
+      // Запечённая комната: ночью — тёплый полумрак
+      for (const m of this.baked) m.color.set(s.night ? '#a9a4c2' : '#ffffff');
       this.hemi.intensity = s.night ? 1.0 : 1.4;
       this.sun.intensity = s.night ? 1.3 : 2.2;
       this.sun.color.set(s.night ? '#ffd9a8' : '#fff1dc');
       this.lamp.intensity = s.night ? 3 : 0;
+    }
+    if (s.weekMeals !== prev.weekMeals && this.calendarNum) {
+      const m = this.calendarNum.material as THREE.MeshBasicMaterial;
+      m.map?.dispose();
+      m.map = numberTexture(s.weekMeals);
+      m.needsUpdate = true;
     }
     if (s.weekMeals !== prev.weekMeals) {
       this.calendarMat.map?.dispose();
@@ -510,6 +667,13 @@ export class KitchenScene {
       (s as THREE.Sprite).material.opacity = 1 - age / 1.6;
     }
 
+    if (this.clock3d) {
+      const d = new Date();
+      const m = d.getMinutes() + d.getSeconds() / 60;
+      this.clock3d.getObjectByName('minute')!.rotation.z = -(m / 60) * Math.PI * 2;
+      this.clock3d.getObjectByName('hour')!.rotation.z = -(((d.getHours() % 12) + m / 60) / 12) * Math.PI * 2;
+    }
+
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -518,11 +682,24 @@ export class KitchenScene {
     const h = this.container.clientHeight;
     if (!w || !h) return;
     this.renderer.setSize(w, h, false);
-    this.camera.aspect = w / h;
-    // Узкий экран — отодвигаем камеру, чтобы влезли холодильник и корзина
-    this.camera.position.z = 6.4 * Math.max(1, 0.86 / this.camera.aspect);
+    const aspect = w / h;
+    this.camera.aspect = aspect;
+    if (aspect < 0.7) {
+      // Весь экран телефона: ширина кадра — от холодильника до корзины, по высоте — сколько влезет
+      // Как камера в Blender, для которой запекали свет
+      const dist = 5.6;
+      const halfW = 1.65;
+      const hfov = 2 * Math.atan(halfW / dist);
+      this.camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / aspect));
+      this.camera.position.set(0, 1.6, dist);
+      this.look.set(0, 2.05, 0);
+    } else {
+      this.camera.fov = 38;
+      this.camera.position.set(0, 1.85, 6.4 * Math.max(1, 0.86 / aspect));
+      this.look.set(0, 1.05, 0);
+    }
     this.camera.updateProjectionMatrix();
-    this.camera.lookAt(0, 1.05, 0);
+    this.camera.lookAt(this.look);
     this.container.dispatchEvent(new CustomEvent('scene-resize'));
   }
 
@@ -558,6 +735,7 @@ export class KitchenScene {
     d.y = e.clientY;
     if (!d.stroked && d.dist > 70) {
       d.stroked = true;
+      this.cat.poke(0.35);
       this.handlers.onCatStroke();
     }
   };
@@ -569,6 +747,7 @@ export class KitchenScene {
     const hit = this.pick(e);
     if (!hit) return;
     if (this.isCat(hit.object)) {
+      this.cat.poke(1);
       this.handlers.onCatTap(this.cat.partAt(hit.point));
       return;
     }

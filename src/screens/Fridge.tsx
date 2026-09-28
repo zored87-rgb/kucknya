@@ -13,12 +13,13 @@ import { PLACES, type FridgeRow, type Product } from '../types';
 import { productEmoji } from '../ui/emoji';
 import { Pantry } from '../ui/Pantry';
 import { IconList } from '../ui/icons';
-import { Empty, Section, Sheet } from '../ui/kit';
+import { Empty, Sheet } from '../ui/kit';
 import { draftFor, productOfRow, ProductForm, type ProductDraft } from '../ui/ProductForm';
 import { ProductPicker } from '../ui/ProductPicker';
 import { toast } from '../ui/toast';
 
 const PLACE_EMOJI: Record<string, string> = { холодильник: '🧊', морозилка: '❄️', 'полка круп': '🫙' };
+const ZONE: Record<string, string> = { холодильник: 'fridge', морозилка: 'freezer', 'полка круп': 'cupboard' };
 
 function daysLeft(row: FridgeRow, today: Date): number | null {
   const d = parseDate(row.expires);
@@ -30,7 +31,8 @@ export function Fridge({ k }: { k: Kitchen }) {
   const [bulk, setBulk] = useState(false);
   const rows = k.view.fridge;
 
-  const groups = [...PLACES, 'другое'].map((place) => ({
+  const order = ['морозилка', ...PLACES.filter((x) => x !== 'морозилка'), 'другое'];
+  const groups = order.map((place) => ({
     place,
     rows: rows
       .filter((r) => (place === 'другое' ? !PLACES.includes(r.where as never) : r.where === place))
@@ -74,48 +76,54 @@ export function Fridge({ k }: { k: Kitchen }) {
         </button>
       </div>
 
-      {rows.length === 0 && <Empty>Холодильник пуст. Добавь продукты — и во вкладке «Готовим» появятся блюда.</Empty>}
+      {rows.length === 0 && <Empty>Холодильник пуст. Добавь продукты — и Гера подскажет, что из них приготовить.</Empty>}
 
-      {groups
-        .filter((g) => g.rows.length)
-        .map((g) => (
-          <Section key={g.place} title={`${PLACE_EMOJI[g.place] ?? '📦'} ${g.place[0].toUpperCase() + g.place.slice(1)}`} action={<span className="count">{g.rows.length}</span>}>
-            <ul className="list">
-              {g.rows.map((row) => {
-                const p = productOfRow(row);
-                const dl = daysLeft(row, k.today);
-                const soon = dl != null && dl <= EXPIRING_DAYS;
-                const counted = isLeftover(row) || parseQty(row.qty, p).n != null;
-                return (
-                  <li key={row.id} className={`item${soon ? ' soon' : ''}`}>
-                    <span className="item-emoji" aria-hidden>
-                      {isLeftover(row) ? '🍲' : productEmoji(p?.key)}
-                    </span>
-                    <button className="item-main" onClick={() => edit(row)}>
-                      <span className="item-name">{isLeftover(row) ? `${dishOf(row)} (готовое)` : row.name}</span>
-                      <span className="item-sub">
-                        {row.qty && <span>{row.qty}</span>}
+      {/* Открытый холодильник: морозилка сверху, стеклянные полки, отдельно — шкафчик для круп */}
+      <div className="fridge-open">
+        {groups
+          .filter((g) => g.rows.length)
+          .map((g) => (
+            <section key={g.place} className={`fridge-zone zone-${ZONE[g.place] ?? 'other'}`}>
+              <h3 className="zone-title">
+                {PLACE_EMOJI[g.place] ?? '📦'} {g.place[0].toUpperCase() + g.place.slice(1)} <span className="count">{g.rows.length}</span>
+              </h3>
+              <div className="shelf-items">
+                {g.rows.map((row) => {
+                  const p = productOfRow(row);
+                  const dl = daysLeft(row, k.today);
+                  const soon = dl != null && dl <= EXPIRING_DAYS;
+                  const left = isLeftover(row);
+                  const counted = left || parseQty(row.qty, p).n != null;
+                  return (
+                    <div key={row.id} className={`food-item${soon ? ' soon' : ''}${left ? ' leftover' : ''}`}>
+                      <button className="food-main" onClick={() => edit(row)} aria-label={`${row.name}: изменить`}>
+                        <span className="food-emoji" aria-hidden>
+                          {left ? '🍲' : productEmoji(p?.key)}
+                          {soon && <i className="stink-puff" />}
+                        </span>
+                        <span className="food-name">{left ? dishOf(row) : row.name}</span>
+                        {row.qty && <span className="food-qty">{row.qty}</span>}
                         {row.expires && (
-                          <span className={`exp-pill${soon ? ' hot' : dl != null && dl <= 5 ? ' warm' : ''}`}>
-                            {dl != null ? daysLeftText(dl) : row.expires}
-                          </span>
+                          <span className={`exp-pill${soon ? ' hot' : dl != null && dl <= 5 ? ' warm' : ''}`}>{dl != null ? daysLeftText(dl) : row.expires}</span>
                         )}
-                      </span>
-                    </button>
-                    {counted && (
-                      <button className="round-btn" onClick={() => minus(row, p)} aria-label="Меньше">
-                        −
                       </button>
-                    )}
-                    <button className="round-btn done" onClick={() => finish(row)} aria-label="Закончилось" title="Закончилось">
-                      ✕
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </Section>
-        ))}
+                      <div className="food-actions">
+                        {counted && (
+                          <button onClick={() => minus(row, p)} aria-label="Меньше">
+                            −
+                          </button>
+                        )}
+                        <button onClick={() => finish(row)} aria-label="Закончилось">
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+      </div>
 
       <Pantry k={k} />
 

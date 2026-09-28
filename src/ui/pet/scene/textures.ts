@@ -352,3 +352,15 @@ export function basketTexture(): THREE.CanvasTexture {
   t.wrapS = THREE.RepeatWrapping;
   return t;
 }
+
+/** Крупное число на прозрачном фоне — поверх запечённого календаря. */
+export function numberTexture(n: number): THREE.CanvasTexture {
+  return canvasTexture(256, 224, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = '#2a211a';
+    g.font = '900 150px "Nunito Variable", sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(String(n), w / 2, h / 2 + 12);
+  });
+}

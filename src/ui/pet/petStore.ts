@@ -20,7 +20,7 @@ export interface PetPrefs {
 
 const KEY = 'kukhnya.pet';
 
-const DEFAULTS: PetPrefs = { name: 'Пухля', outfit: '', wall: '', sound: true, fed: {}, seenLevel: 0, pendingFeed: 0, lastXp: -1 };
+const DEFAULTS: PetPrefs = { name: 'Гера', outfit: '', wall: '', sound: true, fed: {}, seenLevel: 0, pendingFeed: 0, lastXp: -1 };
 
 let prefs: PetPrefs = load();
 const listeners = new Set<() => void>();
@@ -28,7 +28,10 @@ const listeners = new Set<() => void>();
 function load(): PetPrefs {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS };
+    const saved = raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS };
+    // Кота зовут Гера: старое имя по умолчанию меняем
+    if (saved.name === 'Пухля') saved.name = 'Гера';
+    return saved;
   } catch {
     return { ...DEFAULTS };
   }

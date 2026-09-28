@@ -176,7 +176,7 @@ function PetSettings() {
   return (
     <Section title="🐱 Кот">
       <Field label="Как зовут">
-        <input value={pet.name} onChange={(e) => setPet({ name: e.target.value })} placeholder="Пухля" maxLength={20} />
+        <input value={pet.name} onChange={(e) => setPet({ name: e.target.value })} placeholder="Гера" maxLength={20} />
       </Field>
       <Segmented<'on' | 'off'>
         value={pet.sound ? 'on' : 'off'}

@@ -24,30 +24,138 @@ function noise(c: AudioContext, seconds: number): AudioBufferSourceNode {
   return src;
 }
 
-/** «Мяу»: пила через два фильтра-форманты, высота вверх и вниз. pitch 1 — обычный, 1.4 — котёночный. */
-export function meow(pitch = 1, length = 0.55) {
+/**
+ * Ленивое милое «мрр-ряу»: короткое мурлыкающее начало, мягкий подъём и долгий спад,
+ * лёгкое дрожание голоса и придыхание. pitch 1 — обычный, больше — выше и короче.
+ */
+export function meow(pitch = 1, length = 0.9) {
   const c = ac();
   if (!c) return;
   const t = c.currentTime;
-  const osc = c.createOscillator();
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(380 * pitch, t);
-  osc.frequency.linearRampToValueAtTime(620 * pitch, t + length * 0.3);
-  osc.frequency.linearRampToValueAtTime(340 * pitch, t + length);
+  const p = pitch * (0.96 + Math.random() * 0.08);
+  const L = length / Math.sqrt(pitch);
+  const out = c.createGain();
+  out.gain.value = 0.9;
+  const lp = c.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 2600;
+  out.connect(lp).connect(c.destination);
+
+  // Голос: треугольник + пила тише — мягче, чем голая пила
+  const f0 = c.createGain();
+  const oscA = c.createOscillator();
+  oscA.type = 'sawtooth';
+  const oscB = c.createOscillator();
+  oscB.type = 'triangle';
+  const mixA = c.createGain();
+  mixA.gain.value = 0.35;
+  const mixB = c.createGain();
+  mixB.gain.value = 0.8;
+  oscA.connect(mixA).connect(f0);
+  oscB.connect(mixB).connect(f0);
+  for (const o of [oscA, oscB]) {
+    o.frequency.setValueAtTime(260 * p, t);
+    // «мрр» — низко
+    o.frequency.linearRampToValueAtTime(300 * p, t + L * 0.18);
+    // «я» — подъём
+    o.frequency.exponentialRampToValueAtTime(470 * p, t + L * 0.42);
+    // «у» — ленивый спад
+    o.frequency.exponentialRampToValueAtTime(290 * p, t + L);
+  }
+  // Дрожание голоса
+  const vib = c.createOscillator();
+  vib.frequency.value = 5.5;
+  const vibAmt = c.createGain();
+  vibAmt.gain.value = 7 * p;
+  vib.connect(vibAmt);
+  vibAmt.connect(oscA.frequency);
+  vibAmt.connect(oscB.frequency);
+  // «мрр»: быстрая пульсация громкости в начале
+  const trill = c.createOscillator();
+  trill.frequency.value = 28;
+  const trillAmt = c.createGain();
+  trillAmt.gain.setValueAtTime(0.5, t);
+  trillAmt.gain.linearRampToValueAtTime(0, t + L * 0.2);
+  const amp = c.createGain();
+  amp.gain.value = 0.5;
+  trill.connect(trillAmt).connect(amp.gain);
+
+  // Форманта «мяу»: рот открывается и закрывается
   const f1 = c.createBiquadFilter();
   f1.type = 'bandpass';
-  f1.Q.value = 4;
-  f1.frequency.setValueAtTime(700, t);
-  f1.frequency.linearRampToValueAtTime(1300, t + length * 0.35);
-  f1.frequency.linearRampToValueAtTime(800, t + length);
+  f1.Q.value = 3;
+  f1.frequency.setValueAtTime(550, t);
+  f1.frequency.linearRampToValueAtTime(1150, t + L * 0.45);
+  f1.frequency.linearRampToValueAtTime(650, t + L);
+  const f2 = c.createBiquadFilter();
+  f2.type = 'peaking';
+  f2.frequency.value = 2400;
+  f2.gain.value = 4;
+  const env = c.createGain();
+  env.gain.setValueAtTime(0.0001, t);
+  env.gain.exponentialRampToValueAtTime(0.32, t + 0.07);
+  env.gain.setValueAtTime(0.32, t + L * 0.55);
+  env.gain.exponentialRampToValueAtTime(0.0001, t + L + 0.15);
+  f0.connect(amp).connect(f1).connect(f2).connect(env).connect(out);
+
+  // Придыхание
+  const breath = noise(c, L + 0.2);
+  const bf = c.createBiquadFilter();
+  bf.type = 'bandpass';
+  bf.frequency.value = 1800;
+  bf.Q.value = 0.8;
+  const bg = c.createGain();
+  bg.gain.setValueAtTime(0.0001, t);
+  bg.gain.exponentialRampToValueAtTime(0.035, t + 0.1);
+  bg.gain.exponentialRampToValueAtTime(0.0001, t + L + 0.15);
+  breath.connect(bf).connect(bg).connect(out);
+
+  for (const o of [oscA, oscB, vib, trill]) {
+    o.start(t);
+    o.stop(t + L + 0.2);
+  }
+  breath.start(t);
+}
+
+/** Ленивый зевок: долгое низкое «а-а-ау» с выдохом. */
+export function yawnSound() {
+  const c = ac();
+  if (!c) return;
+  const t = c.currentTime;
+  const L = 1.5;
+  const o = c.createOscillator();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(210, t);
+  o.frequency.exponentialRampToValueAtTime(340, t + 0.5);
+  o.frequency.exponentialRampToValueAtTime(170, t + L);
+  const f = c.createBiquadFilter();
+  f.type = 'bandpass';
+  f.Q.value = 2;
+  f.frequency.setValueAtTime(500, t);
+  f.frequency.linearRampToValueAtTime(900, t + 0.6);
+  f.frequency.linearRampToValueAtTime(400, t + L);
   const g = c.createGain();
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(0.35, t + 0.05);
-  g.gain.setValueAtTime(0.35, t + length * 0.6);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + length);
-  osc.connect(f1).connect(g).connect(c.destination);
-  osc.start(t);
-  osc.stop(t + length + 0.05);
+  g.gain.exponentialRampToValueAtTime(0.18, t + 0.25);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + L);
+  o.connect(f).connect(g).connect(c.destination);
+  const br = noise(c, L);
+  const bf = c.createBiquadFilter();
+  bf.type = 'bandpass';
+  bf.frequency.value = 1200;
+  const bg = c.createGain();
+  bg.gain.setValueAtTime(0.0001, t);
+  bg.gain.exponentialRampToValueAtTime(0.05, t + 0.8);
+  bg.gain.exponentialRampToValueAtTime(0.0001, t + L);
+  br.connect(bf).connect(bg).connect(c.destination);
+  o.start(t);
+  o.stop(t + L);
+  br.start(t);
+}
+
+/** Короткое довольное «мрр?» */
+export function chirp() {
+  meow(1.35, 0.32);
 }
 
 /** Мурчание: низкий шум, пульсирующий ~25 раз в секунду. */
@@ -134,7 +242,7 @@ export function fanfare() {
   });
 }
 
-/** Хихиканье: три высоких коротких «мя». */
+/** Хихиканье: три коротких довольных «мрр». */
 export function giggle() {
-  [0, 0.16, 0.32].forEach((d, i) => setTimeout(() => meow(1.5 + i * 0.1, 0.14), d * 1000));
+  [0, 0.2, 0.4].forEach((d, i) => setTimeout(() => meow(1.3 + i * 0.08, 0.22), d * 1000));
 }

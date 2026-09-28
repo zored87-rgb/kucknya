@@ -33,7 +33,7 @@ function can3d(): boolean {
   }
 }
 
-const TARGET_TAB: Record<Target, string> = { fridge: 'fridge', recipes: 'recipes', eaten: 'eaten', buy: 'buy', feed: '' };
+const TARGET_TAB: Record<Target, string> = { fridge: 'fridge', recipes: 'recipes', eaten: 'eaten', buy: 'buy', feed: '', settings: 'settings' };
 
 /** Небо в окне по времени: утро, день, вечер, ночь. */
 function skyOf(h: number): string {
@@ -43,7 +43,21 @@ function skyOf(h: number): string {
   return 'evening';
 }
 
-export function Room({ k, go, onFeed }: { k: Kitchen; go: (tab: string) => void; onFeed: () => void }) {
+export function Room({
+  k,
+  go,
+  onFeed,
+  full,
+  sync,
+}: {
+  k: Kitchen;
+  go: (tab: string) => void;
+  onFeed: () => void;
+  /** На весь экран — главный экран приложения. */
+  full?: boolean;
+  /** Значок синхронизации в углу. */
+  sync?: React.ReactNode;
+}) {
   const pet = usePet();
   const [now, setNow] = useState(() => Date.now());
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 100));
@@ -58,6 +72,7 @@ export function Room({ k, go, onFeed }: { k: Kitchen; go: (tab: string) => void;
   const [reaction, setReaction] = useState<Reaction>(null);
   const [heartsKey, setHeartsKey] = useState(0);
   const reactTimer = useRef<number | undefined>(undefined);
+  const roomRef = useRef<HTMLDivElement>(null);
 
   // Раз в минуту пересчитываем голод, раз в 20 секунд — новая фраза.
   useEffect(() => {
@@ -146,14 +161,14 @@ export function Room({ k, go, onFeed }: { k: Kitchen; go: (tab: string) => void;
       hiss();
       react('hiss', 1400);
     } else if (mood === 'sleeping') {
-      meow(0.8, 0.8);
+      meow(0.85, 1.2);
       react('wake', 1600);
     } else if (part === 'belly') {
       giggle();
       react('giggle', 1200);
       setHeartsKey((x) => x + 1);
     } else {
-      meow(mood === 'hungry' ? 0.9 : 1.1, mood === 'hungry' ? 0.8 : 0.55);
+      meow(mood === 'hungry' ? 0.92 : 1, mood === 'hungry' ? 1.3 : 0.9);
       react('meow', 1000);
     }
   };
@@ -200,13 +215,18 @@ export function Room({ k, go, onFeed }: { k: Kitchen; go: (tab: string) => void;
     [mood, reaction, eating, say, pet.outfit, pet.wall, h, now, spoiling.length, weekMeals],
   );
   const flat = !ready3d;
-  const at = (key: string, dy = 0): React.CSSProperties | undefined =>
-    anchors[key] ? { left: anchors[key].x, top: anchors[key].y + dy } : undefined;
+  // Подпись не вылезает за край экрана
+  const at = (key: string, dy = 0): React.CSSProperties | undefined => {
+    const a = anchors[key];
+    if (!a) return undefined;
+    const w = roomRef.current?.clientWidth ?? 400;
+    return { left: Math.min(w - 62, Math.max(62, a.x)), top: a.y + dy };
+  };
 
   const satTone = sat >= 65 ? 'good' : sat >= 35 ? 'ok' : sat >= 10 ? 'low' : 'empty';
 
   return (
-    <div className={`room wall-${pet.wall || 'base'} sky-${skyOf(h)}${isNight(new Date(now)) ? ' night' : ''}${ready3d ? ' is-3d' : ''}`}>
+    <div ref={roomRef} className={`room${full ? ' full' : ''} wall-${pet.wall || 'base'} sky-${skyOf(h)}${isNight(new Date(now)) ? ' night' : ''}${ready3d ? ' is-3d' : ''}`}>
       {try3d && (
         <Suspense fallback={null}>
           <Scene3D
@@ -242,6 +262,7 @@ export function Room({ k, go, onFeed }: { k: Kitchen; go: (tab: string) => void;
             </div>
           </div>
         </div>
+        {sync && <div className="hud-sync">{sync}</div>}
         <button className="hud-pill hud-level" onClick={() => setWardrobe(true)} aria-label={`Уровень ${lvl.level}. Наряды`}>
           <span className="hud-star">{lvl.level}</span>
           <div className="hud-bar">
@@ -307,7 +328,7 @@ export function Room({ k, go, onFeed }: { k: Kitchen; go: (tab: string) => void;
       ) : (
         <>
           {/* Подписи и значки над 3D-предметами — тоже кнопки */}
-          <button className="obj-label pin" style={at('fridge', 4)} onClick={() => go('fridge')}>
+          <button className="obj-label pin" style={at('fridge', -34)} onClick={() => go('fridge')}>
             Холодильник
           </button>
           {spoiling.length > 0 && (
@@ -321,7 +342,7 @@ export function Room({ k, go, onFeed }: { k: Kitchen; go: (tab: string) => void;
           <button className="obj-label pin" style={at('eaten', 4)} onClick={() => go('eaten')}>
             Дневник
           </button>
-          <button className="obj-label pin" style={at('buy', 4)} onClick={() => go('buy')}>
+          <button className="obj-label pin" style={at('buy', -34)} onClick={() => go('buy')}>
             Магазин
           </button>
           {toBuy > 0 && (
@@ -329,7 +350,10 @@ export function Room({ k, go, onFeed }: { k: Kitchen; go: (tab: string) => void;
               {toBuy}
             </span>
           )}
-          <button className="obj-label pin feed" style={at('feed', 4)} onClick={onFeed}>
+          <button className="obj-label pin small" style={at('settings', 4)} onClick={() => go('settings')}>
+            ⚙️ Настройки
+          </button>
+          <button className="obj-label pin feed" style={at('feed', -50)} onClick={onFeed}>
             🍽 Покормить
           </button>
           {anchors.catHead && (

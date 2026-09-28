@@ -103,14 +103,14 @@ export function Cat({
       hiss();
       react('hiss', 1400);
     } else if (mood === 'sleeping') {
-      meow(0.8, 0.8);
+      meow(0.85, 1.2);
       react('wake', 1600);
     } else if (y > 125) {
       giggle();
       react('giggle', 1200);
       addHearts(1);
     } else {
-      meow(mood === 'hungry' ? 0.9 : 1.1, mood === 'hungry' ? 0.8 : 0.55);
+      meow(mood === 'hungry' ? 0.92 : 1, mood === 'hungry' ? 1.3 : 0.9);
       react('meow', 900);
     }
   };

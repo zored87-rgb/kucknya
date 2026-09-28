@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 
 const THRESHOLD = 70;
 
-export function usePullToRefresh(onRefresh: () => Promise<void> | void) {
+/** enabled = false — жест выключен (на кухне-комнате пальцем гладят кота). */
+export function usePullToRefresh(onRefresh: () => Promise<void> | void, enabled = true) {
   const [distance, setDistance] = useState(0);
   const start = useRef<number | null>(null);
   const dist = useRef(0);
@@ -12,6 +13,7 @@ export function usePullToRefresh(onRefresh: () => Promise<void> | void) {
   cb.current = onRefresh;
 
   useEffect(() => {
+    if (!enabled) return;
     const down = (e: TouchEvent) => {
       // Только если страница в самом верху и не открыта шторка.
       if (window.scrollY > 0 || document.querySelector('.sheet-backdrop')) return;
@@ -45,7 +47,7 @@ export function usePullToRefresh(onRefresh: () => Promise<void> | void) {
       window.removeEventListener('touchend', up);
       window.removeEventListener('touchcancel', up);
     };
-  }, []);
+  }, [enabled]);
 
   return { distance, ready: distance >= THRESHOLD * 0.8 };
 }
