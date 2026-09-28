@@ -5,7 +5,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Face } from '../Cat';
 import { Cat3D } from './cat3d';
-import { basketTexture, calendarTexture, floorTexture, glyphTexture, dateTexture, doorInsideTexture, fridgeInsideTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
+import { basketTexture, calendarTexture, floorTexture, glyphTexture, cloudLayerTexture, dateTexture, doorInsideTexture, fridgeInsideTexture, precipTexture, rugTexture, skyTexture, wallTexture } from './textures';
 
 export type Target = 'fridge' | 'recipes' | 'eaten' | 'buy' | 'feed' | 'settings';
 
@@ -41,10 +41,10 @@ export const ANCHORS: Record<string, THREE.Vector3> = {
   fridgeTop: new THREE.Vector3(-0.9, 2.25, -1.2),
   recipes: new THREE.Vector3(1.35, 2.45, -2.8),
   eaten: new THREE.Vector3(1.5, 1.33, -2.85),
-  buy: new THREE.Vector3(1.3, 0.2, 1.2),
-  buyTop: new THREE.Vector3(1.55, 0.85, 0.9),
+  buy: new THREE.Vector3(1.1, 0.2, 1.2),
+  buyTop: new THREE.Vector3(1.35, 0.85, 0.9),
   feed: new THREE.Vector3(-0.8, 0.45, 1.4),
-  catHead: new THREE.Vector3(0, 1.75, 0.55),
+  catHead: new THREE.Vector3(0, 1.95, 0.85),
   settings: new THREE.Vector3(1.3, 4.42, -2.9),
   window: new THREE.Vector3(-0.45, 4.3, -2.8),
 };
@@ -79,6 +79,8 @@ export class KitchenScene {
   private calendarNum: THREE.Mesh | null = null;
   /** Дождь/снег за окном и вспышка молнии. */
   private precip: THREE.Mesh;
+  /** Облака за окном — плывут. */
+  private cloudLayer: THREE.Mesh;
   private flash: THREE.Mesh;
   private nextFlash = 0;
   private lastFlash = -10;
@@ -93,6 +95,9 @@ export class KitchenScene {
   private drag: { x: number; y: number; dist: number; stroked: boolean; onCat: boolean } | null = null;
   private resizeObs: ResizeObserver;
   private clock3d: THREE.Group | null = null;
+  private zoom: { from: THREE.Vector3; look: THREE.Vector3; to: THREE.Vector3; start: number } | null = null;
+  /** Кипящая кастрюля в режиме готовки. */
+  private pot: { bubbles: THREE.Mesh[]; steam: THREE.Mesh[]; lid: THREE.Object3D } | null = null;
   private look = new THREE.Vector3(0, 1.05, 0);
 
   constructor(
@@ -125,17 +130,21 @@ export class KitchenScene {
     this.precip.position.set(0, 2.55, -2.965);
     this.flash.position.set(0, 2.55, -2.96);
     this.precip.visible = false;
-    this.scene.add(this.precip, this.flash);
+    this.cloudLayer = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.1), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false }));
+    this.cloudLayer.position.set(0, 2.55, -2.97);
+    this.scene.add(this.precip, this.flash, this.cloudLayer);
 
-    this.cat.root.position.set(0, 0.03, 0.55);
-    this.cat.root.scale.setScalar(0.72);
+    // На весь экран Гера сидит ближе и крупнее, как Том в игре
+    this.cat.root.position.set(0, 0.03, this.mode === 'chef' ? 0.55 : 0.85);
+    this.cat.root.scale.setScalar(this.mode === 'chef' ? 0.72 : 0.82);
+    if (this.mode === 'chef') this.buildPot();
     this.scene.add(this.room);
     this.scene.add(this.cat.root);
     this.scene.add(this.hearts);
     // Тень кота на полу запечённой комнаты
     const shadow = new THREE.Mesh(new THREE.PlaneGeometry(5, 5), new THREE.ShadowMaterial({ opacity: 0.28 }));
     shadow.rotation.x = -Math.PI / 2;
-    shadow.position.set(0, 0.05, 0.6);
+    shadow.position.set(0, 0.05, 0.85);
     shadow.receiveShadow = true;
     this.scene.add(shadow);
     // Запечённая кухня из Blender
@@ -508,6 +517,9 @@ export class KitchenScene {
       tag(o, t);
       this.targets.push(o);
     }
+    // Корзину чуть ближе к центру — иначе её обрезает край узкого экрана
+    const basketNode = node('Basket');
+    if (basketNode) basketNode.position.x -= 0.2;
     this.fridgeDoors = [node('FridgeDoorTop'), node('FridgeDoorMain')].filter((x): x is THREE.Object3D => !!x);
     // Внутренняя сторона дверец — светлая, с полочками (при запекании там была тень)
     this.fridgeDoors.forEach((door, i) => {
@@ -554,9 +566,9 @@ export class KitchenScene {
     model.add(inside);
 
     // Окно запечённой кухни больше и выше
-    for (const m of [this.precip, this.flash]) {
+    for (const m of [this.precip, this.flash, this.cloudLayer]) {
       m.scale.set(1.6 / 1.5, 1.3 / 1.1, 1);
-      m.position.set(0, 3.45, m === this.flash ? -2.935 : -2.94);
+      m.position.set(0, 3.45, m === this.flash ? -2.935 : m === this.cloudLayer ? -2.945 : -2.94);
     }
     // Запах — над новым холодильником
     this.stink.position.set(-1.35, 2.45, -1.6);
@@ -567,6 +579,77 @@ export class KitchenScene {
     const night = this.state.night;
     this.state = { ...this.state, night: undefined };
     if (night !== undefined) this.setState({ ...(this.state as SceneState), night });
+  }
+
+  /** Плитка с кипящей кастрюлей перед Герой-поваром. */
+  private buildPot() {
+    const g = new THREE.Group();
+    const stove = new THREE.Mesh(new RoundedBoxGeometry(0.9, 0.5, 0.7, 3, 0.06), mat('#f2f4f6', { roughness: 0.4 }));
+    stove.position.y = 0.25;
+    const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.03, 32), mat('#2a2a2e', { roughness: 0.6 }));
+    plate.position.y = 0.515;
+    // огонёк под кастрюлей
+    const glow = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.02, 8, 32), new THREE.MeshBasicMaterial({ color: '#ff6a2a' }));
+    glow.rotation.x = Math.PI / 2;
+    glow.position.y = 0.535;
+    const knob1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.05, 16), mat('#e2483d'));
+    knob1.rotation.x = Math.PI / 2;
+    knob1.position.set(-0.22, 0.28, 0.36);
+    const knob2 = knob1.clone();
+    knob2.position.x = 0.22;
+    // кастрюля
+    const potMat = new THREE.MeshPhysicalMaterial({ color: '#e2483d', roughness: 0.3, clearcoat: 0.8 });
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.27, 0.34, 40, 1, true), potMat);
+    (body.material as THREE.Material).side = THREE.DoubleSide;
+    body.position.y = 0.7;
+    const bottom = new THREE.Mesh(new THREE.CircleGeometry(0.27, 32), potMat);
+    bottom.rotation.x = -Math.PI / 2;
+    bottom.position.y = 0.535;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.018, 10, 40), potMat);
+    rim.rotation.x = Math.PI / 2;
+    rim.position.y = 0.87;
+    for (const side of [-1, 1]) {
+      const handle = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.018, 8, 16, Math.PI), mat('#2a2a2e'));
+      handle.position.set(side * 0.33, 0.82, 0);
+      handle.rotation.z = side * -Math.PI / 2;
+      g.add(handle);
+    }
+    // вода-суп
+    const soup = new THREE.Mesh(new THREE.CircleGeometry(0.28, 32), new THREE.MeshPhysicalMaterial({ color: '#f2a65a', roughness: 0.15, clearcoat: 1 }));
+    soup.rotation.x = -Math.PI / 2;
+    soup.position.y = 0.83;
+    // крышка лежит рядом, чуть приоткрыта — подпрыгивает от кипения
+    const lid = new THREE.Group();
+    const lidDisc = new THREE.Mesh(new THREE.CylinderGeometry(0.31, 0.31, 0.02, 40), potMat);
+    const lidKnob = new THREE.Mesh(new THREE.SphereGeometry(0.04, 12, 8), mat('#2a2a2e'));
+    lidKnob.position.y = 0.03;
+    lid.add(lidDisc, lidKnob);
+    lid.position.set(0.12, 0.9, -0.05);
+    lid.rotation.z = -0.35;
+    g.add(stove, plate, glow, knob1, knob2, body, bottom, rim, soup, lid);
+    // пузыри и пар
+    const bubbleMat = new THREE.MeshPhysicalMaterial({ color: '#ffd9a8', roughness: 0.1, transmission: 0.2, clearcoat: 1 });
+    const bubbles: THREE.Mesh[] = [];
+    for (let i = 0; i < 9; i++) {
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8), bubbleMat);
+      b.userData.phase = Math.random();
+      b.userData.pos = [(Math.random() - 0.5) * 0.36, (Math.random() - 0.5) * 0.36];
+      bubbles.push(b);
+      g.add(b);
+    }
+    const steamMat = new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.6, depthWrite: false });
+    const steam: THREE.Mesh[] = [];
+    for (let i = 0; i < 6; i++) {
+      const p = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 8), steamMat.clone());
+      p.userData.phase = i / 6;
+      steam.push(p);
+      g.add(p);
+    }
+    g.traverse((o) => (o.castShadow = true));
+    g.position.set(0.48, 0, 1.3);
+    g.rotation.y = -0.25;
+    this.scene.add(g);
+    this.pot = { bubbles, steam, lid };
   }
 
   // ---------- Состояние ----------
@@ -587,8 +670,12 @@ export class KitchenScene {
     }
     if (s.sky !== prev.sky || s.weather !== prev.weather || s.clouds !== prev.clouds) {
       this.skyMat.map?.dispose();
-      this.skyMat.map = skyTexture(s.sky, s.weather, s.clouds);
+      this.skyMat.map = skyTexture(s.sky, s.weather, s.clouds, false);
       this.skyMat.needsUpdate = true;
+      const cm = this.cloudLayer.material as THREE.MeshBasicMaterial;
+      cm.map?.dispose();
+      cm.map = cloudLayerTexture(s.sky, s.weather, s.clouds);
+      cm.needsUpdate = true;
     }
     if (s.weather !== prev.weather) {
       const kind = s.weather === 'storm' ? 'rain' : s.weather;
@@ -643,7 +730,22 @@ export class KitchenScene {
   /** Открыть дверцу холодильника, потом перейти. */
   openFridge(done: () => void) {
     this.fridgeOpenAt = this.clock.getElapsedTime();
-    window.setTimeout(done, 450);
+    this.zoomTo('fridge', done);
+  }
+
+  /** Камера «подлетает» к предмету, потом переходим в раздел. При возвращении resize() вернёт камеру. */
+  zoomTo(target: Target, done: () => void) {
+    const focus: Record<Target, [number, number, number]> = {
+      fridge: [-1.35, 1.3, -1.6],
+      recipes: [1.35, 2.85, -2.8],
+      eaten: [1.5, 1.75, -2.9],
+      buy: [1.05, 0.45, 0.9],
+      feed: [-0.8, 0.15, 1.4],
+      settings: [1.3, 4.85, -2.9],
+    };
+    const [x, y, z] = focus[target];
+    this.zoom = { from: this.camera.position.clone(), look: this.look.clone(), to: new THREE.Vector3(x, y, z), start: this.clock.getElapsedTime() };
+    window.setTimeout(done, 420);
   }
 
   /** Экранные координаты якорей (px от левого верхнего угла контейнера). */
@@ -730,6 +832,37 @@ export class KitchenScene {
       (s as THREE.Sprite).material.opacity = 1 - age / 1.6;
     }
 
+    // Кипящая кастрюля: пузыри, пар, крышка подпрыгивает
+    if (this.pot) {
+      for (const b of this.pot.bubbles) {
+        const ph = (t * 1.4 + b.userData.phase) % 1;
+        const [x, z] = b.userData.pos as [number, number];
+        b.position.set(x, 0.835 + Math.sin(ph * Math.PI) * 0.03, z);
+        b.scale.setScalar(ph < 0.85 ? 0.4 + ph : 0.01);
+      }
+      for (const p of this.pot.steam) {
+        const ph = (t * 0.45 + p.userData.phase) % 1;
+        p.position.set(Math.sin(ph * 6 + p.userData.phase * 9) * 0.08, 0.95 + ph * 0.9, Math.cos(ph * 5) * 0.05);
+        p.scale.setScalar(0.6 + ph * 1.8);
+        ((p as THREE.Mesh).material as THREE.MeshStandardMaterial).opacity = 0.55 * (1 - ph);
+      }
+      this.pot.lid.position.y = 0.9 + Math.max(0, Math.sin(t * 9)) * 0.02 * (Math.sin(t * 0.7) > 0 ? 1 : 0);
+    }
+
+    // Подлёт камеры к предмету
+    if (this.zoom) {
+      const p = Math.min(1, (t - this.zoom.start) / 0.42);
+      const e = p * p * (3 - 2 * p);
+      const toward = this.zoom.to.clone();
+      this.camera.position.lerpVectors(this.zoom.from, this.zoom.from.clone().lerp(toward, 0.55), e);
+      this.camera.lookAt(this.zoom.look.clone().lerp(toward, e));
+      if (p >= 1 && !this.container.clientWidth) this.zoom = null;
+    }
+
+    // Облака плывут за окном
+    const cmap = (this.cloudLayer.material as THREE.MeshBasicMaterial).map;
+    if (cmap) cmap.offset.x = (t * 0.008) % 1;
+
     // Дождь и снег за окном, молнии в грозу
     if (this.precip.visible) {
       const map = (this.precip.material as THREE.MeshBasicMaterial).map;
@@ -764,6 +897,7 @@ export class KitchenScene {
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
     if (!w || !h) return;
+    this.zoom = null;
     this.renderer.setSize(w, h, false);
     const aspect = w / h;
     this.camera.aspect = aspect;
@@ -776,13 +910,17 @@ export class KitchenScene {
       this.camera.position.set(0, 1.35, 0.55 + dist);
       this.look.set(0, 1.0, 0.5);
     } else if (aspect < 0.7) {
-      // Весь экран телефона — как камера в Blender, для которой запекали свет
+      // Весь экран телефона. Кадр чуть ближе и ниже: сверху картина, часы и окно,
+      // без пустой стены; Гера в центре-внизу, под ним миска и коврик
       const dist = 5.6;
-      const halfW = 1.65;
+      const halfW = 1.45;
       const hfov = 2 * Math.atan(halfW / dist);
-      this.camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / aspect));
+      const vfov = 2 * Math.atan(Math.tan(hfov / 2) / aspect);
+      this.camera.fov = THREE.MathUtils.radToDeg(vfov);
       this.camera.position.set(0, 1.6, dist);
-      this.look.set(0, 2.05, 0);
+      // Верх кадра — чуть выше картины на задней стене (y ≈ 6.1)
+      const up = Math.atan((6.1 - 1.6) / (dist + 3)) - vfov / 2;
+      this.look.set(0, 1.6 + Math.tan(up) * dist, 0);
     } else {
       this.camera.fov = 38;
       this.camera.position.set(0, 1.85, 6.4 * Math.max(1, 0.86 / aspect));

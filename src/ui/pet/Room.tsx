@@ -76,6 +76,13 @@ export function Room({
   const [anchors, setAnchors] = useState<Record<string, { x: number; y: number }>>({});
   const [reaction, setReaction] = useState<Reaction>(null);
   const [heartsKey, setHeartsKey] = useState(0);
+  const [zoomReq, setZoomReq] = useState<{ t: Target; n: number } | null>(null);
+  const fly = (t: Target) => setZoomReq({ t, n: Date.now() });
+  // Пока камера подлетает к предмету, подписи прячутся; вернулись на кухню — снова видны
+  const [zooming, setZooming] = useState(false);
+  useEffect(() => {
+    if (active) setZooming(false);
+  }, [active]);
   const reactTimer = useRef<number | undefined>(undefined);
   const roomRef = useRef<HTMLDivElement>(null);
 
@@ -234,7 +241,8 @@ export function Room({
       wall: pet.wall,
       sky: skyOf(h),
       night: isNight(new Date(now)),
-      spoiling: spoiling.length > 0,
+      // Мухи над холодильником — только если что-то уже просрочено и пора выбрасывать
+      spoiling: spoiling.some((i) => (i.daysLeft ?? 0) < 0),
       weekMeals,
       day: new Date(now).getDate(),
       month: new Date(now).getMonth(),
@@ -255,12 +263,14 @@ export function Room({
   const satTone = sat >= 65 ? 'good' : sat >= 35 ? 'ok' : sat >= 10 ? 'low' : 'empty';
 
   return (
-    <div ref={roomRef} className={`room${full ? ' full' : ''} wall-${pet.wall || 'base'} sky-${skyOf(h)}${isNight(new Date(now)) ? ' night' : ''}${ready3d ? ' is-3d' : ''}`}>
+    <div ref={roomRef} className={`room${full ? ' full' : ''}${zooming ? ' zooming' : ''} wall-${pet.wall || 'base'} sky-${skyOf(h)}${isNight(new Date(now)) ? ' night' : ''}${ready3d ? ' is-3d' : ''}`}>
       {try3d && (
         <Suspense fallback={null}>
           <Scene3D
             state={sceneState}
             heartsKey={heartsKey}
+            zoomReq={zoomReq}
+            onZoomStart={() => setZooming(true)}
             onTarget={(t) => (t === 'feed' ? onFeed() : go(TARGET_TAB[t]))}
             onCatTap={catTap}
             onCatStroke={catStroke}
@@ -357,7 +367,7 @@ export function Room({
       ) : (
         <>
           {/* Подписи и значки над 3D-предметами — тоже кнопки */}
-          <button className="obj-label pin" style={at('fridge', -34)} onClick={() => go('fridge')}>
+          <button className="obj-label pin" style={at('fridge', -34)} onClick={() => fly('fridge')}>
             Холодильник
           </button>
           {spoiling.length > 0 && (
@@ -365,13 +375,13 @@ export function Room({
               {spoiling.length}
             </span>
           )}
-          <button className="obj-label pin" style={at('recipes', 6)} onClick={() => go('recipes')}>
+          <button className="obj-label pin" style={at('recipes', 6)} onClick={() => fly('recipes')}>
             Рецепты
           </button>
-          <button className="obj-label pin" style={at('eaten', 4)} onClick={() => go('eaten')}>
+          <button className="obj-label pin" style={at('eaten', 4)} onClick={() => fly('eaten')}>
             Дневник
           </button>
-          <button className="obj-label pin" style={at('buy', -34)} onClick={() => go('buy')}>
+          <button className="obj-label pin" style={at('buy', -34)} onClick={() => fly('buy')}>
             Магазин
           </button>
           {toBuy > 0 && (
@@ -379,10 +389,10 @@ export function Room({
               {toBuy}
             </span>
           )}
-          <button className="obj-label pin small" style={at('settings', 4)} onClick={() => go('settings')}>
+          <button className="obj-label pin small" style={at('settings', 4)} onClick={() => fly('settings')}>
             ⚙️ Настройки
           </button>
-          <button className="obj-label pin feed" style={at('feed', -50)} onClick={onFeed}>
+          <button className="obj-label pin feed" style={at('feed', -50)} onClick={() => fly('feed')}>
             🍽 Покормить
           </button>
           {anchors.catHead && (

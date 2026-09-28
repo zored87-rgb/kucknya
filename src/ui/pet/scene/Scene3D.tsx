@@ -13,8 +13,14 @@ export default function Scene3D({
   onReady,
   onFail,
   mode = 'room',
+  zoomReq,
+  onZoomStart,
 }: {
+  /** Камера начала подлёт — прячем подписи. */
+  onZoomStart?: () => void;
   mode?: 'room' | 'chef';
+  /** Нажали подпись предмета — камера подлетает к нему, потом переход. */
+  zoomReq?: { t: Target; n: number } | null;
   state: SceneState;
   /** Меняется — над котом вылетают сердечки. */
   heartsKey: number;
@@ -28,15 +34,19 @@ export default function Scene3D({
   const box = useRef<HTMLDivElement>(null);
   const scene = useRef<KitchenScene | null>(null);
   // Свежие обработчики без пересоздания сцены
-  const h = useRef({ onTarget, onCatTap, onCatStroke, onAnchors });
-  h.current = { onTarget, onCatTap, onCatStroke, onAnchors };
+  const h = useRef({ onTarget, onCatTap, onCatStroke, onAnchors, onZoomStart });
+  h.current = { onTarget, onCatTap, onCatStroke, onAnchors, onZoomStart };
 
   useEffect(() => {
     const el = box.current!;
     let s: KitchenScene;
     try {
       s = new KitchenScene(el, {
-        onTarget: (t) => (t === 'fridge' ? s.openFridge(() => h.current.onTarget(t)) : h.current.onTarget(t)),
+        onTarget: (t) => {
+          h.current.onZoomStart?.();
+          if (t === 'fridge') s.openFridge(() => h.current.onTarget(t));
+          else s.zoomTo(t, () => h.current.onTarget(t));
+        },
         onCatTap: (p) => h.current.onCatTap(p),
         onCatStroke: () => h.current.onCatStroke(),
       }, mode);
@@ -72,6 +82,15 @@ export default function Scene3D({
   useEffect(() => {
     if (heartsKey) scene.current?.hearts3();
   }, [heartsKey]);
+
+  useEffect(() => {
+    const s = scene.current;
+    if (!zoomReq || !s) return;
+    h.current.onZoomStart?.();
+    const done = () => h.current.onTarget(zoomReq.t);
+    if (zoomReq.t === 'fridge') s.openFridge(done);
+    else s.zoomTo(zoomReq.t, done);
+  }, [zoomReq]);
 
   return <div ref={box} className="room-3d" />;
 }

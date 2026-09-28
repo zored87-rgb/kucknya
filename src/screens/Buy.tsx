@@ -206,7 +206,8 @@ export function Buy({ k }: { k: Kitchen }) {
       )}
 
       {tab === 'ideas' && (
-        <>
+        <div className="sketchbook">
+          <div className="sketch-title">План покупок ✎</div>
           {top.length > 0 && (
             <Section title="Откроют блюда">
               <div className="tiles">
@@ -296,61 +297,65 @@ export function Buy({ k }: { k: Kitchen }) {
               </div>
             </div>
           </Section>
-        </>
+        </div>
       )}
 
       {tab === 'money' && (
-        <>
-          <button className="btn primary wide" onClick={() => setReceipt(true)}>
-            🧾 Записать чек
-          </button>
-          <div className="stats">
-            <div className="stat">
+        <div className="register">
+          <div className="reg-display" role="group" aria-label="Траты">
+            <div className="reg-row big">
+              <span>НЕДЕЛЯ</span>
               <b>{money(spent.week)}</b>
-              <span>неделя</span>
             </div>
-            <div className="stat">
+            <div className="reg-row">
+              <span>МЕСЯЦ</span>
               <b>{money(spent.month)}</b>
-              <span>месяц</span>
             </div>
-            <div className="stat">
+            <div className="reg-row">
+              <span>В СРЕДНЕМ ЗА НЕДЕЛЮ</span>
               <b>{money(spent.avgWeek)}</b>
-              <span>в среднем</span>
             </div>
           </div>
+          <button className="reg-key big" onClick={() => setReceipt(true)}>
+            🧾 ЗАПИСАТЬ ЧЕК
+          </button>
           {spent.byStore.length > 0 && (
-            <Section title="Магазины">
-              <ul className="list">
-                {spent.byStore.map((b) => (
-                  <li key={b.store} className="item">
-                    <span className="item-main static">
-                      <span className="item-name">{b.store}</span>
-                      <span className="item-sub">× {b.count}</span>
-                    </span>
-                    <b>{money(b.total)}</b>
-                  </li>
-                ))}
-              </ul>
-            </Section>
-          )}
-          {receipts.length > 0 && (
-            <Section title="Чеки">
-              <div className="receipt small">
-                <RecentReceipts receipts={receipts} />
+            <div className="receipt small">
+              <div className="rc-head">
+                <b>ПО МАГАЗИНАМ</b>
+                <span>этот месяц</span>
               </div>
-            </Section>
-          )}
-          <div className="ocu">
-            <span className="muted small">Индекс цен OCU 2026 · меньше — дешевле</span>
-            <div className="chip-row">
-              {(['Mercadona', 'Carrefour Market', 'Carrefour', 'Carrefour Express'] as const).map((s) => (
-                <span key={s} className="chip static">
-                  {s} <b>{OCU_2026[s]}</b>
-                </span>
+              <div className="rc-sep" />
+              {spent.byStore.map((b) => (
+                <div key={b.store} className="rc-row">
+                  <span className="rc-name">
+                    {b.store} × {b.count}
+                  </span>
+                  <span className="rc-dots" aria-hidden />
+                  <span className="rc-price">{money(b.total)}</span>
+                </div>
               ))}
             </div>
+          )}
+          {receipts.length > 0 && (
+            <div className="receipt small">
+              <div className="rc-head">
+                <b>ЧЕКИ</b>
+              </div>
+              <div className="rc-sep" />
+              <RecentReceipts receipts={receipts} />
+            </div>
+          )}
+          <div className="reg-keys" aria-label="Индекс цен OCU 2026, меньше — дешевле">
+            <span className="reg-caption">ИНДЕКС ЦЕН OCU 2026 · МЕНЬШЕ — ДЕШЕВЛЕ</span>
+            {(['Mercadona', 'Carrefour Market', 'Carrefour', 'Carrefour Express'] as const).map((st) => (
+              <span key={st} className="reg-key small">
+                {st}
+                <b>{OCU_2026[st]}</b>
+              </span>
+            ))}
           </div>
-        </>
+        </div>
       )}
 
       {receipt && <ReceiptSheet stores={k.stores} onClose={() => setReceipt(false)} />}

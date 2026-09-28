@@ -234,7 +234,7 @@ export function floorTexture(): THREE.CanvasTexture {
 }
 
 /** Небо в окне: время суток + погода (облачность, пасмурно, туман). */
-export function skyTexture(sky: string, weather = 'clear', clouds = 20): THREE.CanvasTexture {
+export function skyTexture(sky: string, weather = 'clear', clouds = 20, withClouds = true): THREE.CanvasTexture {
   return canvasTexture(256, 192, (g, w, h) => {
     const grey = weather === 'cloudy' || weather === 'rain' || weather === 'storm' || weather === 'drizzle' || weather === 'fog';
     const stops: Record<string, [string, string]> = grey
@@ -289,7 +289,7 @@ export function skyTexture(sky: string, weather = 'clear', clouds = 20): THREE.C
       }
     }
     // Облака: чем больше облачность, тем больше и серее
-    const n = weather === 'clear' ? Math.round(clouds / 25) : grey ? 7 : 2 + Math.round(clouds / 20);
+    const n = !withClouds ? 0 : weather === 'clear' ? Math.round(clouds / 25) : grey ? 7 : 2 + Math.round(clouds / 20);
     const cloudColor = grey ? (night ? '#3d4456' : '#b9c2cb') : night ? '#5a6490' : '#ffffff';
     g.fillStyle = cloudColor;
     for (let i = 0; i < n; i++) {
@@ -493,4 +493,33 @@ export function doorInsideTexture(shelves: boolean): THREE.CanvasTexture {
       g.fillRect(10, y - 6, w - 20, 6);
     }
   });
+}
+
+/** Облака отдельным прозрачным слоем — их медленно сдвигаем, и они плывут за окном. */
+export function cloudLayerTexture(sky: string, weather = 'clear', clouds = 20): THREE.CanvasTexture {
+  const t = canvasTexture(512, 192, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    const grey = weather === 'cloudy' || weather === 'rain' || weather === 'storm' || weather === 'drizzle' || weather === 'fog';
+    const night = sky === 'night';
+    const n = weather === 'clear' ? 1 + Math.round(clouds / 25) : grey ? 9 : 3 + Math.round(clouds / 18);
+    g.fillStyle = grey ? (night ? '#3d4456' : '#b9c2cb') : night ? '#5a6490' : '#ffffff';
+    for (let i = 0; i < n; i++) {
+      const x = ((i * 131 + 40) % w) + 0.5;
+      const y = 28 + ((i * 53) % (h - 70));
+      const s = 0.6 + ((i * 37) % 10) / 16;
+      g.globalAlpha = grey ? 0.85 : 0.95;
+      // рисуем дважды со сдвигом на ширину — бесшовно по кругу
+      for (const dx of [0, -w]) {
+        g.beginPath();
+        g.ellipse(x + dx, y, 36 * s, 13 * s, 0, 0, Math.PI * 2);
+        g.arc(x + dx - 9 * s, y - 10 * s, 15 * s, 0, Math.PI * 2);
+        g.arc(x + dx + 13 * s, y - 8 * s, 13 * s, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+    g.globalAlpha = 1;
+  });
+  t.wrapS = THREE.RepeatWrapping;
+  t.repeat.x = 0.5;
+  return t;
 }

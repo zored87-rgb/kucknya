@@ -135,10 +135,12 @@ function Shell() {
           )}
         </div>
       </header>
-      <h1 className="page-title">{title}</h1>
+      <h1 className="page-title" key={`t-${tab}`}>
+        {title}
+      </h1>
 
       <TimerChips />
-      <main className={`content tab-${tab}`}>
+      <main className={`content tab-${tab}`} key={tab}>
         {!hasData && syncing ? (
           <div className="empty">Загружаю данные из таблицы…</div>
         ) : (
